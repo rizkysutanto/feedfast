@@ -43,13 +43,7 @@
         .logo-icon {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, #8b5cf6, #a855f7);
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
         }
 
         .cta-button {
@@ -140,17 +134,16 @@
         .dashboard-mockup {
             width: 100%;
             height: 500px;
-            background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 18px;
             position: relative;
             overflow: hidden;
+        }
+
+        .dashboard-mockup img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
         }
 
         .floating-icon {
@@ -218,16 +211,15 @@
         .feature-image {
             width: 100%;
             height: 400px;
-            background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 16px;
-            position: relative;
-            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .feature-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
         }
 
         /* Analytics Section */
@@ -238,16 +230,15 @@
         .analytics-dashboard {
             width: 100%;
             height: 500px;
-            background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 16px;
-            backdrop-filter: blur(10px);
-            position: relative;
+            overflow: hidden;
+        }
+
+        .analytics-dashboard img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
         }
 
         /* CTA Section */
@@ -344,7 +335,7 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <div class="logo-icon">IX</div>
+            <img src="Insightx-logo.webp" alt="InsightX Logo" class="logo-icon">
             <span>InsightX</span>
         </div>
         <a href="#" class="cta-button">Get Early Access</a>
@@ -362,11 +353,9 @@
                 </form>
             </div>
             <div class="hero-image">
-                <div class="dashboard-mockup loading-placeholder">
-                    Dashboard Preview Placeholder
+                <div class="dashboard-mockup">
+                    <img src="asset-hero.webp" alt="InsightX Dashboard Preview">
                 </div>
-                <div class="floating-icon">📊</div>
-                <div class="floating-icon">📋</div>
             </div>
         </div>
     </section>
@@ -374,8 +363,8 @@
     <!-- Centralized Complaints Section -->
     <section class="section">
         <div class="section-content">
-            <div class="feature-image loading-placeholder">
-                Centralized Complaints Dashboard Placeholder
+            <div class="feature-image">
+                <img src="asset-section1.webp" alt="Centralized Complaints Dashboard">
             </div>
             <div>
                 <h2>No More Scattered Complaints</h2>
@@ -393,8 +382,8 @@
                 <p>Know how many complaints each location gets. Compare solve time. Spot patterns. Stop churn before it gets worse.</p>
                 <a href="#" class="cta-button">Get Early Access</a>
             </div>
-            <div class="analytics-dashboard loading-placeholder">
-                AI Powered Analytics Dashboard Placeholder
+            <div class="analytics-dashboard">
+                <img src="asset-section2.webp" alt="AI Powered Analytics Dashboard">
             </div>
         </div>
     </section>
