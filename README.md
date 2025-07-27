@@ -1,1 +1,1 @@
-# InsightX_LP
+# Landing Page for FeedFast
