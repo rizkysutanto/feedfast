@@ -175,7 +175,6 @@
 
         .hero-image {
             position: relative;
-            height: 800px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -183,18 +182,15 @@
 
         .dashboard-mockup {
             width: 100%;
-            max-width: 800px;
             height: auto;
-            border-radius: 20px;
             position: relative;
-            overflow: hidden;
         }
 
         .dashboard-mockup img {
             width: 100%;
             height: auto;
-            object-fit: cover;
-            border-radius: 20px;
+            object-fit: contain;
+            display: block;
         }
 
         /* Section Styles */
@@ -327,38 +323,7 @@
             border: 1px solid rgba(244, 67, 54, 0.3);
         }
 
-        /* Floating Elements */
-        .floating-icon {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #8527F0, #A855F7);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            animation: float 3s ease-in-out infinite;
-            z-index: 1;
-        }
-
-        .floating-icon:nth-child(2) {
-            top: 20%;
-            right: -30px;
-            animation-delay: 0.5s;
-        }
-
-        .floating-icon:nth-child(3) {
-            bottom: 30%;
-            left: -30px;
-            animation-delay: 1s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
+        /* Floating Elements - Remove unused styles */
 
         /* Responsive Design - Mobile First */
         @media (max-width: 768px) {
@@ -401,7 +366,7 @@
                 margin-bottom: 30px;
             }
 
-            . {
+            .hero-image {
                 height: auto;
                 order: -1;
             }
@@ -458,10 +423,6 @@
             .submit-button {
                 width: 100%;
                 padding: 14px 20px;
-            }
-
-            .floating-icon {
-                display: none;
             }
         }
 
@@ -686,13 +647,7 @@
             }
         });
 
-        // Initialize floating animations
-        const floatingIcons = document.querySelectorAll('.floating-icon');
-        floatingIcons.forEach((icon, index) => {
-            icon.style.animationDelay = `${index * 0.5}s`;
-        });
-
-        // Intersection Observer for smooth animations
+        // Initialize animations
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
