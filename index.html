@@ -64,6 +64,13 @@
             box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
         }
 
+        .cta-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         /* Hero Section */
         .hero {
             min-height: 100vh;
@@ -104,8 +111,15 @@
 
         .hero-form {
             display: flex;
+            flex-direction: column;
             gap: 15px;
             margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
         }
 
         .email-input {
@@ -117,10 +131,40 @@
             color: white;
             font-size: 16px;
             backdrop-filter: blur(10px);
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .email-input:focus {
+            border-color: #8b5cf6;
         }
 
         .email-input::placeholder {
             color: #666;
+        }
+
+        .submit-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .submit-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .hero-image {
@@ -270,6 +314,35 @@
             gap: 15px;
             max-width: 500px;
             margin: 0 auto;
+            flex-direction: column;
+        }
+
+        .final-form-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        /* Success/Error Messages */
+        .message {
+            margin-top: 15px;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 500;
+            display: none;
+            text-align: center;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
         }
 
         /* Responsive Design */
@@ -309,9 +382,13 @@
                 padding: 100px 20px;
             }
 
-            .hero-form,
-            .final-cta-form {
+            .form-row,
+            .final-form-row {
                 flex-direction: column;
+            }
+
+            .email-input {
+                width: 100%;
             }
         }
 
@@ -337,7 +414,7 @@
         <div class="logo">
             <img src="Insightx-logo.webp" alt="InsightX Logo" class="logo-icon">
         </div>
-        <a href="#" class="cta-button">Get Early Access</a>
+        <a href="#final-cta" class="cta-button">Get Early Access</a>
     </header>
 
     <!-- Hero Section -->
@@ -346,10 +423,13 @@
             <div class="hero-text">
                 <h1>Losing Customers & Don't Even Know Why?</h1>
                 <p>Centralize complaints and feedback across all your outlets. Get structured data, not noise. Track, act, improve all in one place.</p>
-                <form class="hero-form">
-                    <input type="email" class="email-input" placeholder="Type your email here">
-                    <button type="submit" class="cta-button">Get Early Access</button>
-                </form>
+                <div class="hero-form">
+                    <div class="form-row">
+                        <input type="email" id="hero-email" class="email-input" placeholder="Type your email here" required>
+                        <button type="submit" class="submit-button" onclick="submitEmail('hero-email', 'hero-message')">Get Early Access</button>
+                    </div>
+                    <div id="hero-message" class="message"></div>
+                </div>
             </div>
             <div class="hero-image">
                 <div class="dashboard-mockup">
@@ -368,7 +448,7 @@
             <div>
                 <h2>No More Scattered Complaints</h2>
                 <p>Everything centralized and integrated in your dashboard to ensure no lost feedback.</p>
-                <a href="#" class="cta-button">Get Early Access</a>
+                <a href="#final-cta" class="cta-button">Get Early Access</a>
             </div>
         </div>
     </section>
@@ -379,7 +459,7 @@
             <div>
                 <h2>See Trends, Spot Patterns, Act Fast</h2>
                 <p>Know how many complaints each location gets. Compare solve time. Spot patterns. Stop churn before it gets worse.</p>
-                <a href="#" class="cta-button">Get Early Access</a>
+                <a href="#final-cta" class="cta-button">Get Early Access</a>
             </div>
             <div class="analytics-dashboard">
                 <img src="asset-section2.webp" alt="AI Powered Analytics Dashboard">
@@ -388,17 +468,93 @@
     </section>
 
     <!-- Final CTA Section -->
-    <section class="final-cta">
+    <section class="final-cta" id="final-cta">
         <h2>Start Fixing What's Broken.</h2>
         <p>Centralize feedback. Fix what's broken. Track complaints before churn hits.</p>
-        <form class="final-cta-form">
-            <input type="email" class="email-input" placeholder="Type your email here">
-            <button type="submit" class="cta-button">Get Early Access</button>
-        </form>
+        <div class="final-cta-form">
+            <div class="final-form-row">
+                <input type="email" id="final-email" class="email-input" placeholder="Type your email here" required>
+                <button type="submit" class="submit-button" onclick="submitEmail('final-email', 'final-message')">Get Early Access</button>
+            </div>
+            <div id="final-message" class="message"></div>
+        </div>
     </section>
 
     <script>
-        // Smooth scrolling for CTA buttons
+        // Email submission function
+        async function submitEmail(emailId, messageId) {
+            const emailInput = document.getElementById(emailId);
+            const messageDiv = document.getElementById(messageId);
+            const button = emailInput.parentElement.querySelector('button');
+            
+            const email = emailInput.value.trim();
+            
+            // Enhanced email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                showMessage(messageDiv, 'Please enter a valid email address', 'error');
+                return;
+            }
+            
+            // Disable button and show loading
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Submitting...';
+            
+            try {
+                const response = await fetch('/api/submit-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(messageDiv, 'Thank you! We\'ll notify you when InsightX is ready.', 'success');
+                    emailInput.value = '';
+                } else {
+                    showMessage(messageDiv, result.message || 'Something went wrong. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage(messageDiv, 'Network error. Please check your connection and try again.', 'error');
+            } finally {
+                // Reset button
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+        
+        // Show message function
+        function showMessage(messageDiv, text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Handle Enter key press
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const target = e.target;
+                if (target.id === 'hero-email') {
+                    e.preventDefault();
+                    submitEmail('hero-email', 'hero-message');
+                } else if (target.id === 'final-email') {
+                    e.preventDefault();
+                    submitEmail('final-email', 'final-message');
+                }
+            }
+        });
+
+        // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -408,18 +564,6 @@
                         behavior: 'smooth',
                         block: 'start'
                     });
-                }
-            });
-        });
-
-        // Form handling
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = this.querySelector('input[type="email"]').value;
-                if (email) {
-                    alert('Thank you for your interest! We\'ll be in touch soon.');
-                    this.querySelector('input[type="email"]').value = '';
                 }
             });
         });
@@ -435,7 +579,19 @@
             const scrolled = window.pageYOffset;
             const parallax = document.querySelector('.hero');
             const speed = scrolled * 0.5;
-            parallax.style.transform = `translateY(${speed}px)`;
+            if (parallax) {
+                parallax.style.transform = `translateY(${speed}px)`;
+            }
+        });
+
+        // Add scroll effect to header
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(10, 10, 10, 0.95)';
+            } else {
+                header.style.background = 'rgba(10, 10, 10, 0.8)';
+            }
         });
     </script>
 </body>
