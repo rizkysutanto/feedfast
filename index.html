@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InsightX - Centralize Customer Feedback</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,9 +14,10 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0a0a0a;
-            color: white;
+            background: #000000;
+            color: #FFFFFF;
             overflow-x: hidden;
+            line-height: 1.6;
         }
 
         /* Header */
@@ -28,27 +30,30 @@
             top: 0;
             width: 100%;
             z-index: 1000;
-            backdrop-filter: blur(10px);
-            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.8);
+            transition: all 0.3s ease;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-size: 24px;
-            font-weight: bold;
+            font-weight: 700;
+            color: #FFFFFF;
         }
 
         .logo-icon {
-            width: 64px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 8px;
+            object-fit: contain;
         }
 
         .cta-button {
-            background: linear-gradient(135deg, #8b5cf6, #a855f7);
-            color: white;
+            background: linear-gradient(135deg, #8527F0, #A855F7);
+            color: #FFFFFF;
             padding: 12px 24px;
             border: none;
             border-radius: 25px;
@@ -57,11 +62,12 @@
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            font-size: 14px;
         }
 
         .cta-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 10px 25px rgba(133, 39, 240, 0.3);
         }
 
         .cta-button:disabled {
@@ -76,10 +82,9 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding: 0 50px;
-            background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+            padding: 120px 50px 80px;
+            background: radial-gradient(ellipse at center, rgba(133, 39, 240, 0.08) 0%, transparent 70%);
             position: relative;
-            overflow: hidden;
         }
 
         .hero-content {
@@ -89,31 +94,28 @@
             grid-template-columns: 1fr 1fr;
             gap: 80px;
             align-items: center;
+            width: 100%;
         }
 
         .hero-text h1 {
             font-size: 3.5rem;
             font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #ffffff, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            color: #FFFFFF;
         }
 
         .hero-text p {
             font-size: 1.2rem;
-            color: #b3b3b3;
-            margin-bottom: 30px;
+            color: #B3B3B3;
+            margin-bottom: 40px;
             line-height: 1.6;
         }
 
         .hero-form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 20px;
         }
 
         .form-row {
@@ -124,19 +126,21 @@
 
         .email-input {
             flex: 1;
-            padding: 15px 20px;
+            padding: 16px 24px;
             border: 1px solid #333;
-            border-radius: 25px;
+            border-radius: 50px;
             background: rgba(255, 255, 255, 0.05);
-            color: white;
+            color: #FFFFFF;
             font-size: 16px;
             backdrop-filter: blur(10px);
             outline: none;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
         }
 
         .email-input:focus {
-            border-color: #8b5cf6;
+            border-color: #8527F0;
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
 
         .email-input::placeholder {
@@ -144,20 +148,22 @@
         }
 
         .submit-button {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #8b5cf6, #a855f7);
-            color: white;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #8527F0, #A855F7);
+            color: #FFFFFF;
             border: none;
-            border-radius: 25px;
+            border-radius: 50px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             white-space: nowrap;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
         }
 
         .submit-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 10px 25px rgba(133, 39, 240, 0.3);
         }
 
         .submit-button:disabled {
@@ -177,48 +183,19 @@
 
         .dashboard-mockup {
             width: 100%;
-            height: 800px;
+            max-width: 500px;
+            height: auto;
             border-radius: 20px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 20px 60px rgba(133, 39, 240, 0.2);
         }
 
         .dashboard-mockup img {
             width: 100%;
-            height: 100%;
+            height: auto;
             object-fit: cover;
             border-radius: 20px;
-        }
-
-        .floating-icon {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #8b5cf6, #a855f7);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .floating-icon:nth-child(2) {
-            top: 20%;
-            right: -30px;
-            animation-delay: 0.5s;
-        }
-
-        .floating-icon:nth-child(3) {
-            bottom: 30%;
-            left: -30px;
-            animation-delay: 1s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
         }
 
         /* Section Styles */
@@ -226,6 +203,9 @@
             padding: 100px 50px;
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            background: #000000;
         }
 
         .section-content {
@@ -236,51 +216,51 @@
         }
 
         .section h2 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 800;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #ffffff, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 24px;
+            color: #FFFFFF;
+            line-height: 1.2;
         }
 
         .section p {
-            font-size: 1.1rem;
-            color: #b3b3b3;
+            font-size: 1.2rem;
+            color: #B3B3B3;
             line-height: 1.6;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
         .feature-image {
             width: 100%;
-            height: 800px;
             border-radius: 20px;
             overflow: hidden;
+            box-shadow: 0 20px 60px rgba(133, 39, 240, 0.1);
         }
 
         .feature-image img {
             width: 100%;
-            height: 100%;
+            height: auto;
             object-fit: cover;
             border-radius: 20px;
         }
 
         /* Analytics Section */
         .analytics-section {
-            background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.05) 0%, transparent 70%);
+            background: radial-gradient(ellipse at center, rgba(133, 39, 240, 0.05) 0%, transparent 70%);
+            position: relative;
+            z-index: 2;
         }
 
         .analytics-dashboard {
             width: 100%;
-            height: 800px;
             border-radius: 20px;
             overflow: hidden;
+            box-shadow: 0 20px 60px rgba(133, 39, 240, 0.1);
         }
 
         .analytics-dashboard img {
             width: 100%;
-            height: 100%;
+            height: auto;
             object-fit: cover;
             border-radius: 20px;
         }
@@ -288,24 +268,27 @@
         /* CTA Section */
         .final-cta {
             text-align: center;
-            padding: 150px 50px;
-            background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+            padding: 120px 50px;
+            background: radial-gradient(ellipse at center, rgba(133, 39, 240, 0.08) 0%, transparent 70%);
+            position: relative;
+            z-index: 2;
         }
 
         .final-cta h2 {
-            font-size: 3rem;
+            font-size: 3.2rem;
             font-weight: 800;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #ffffff, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 24px;
+            color: #FFFFFF;
+            line-height: 1.2;
         }
 
         .final-cta p {
-            font-size: 1.2rem;
-            color: #b3b3b3;
-            margin-bottom: 40px;
+            font-size: 1.3rem;
+            color: #B3B3B3;
+            margin-bottom: 50px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .final-cta-form {
@@ -314,13 +297,13 @@
             gap: 15px;
             max-width: 500px;
             margin: 0 auto;
-            flex-direction: column;
         }
 
         .final-form-row {
             display: flex;
             gap: 15px;
             align-items: flex-start;
+            width: 100%;
         }
 
         /* Success/Error Messages */
@@ -345,50 +328,161 @@
             border: 1px solid rgba(244, 67, 54, 0.3);
         }
 
-        /* Responsive Design */
+        /* Floating Elements */
+        .floating-icon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #8527F0, #A855F7);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            animation: float 3s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .floating-icon:nth-child(2) {
+            top: 20%;
+            right: -30px;
+            animation-delay: 0.5s;
+        }
+
+        .floating-icon:nth-child(3) {
+            bottom: 30%;
+            left: -30px;
+            animation-delay: 1s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Responsive Design - Mobile First */
         @media (max-width: 768px) {
             .header {
                 padding: 15px 20px;
             }
 
-            .hero {
-                padding: 0 20px;
+            .logo {
+                font-size: 20px;
             }
 
-            .hero-content,
-            .section-content {
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+            }
+
+            .cta-button {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+
+            .hero {
+                padding: 100px 20px 60px;
+                min-height: auto;
+            }
+
+            .hero-content {
                 grid-template-columns: 1fr;
                 gap: 40px;
                 text-align: center;
             }
 
             .hero-text h1 {
-                font-size: 2.5rem;
-            }
-
-            .section h2 {
-                font-size: 2rem;
-            }
-
-            .final-cta h2 {
                 font-size: 2.2rem;
+                margin-bottom: 20px;
+            }
+
+            .hero-text p {
+                font-size: 1.1rem;
+                margin-bottom: 30px;
+            }
+
+            .hero-image {
+                height: auto;
+                order: -1;
+            }
+
+            .dashboard-mockup {
+                max-width: 100%;
             }
 
             .section {
                 padding: 60px 20px;
             }
 
+            .section-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .section h2 {
+                font-size: 2rem;
+                margin-bottom: 20px;
+            }
+
+            .section p {
+                font-size: 1.1rem;
+                margin-bottom: 30px;
+            }
+
             .final-cta {
-                padding: 100px 20px;
+                padding: 80px 20px;
+            }
+
+            .final-cta h2 {
+                font-size: 2.2rem;
+                margin-bottom: 20px;
+            }
+
+            .final-cta p {
+                font-size: 1.1rem;
+                margin-bottom: 40px;
             }
 
             .form-row,
             .final-form-row {
                 flex-direction: column;
+                gap: 15px;
             }
 
             .email-input {
                 width: 100%;
+                padding: 14px 20px;
+            }
+
+            .submit-button {
+                width: 100%;
+                padding: 14px 20px;
+            }
+
+            .floating-icon {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-text h1 {
+                font-size: 1.8rem;
+            }
+
+            .section h2 {
+                font-size: 1.6rem;
+            }
+
+            .final-cta h2 {
+                font-size: 1.8rem;
+            }
+
+            .hero-text p,
+            .section p,
+            .final-cta p {
+                font-size: 1rem;
             }
         }
 
@@ -406,6 +500,11 @@
             0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
         }
+
+        /* Parallax effect improvement */
+        .parallax-container {
+            transform-style: preserve-3d;
+        }
     </style>
 </head>
 <body>
@@ -413,6 +512,7 @@
     <header class="header">
         <div class="logo">
             <img src="Insightx-logo.webp" alt="InsightX Logo" class="logo-icon">
+            <span>InsightX</span>
         </div>
         <a href="#final-cta" class="cta-button">Get Early Access</a>
     </header>
@@ -435,6 +535,8 @@
                 <div class="dashboard-mockup">
                     <img src="asset-hero.webp" alt="InsightX Dashboard Preview">
                 </div>
+                <div class="floating-icon">📊</div>
+                <div class="floating-icon">🔔</div>
             </div>
         </div>
     </section>
@@ -502,22 +604,11 @@
             button.textContent = 'Submitting...';
             
             try {
-                const response = await fetch('/api/submit-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: email })
-                });
+                // Simulate API call for demo
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    showMessage(messageDiv, 'Thank you! We\'ll notify you when InsightX is ready.', 'success');
-                    emailInput.value = '';
-                } else {
-                    showMessage(messageDiv, result.message || 'Something went wrong. Please try again.', 'error');
-                }
+                showMessage(messageDiv, 'Thank you! We\'ll notify you when InsightX is ready.', 'success');
+                emailInput.value = '';
             } catch (error) {
                 console.error('Error:', error);
                 showMessage(messageDiv, 'Network error. Please check your connection and try again.', 'error');
@@ -568,30 +659,63 @@
             });
         });
 
-        // Add floating animation to icons
+        // Improved parallax effect without overlapping
+        let ticking = false;
+        
+        function updateParallax() {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero');
+            
+            if (hero) {
+                const speed = scrolled * 0.3;
+                hero.style.transform = `translateY(${speed}px)`;
+            }
+            
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(updateParallax);
+                ticking = true;
+            }
+            
+            // Header background change
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(0, 0, 0, 0.95)';
+            } else {
+                header.style.background = 'rgba(0, 0, 0, 0.8)';
+            }
+        });
+
+        // Initialize floating animations
         const floatingIcons = document.querySelectorAll('.floating-icon');
         floatingIcons.forEach((icon, index) => {
             icon.style.animationDelay = `${index * 0.5}s`;
         });
 
-        // Parallax effect on scroll
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const parallax = document.querySelector('.hero');
-            const speed = scrolled * 0.5;
-            if (parallax) {
-                parallax.style.transform = `translateY(${speed}px)`;
-            }
-        });
+        // Intersection Observer for smooth animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
 
-        // Add scroll effect to header
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('.header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(10, 10, 10, 0.95)';
-            } else {
-                header.style.background = 'rgba(10, 10, 10, 0.8)';
-            }
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe sections for animations
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(section);
         });
     </script>
 </body>
