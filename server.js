@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,120 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve static files
-app.use(express.static(__dirname));
-
-// Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// API endpoint for email signup (for future use)
-app.post('/api/signup', (req, res) => {
-    const { email } = req.body;
-    
-    if (!email) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'Email is required' 
-        });
-    }
-    
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'Please provide a valid email address' 
-        });
-    }
-    
-    // Here you would typically save to database
-    console.log('New signup:', email);
-    
-    res.json({ 
-        success: true, 
-        message: 'Thank you for signing up! We\'ll be in touch soon.' 
-    });
-});
-
-// API endpoint for contact form (for future use)
-app.post('/api/contact', (req, res) => {
-    const { name, email, message } = req.body;
-    
-    if (!name || !email || !message) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'All fields are required' 
-        });
-    }
-    
-    // Here you would typically save to database or send email
-    console.log('New contact form submission:', { name, email, message });
-    
-    res.json({ 
-        success: true, 
-        message: 'Thank you for your message! We\'ll get back to you soon.' 
-    });
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime()
-    });
-});
-
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({ 
-        success: false, 
-        message: 'Page not found' 
-    });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ 
-        success: false, 
-        message: 'Something went wrong!' 
-    });
-});
-
-// Start server
-app.listen(PORT, () => {
-    console.log(`🚀 InsightX Landing Page server running on port ${PORT}`);
-    console.log(`📱 Local: http://localhost:${PORT}`);
-    console.log(`🌐 Network: http://0.0.0.0:${PORT}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down gracefully');
-    process.exit(0);
-});
-
-process.on('SIGINT', () => {
-    console.log('SIGINT received, shutting down gracefully');
-    process.exit(0);
-});
-
-// Add this to your existing server.js or create a new file for the API endpoint
-
-const express = require('express');
-const { Pool } = require('pg');
-const cors = require('cors');
-
-const app = express();
-
-// Middleware
-app.use(express.json());
-app.use(cors());
-app.use(express.static('public')); // Serve static files
+app.use(express.static(__dirname)); // Serve static files from root
 
 // PostgreSQL connection
 const pool = new Pool({
@@ -156,7 +44,12 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-// API endpoint for email submission
+// Routes
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index-7.html'));
+});
+
+// NEW: API endpoint for InsightX email submission
 app.post('/api/submit-email', async (req, res) => {
     try {
         const { email } = req.body;
@@ -203,7 +96,55 @@ app.post('/api/submit-email', async (req, res) => {
     }
 });
 
-// API endpoint to get all emails (for admin purposes)
+// EXISTING: API endpoint for email signup (keeping for backward compatibility)
+app.post('/api/signup', (req, res) => {
+    const { email } = req.body;
+    
+    if (!email) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Email is required' 
+        });
+    }
+    
+    // Email validation
+    if (!isValidEmail(email)) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Please provide a valid email address' 
+        });
+    }
+    
+    // Here you would typically save to database
+    console.log('New signup:', email);
+    
+    res.json({ 
+        success: true, 
+        message: 'Thank you for signing up! We\'ll be in touch soon.' 
+    });
+});
+
+// EXISTING: API endpoint for contact form
+app.post('/api/contact', (req, res) => {
+    const { name, email, message } = req.body;
+    
+    if (!name || !email || !message) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'All fields are required' 
+        });
+    }
+    
+    // Here you would typically save to database or send email
+    console.log('New contact form submission:', { name, email, message });
+    
+    res.json({ 
+        success: true, 
+        message: 'Thank you for your message! We\'ll get back to you soon.' 
+    });
+});
+
+// NEW: API endpoint to get all emails (for admin purposes)
 app.get('/api/emails', async (req, res) => {
     try {
         const result = await pool.query(
@@ -224,7 +165,7 @@ app.get('/api/emails', async (req, res) => {
     }
 });
 
-// API endpoint to get email statistics
+// NEW: API endpoint to get email statistics
 app.get('/api/stats', async (req, res) => {
     try {
         const totalResult = await pool.query('SELECT COUNT(*) as total FROM insightx_emails');
@@ -252,29 +193,51 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-// Serve the HTML file
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index-7.html');
-});
-
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ 
+        success: false, 
+        message: 'Page not found' 
+    });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ 
+        success: false, 
+        message: 'Something went wrong!' 
+    });
 });
 
 // Initialize database and start server
-const PORT = process.env.PORT || 3000;
-
 initDatabase().then(() => {
     app.listen(PORT, () => {
-        console.log(`InsightX server running on port ${PORT}`);
+        console.log(`🚀 InsightX Landing Page server running on port ${PORT}`);
+        console.log(`📱 Local: http://localhost:${PORT}`);
+        console.log(`🌐 Network: http://0.0.0.0:${PORT}`);
         console.log(`Visit http://localhost:${PORT} to view the landing page`);
     });
 });
 
 // Graceful shutdown
+process.on('SIGTERM', async () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    await pool.end();
+    process.exit(0);
+});
+
 process.on('SIGINT', async () => {
-    console.log('Shutting down gracefully...');
+    console.log('SIGINT received, shutting down gracefully');
     await pool.end();
     process.exit(0);
 });
