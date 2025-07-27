@@ -13,13 +13,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname)); // Serve static files from root
 
-// PostgreSQL connection
+// PostgreSQL connection - NOW USING ENVIRONMENT VARIABLE
 const pool = new Pool({
-    connectionString: 'postgresql://postgres:VzelCGdDkFwXNCFQOIghaDyxxRBOrexK@centerbeam.proxy.rlwy.net:18520/railway',
-    ssl: {
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? {
         rejectUnauthorized: false
-    }
+    } : false
 });
+
+// Test database connection
+async function testConnection() {
+    try {
+        const client = await pool.connect();
+        console.log('✅ Database connected successfully');
+        client.release();
+    } catch (error) {
+        console.error('❌ Database connection failed:', error.message);
+    }
+}
 
 // Initialize database table
 async function initDatabase() {
@@ -32,9 +43,9 @@ async function initDatabase() {
                 source VARCHAR(50) DEFAULT 'landing_page'
             )
         `);
-        console.log('Database table initialized successfully');
+        console.log('✅ Database table initialized successfully');
     } catch (error) {
-        console.error('Error initializing database:', error);
+        console.error('❌ Error initializing database:', error);
     }
 }
 
@@ -46,7 +57,7 @@ function isValidEmail(email) {
 
 // Routes
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index-7.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // NEW: API endpoint for InsightX email submission
@@ -66,7 +77,7 @@ app.post('/api/submit-email', async (req, res) => {
         const query = 'INSERT INTO insightx_emails (email) VALUES ($1) RETURNING id, created_at';
         const result = await pool.query(query, [email.toLowerCase().trim()]);
 
-        console.log(`New email subscription: ${email}`);
+        console.log(`📧 New email subscription: ${email}`);
         
         res.json({
             success: true,
@@ -79,7 +90,7 @@ app.post('/api/submit-email', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error submitting email:', error);
+        console.error('❌ Error submitting email:', error);
         
         // Handle duplicate email error
         if (error.code === '23505') {
@@ -116,7 +127,7 @@ app.post('/api/signup', (req, res) => {
     }
     
     // Here you would typically save to database
-    console.log('New signup:', email);
+    console.log('📝 New signup:', email);
     
     res.json({ 
         success: true, 
@@ -136,7 +147,7 @@ app.post('/api/contact', (req, res) => {
     }
     
     // Here you would typically save to database or send email
-    console.log('New contact form submission:', { name, email, message });
+    console.log('💬 New contact form submission:', { name, email, message });
     
     res.json({ 
         success: true, 
@@ -157,7 +168,7 @@ app.get('/api/emails', async (req, res) => {
             emails: result.rows
         });
     } catch (error) {
-        console.error('Error fetching emails:', error);
+        console.error('❌ Error fetching emails:', error);
         res.status(500).json({
             success: false,
             message: 'Server error'
@@ -185,7 +196,7 @@ app.get('/api/stats', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error('❌ Error fetching stats:', error);
         res.status(500).json({
             success: false,
             message: 'Server error'
@@ -220,24 +231,29 @@ app.use((err, req, res, next) => {
 });
 
 // Initialize database and start server
-initDatabase().then(() => {
+async function startServer() {
+    await testConnection();
+    await initDatabase();
+    
     app.listen(PORT, () => {
         console.log(`🚀 InsightX Landing Page server running on port ${PORT}`);
         console.log(`📱 Local: http://localhost:${PORT}`);
         console.log(`🌐 Network: http://0.0.0.0:${PORT}`);
         console.log(`Visit http://localhost:${PORT} to view the landing page`);
     });
-});
+}
+
+startServer().catch(console.error);
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-    console.log('SIGTERM received, shutting down gracefully');
+    console.log('⏹️  SIGTERM received, shutting down gracefully');
     await pool.end();
     process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-    console.log('SIGINT received, shutting down gracefully');
+    console.log('⏹️  SIGINT received, shutting down gracefully');
     await pool.end();
     process.exit(0);
 });
