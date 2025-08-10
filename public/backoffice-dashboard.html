@@ -197,8 +197,8 @@
     </div>
     
     <script>
-        // Check if user is authenticated
-        const token = localStorage.getItem('feedfast_token');
+        // Check if user is authenticated - FIXED: Use correct token name
+        const token = localStorage.getItem('feedfast_admin_token');
         if (!token) {
             window.location.href = '/backoffice';
         }
@@ -231,7 +231,7 @@
                 }
             } catch (error) {
                 console.error('Error loading user info:', error);
-                localStorage.removeItem('feedfast_token');
+                localStorage.removeItem('feedfast_admin_token');
                 window.location.href = '/backoffice';
             }
         }
@@ -282,7 +282,7 @@
             }
         }
         
-        // Logout function
+        // Logout function - FIXED: Use correct token name
         async function logout() {
             try {
                 await fetch('/api/auth/logout', {
@@ -292,7 +292,7 @@
             } catch (error) {
                 console.error('Logout error:', error);
             } finally {
-                localStorage.removeItem('feedfast_token');
+                localStorage.removeItem('feedfast_admin_token');
                 window.location.href = '/backoffice';
             }
         }
