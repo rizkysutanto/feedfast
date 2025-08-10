@@ -322,7 +322,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Protected backoffice dashboard route
-app.get('/backoffice/dashboard', authenticateToken, (req, res) => {
+app.get('/backoffice/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'backoffice-dashboard.html'));
 });
 
