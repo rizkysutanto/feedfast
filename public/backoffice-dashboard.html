@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FeedFast - Admin Dashboard</title>
+    <title>FeedFast - Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -13,191 +13,487 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
+            color: #fff;
             min-height: 100vh;
-            color: #333;
+            display: flex;
         }
         
-        .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: #000000;
+            min-height: 100vh;
+            padding: 1rem 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid #333;
         }
         
         .logo {
-            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
             font-weight: bold;
-            color: #667eea;
+            color: #fff;
+        }
+        
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: #8527F0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .sidebar-subtitle {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 0.25rem;
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: #fff;
+            text-decoration: none;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .nav-item:hover {
+            background: #333;
+        }
+        
+        .nav-item.active {
+            background: #8527F0;
+            color: #fff;
+        }
+        
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 0.75rem;
+            background: currentColor;
+            border-radius: 2px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: #000000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
         }
         
         .user-info {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
+            color: #fff;
+        }
+        
+        .user-name {
+            font-size: 0.9rem;
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #8527F0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: bold;
         }
         
         .logout-btn {
-            background: #ff6b6b;
-            color: white;
+            background: #8527F0;
+            color: #fff;
             border: none;
             padding: 0.5rem 1rem;
-            border-radius: 5px;
+            border-radius: 6px;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.2s;
         }
         
         .logout-btn:hover {
-            background: #ff5252;
+            background: #7119d1;
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-        
-        .welcome-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
+        /* Dashboard Content */
+        .dashboard-content {
             padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+        .dashboard-header {
             margin-bottom: 2rem;
         }
         
-        .stat-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-number {
-            font-size: 2.5rem;
+        .dashboard-title {
+            font-size: 1.8rem;
             font-weight: bold;
-            color: #667eea;
+            color: #8527F0;
             margin-bottom: 0.5rem;
         }
         
-        .stat-label {
+        .dashboard-subtitle {
             color: #666;
             font-size: 1rem;
         }
         
-        .emails-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: #333;
-        }
-        
-        .emails-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .email-item {
+        /* Controls */
+        .controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .filters {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .filter-label {
+            font-size: 0.9rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-icon {
+            width: 16px;
+            height: 16px;
+            background: #666;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .search-input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            width: 250px;
+        }
+        
+        .search-btn {
+            background: #8527F0;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .search-btn:hover {
+            background: #7119d1;
+        }
+        
+        .add-client-btn {
+            background: #8527F0;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .add-client-btn:hover {
+            background: #7119d1;
+        }
+        
+        /* Table */
+        .table-container {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: #f8f9fa;
             padding: 1rem;
-            border-bottom: 1px solid #eee;
-            transition: background 0.3s;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #e9ecef;
         }
         
-        .email-item:hover {
-            background: rgba(102, 126, 234, 0.1);
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f3f4;
+            font-size: 0.9rem;
         }
         
-        .email-address {
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .client-id {
+            color: #8527F0;
             font-weight: 500;
         }
         
-        .email-date {
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-inactive {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .status-active {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .action-btn {
+            background: #8527F0;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #7119d1;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: #fff;
+            border-top: 1px solid #f1f3f4;
+        }
+        
+        .pagination-info {
             color: #666;
             font-size: 0.9rem;
         }
         
-        .loading {
-            text-align: center;
-            color: #666;
-            padding: 2rem;
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
         }
         
-        .error {
-            color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.1);
-            padding: 1rem;
-            border-radius: 5px;
-            margin: 1rem 0;
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #666;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-btn:hover {
+            background: #f8f9fa;
+        }
+        
+        .pagination-btn.active {
+            background: #8527F0;
+            color: #fff;
+            border-color: #8527F0;
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo">🚀 FeedFast Admin</div>
-        <div class="user-info">
-            <span id="userWelcome">Loading...</span>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
-    </nav>
-    
-    <div class="container">
-        <div class="welcome-card">
-            <h1>Welcome to FeedFast Admin Dashboard</h1>
-            <p>Manage your early access subscribers and monitor growth.</p>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="totalEmails">-</div>
-                <div class="stat-label">Total Subscribers</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="todayEmails">-</div>
-                <div class="stat-label">Today's Signups</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="weekEmails">-</div>
-                <div class="stat-label">This Week</div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <div>
+                    <div>FeedFast</div>
+                    <div class="sidebar-subtitle">Back Office</div>
+                </div>
             </div>
         </div>
-        
-        <div class="emails-section">
-            <h2 class="section-title">Recent Subscribers</h2>
-            <div id="emailsList" class="emails-list">
-                <div class="loading">Loading subscribers...</div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <div class="nav-icon"></div>
+                Clients
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="user-info">
+                <div>
+                    <div class="user-name">Rizky</div>
+                    <div class="user-role">Super Admin</div>
+                </div>
+                <div class="user-avatar">R</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Dashboard</h1>
+                <p class="dashboard-subtitle">Manage Clients for FeedFast</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="filters">
+                    <div class="filter-label">
+                        <div class="filter-icon"></div>
+                        Filters:
+                    </div>
+                </div>
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search client">
+                    <button class="search-btn">🔍</button>
+                    <button class="add-client-btn">Add Client</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ClientID</th>
+                            <th>Client Name</th>
+                            <th>Total Branch</th>
+                            <th>Total Users</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="client-id">#Client0001</span></td>
+                            <td>Alfamart</td>
+                            <td>32</td>
+                            <td>100</td>
+                            <td><span class="status-badge status-inactive">Inactive</span></td>
+                            <td><button class="action-btn">Action</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="client-id">#Client0001</span></td>
+                            <td>Alfamart</td>
+                            <td>32</td>
+                            <td>100</td>
+                            <td><span class="status-badge status-inactive">Inactive</span></td>
+                            <td><button class="action-btn">Action</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="client-id">#Client0001</span></td>
+                            <td>Alfamart</td>
+                            <td>32</td>
+                            <td>100</td>
+                            <td><span class="status-badge status-inactive">Inactive</span></td>
+                            <td><button class="action-btn">Action</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="client-id">#Client0001</span></td>
+                            <td>Alfamart</td>
+                            <td>32</td>
+                            <td>100</td>
+                            <td><span class="status-badge status-inactive">Inactive</span></td>
+                            <td><button class="action-btn">Action</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="client-id">#Client0001</span></td>
+                            <td>Alfamart</td>
+                            <td>32</td>
+                            <td>100</td>
+                            <td><span class="status-badge status-inactive">Inactive</span></td>
+                            <td><button class="action-btn">Action</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Pagination -->
+                <div class="pagination">
+                    <div class="pagination-info">
+                        Showing 1 to 5 of 1248 results
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" disabled>‹</button>
+                        <button class="pagination-btn active">1</button>
+                        <button class="pagination-btn">2</button>
+                        <button class="pagination-btn">3</button>
+                        <button class="pagination-btn">›</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    
+
     <script>
-        // Check if user is authenticated - FIXED: Use correct token name
+        // Check if user is authenticated - Use correct token name
         const token = localStorage.getItem('feedfast_admin_token');
         if (!token) {
             window.location.href = '/backoffice';
@@ -208,80 +504,53 @@
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         };
-        
-        // Load user info and data on page load
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadUserInfo();
-            await loadStats();
-            await loadEmails();
-        });
-        
-        // Load user information
-        async function loadUserInfo() {
-            try {
-                const response = await fetch('/api/auth/verify', {
-                    headers: authHeaders
+
+        // Basic interactivity - no real functionality yet
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('FeedFast Dashboard loaded');
+            
+            // Add hover effects and basic interactions
+            const tableRows = document.querySelectorAll('.table tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('click', () => {
+                    console.log('Row clicked');
                 });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('userWelcome').textContent = `Hello, ${data.user.name || data.user.email}!`;
-                } else {
-                    throw new Error('Authentication failed');
-                }
-            } catch (error) {
-                console.error('Error loading user info:', error);
-                localStorage.removeItem('feedfast_admin_token');
-                window.location.href = '/backoffice';
-            }
-        }
-        
-        // Load statistics
-        async function loadStats() {
-            try {
-                const response = await fetch('/api/stats');
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('totalEmails').textContent = data.stats.total || 0;
-                    document.getElementById('todayEmails').textContent = data.stats.today || 0;
-                    document.getElementById('weekEmails').textContent = data.stats.thisWeek || 0;
-                }
-            } catch (error) {
-                console.error('Error loading stats:', error);
-                document.getElementById('totalEmails').textContent = 'Error';
-                document.getElementById('todayEmails').textContent = 'Error';
-                document.getElementById('weekEmails').textContent = 'Error';
-            }
-        }
-        
-        // Load emails list
-        async function loadEmails() {
-            try {
-                const response = await fetch('/api/emails');
-                const emailsList = document.getElementById('emailsList');
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.emails && data.emails.length > 0) {
-                        emailsList.innerHTML = data.emails.map(email => `
-                            <div class="email-item">
-                                <span class="email-address">${email.email}</span>
-                                <span class="email-date">${new Date(email.created_at).toLocaleDateString()}</span>
-                            </div>
-                        `).join('');
-                    } else {
-                        emailsList.innerHTML = '<div class="loading">No subscribers yet.</div>';
+            });
+            
+            // Search functionality placeholder
+            const searchInput = document.querySelector('.search-input');
+            const searchBtn = document.querySelector('.search-btn');
+            
+            searchBtn.addEventListener('click', () => {
+                console.log('Search clicked:', searchInput.value);
+            });
+            
+            // Add client button
+            const addClientBtn = document.querySelector('.add-client-btn');
+            addClientBtn.addEventListener('click', () => {
+                console.log('Add client clicked');
+            });
+            
+            // Action buttons
+            const actionBtns = document.querySelectorAll('.action-btn');
+            actionBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('Action clicked');
+                });
+            });
+            
+            // Pagination
+            const paginationBtns = document.querySelectorAll('.pagination-btn');
+            paginationBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!btn.disabled) {
+                        console.log('Pagination clicked:', btn.textContent);
                     }
-                } else {
-                    throw new Error('Failed to load emails');
-                }
-            } catch (error) {
-                console.error('Error loading emails:', error);
-                document.getElementById('emailsList').innerHTML = '<div class="error">Error loading subscribers.</div>';
-            }
-        }
-        
+                });
+            });
+        });
+
         // Logout function - FIXED: Use correct token name
         async function logout() {
             try {
