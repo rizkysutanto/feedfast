@@ -13,17 +13,21 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            background: #0f0f23;
             min-height: 100vh;
+            color: #fff;
+        }
+        
+        .dashboard-container {
             display: flex;
+            min-height: 100vh;
         }
         
         /* Sidebar Styles */
         .sidebar {
             width: 200px;
-            background: #000000;
-            color: white;
-            padding: 0;
+            background: #1a1a2e;
+            padding: 2rem 0;
             position: fixed;
             height: 100vh;
             left: 0;
@@ -31,92 +35,81 @@
         }
         
         .sidebar-header {
-            padding: 1.5rem 1rem;
-            border-bottom: 1px solid #333;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 2rem;
         }
         
         .sidebar-logo {
-            width: 24px;
-            height: 24px;
-            background: #8527F0;
-            border-radius: 6px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-        
-        .sidebar-title {
+            gap: 0.5rem;
+            font-size: 1rem;
             font-weight: bold;
-            font-size: 1.1rem;
+            color: #fff;
         }
         
         .sidebar-subtitle {
             font-size: 0.8rem;
-            color: #999;
-            margin-top: -0.2rem;
+            color: #888;
+            margin-top: 0.25rem;
         }
         
         .sidebar-menu {
-            padding: 1rem 0;
+            padding: 0 1rem;
         }
         
-        .menu-item {
+        .sidebar-item {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            color: white;
+            padding: 0.75rem;
+            border-radius: 12px;
+            background: #8B5CF6;
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
             text-decoration: none;
-            transition: background 0.2s;
-            background: #8527F0;
-            margin: 0 0.75rem;
-            border-radius: 8px;
         }
         
-        .menu-item:hover {
-            background: #7020d1;
-        }
-        
-        .menu-icon {
-            width: 18px;
-            height: 18px;
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.8rem;
+            color: #8B5CF6;
         }
         
-        /* Main Content Area */
-        .main-container {
-            margin-left: 200px;
+        /* Main Content */
+        .main-content {
             flex: 1;
-            min-height: 100vh;
-            background: #f5f5f5;
+            margin-left: 200px;
+            background: #0f0f23;
         }
         
-        /* Top Header */
-        .top-header {
-            background: white;
-            padding: 1rem 2rem;
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 2rem;
+            background: #0f0f23;
         }
         
-        .page-title-section h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #000;
+        .header-left h1 {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #fff;
             margin-bottom: 0.25rem;
         }
         
-        .page-subtitle {
+        .header-left p {
+            color: #888;
             font-size: 0.9rem;
-            color: #666;
         }
         
         .header-right {
@@ -128,148 +121,134 @@
         .user-info {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            color: #666;
+            gap: 0.75rem;
+            color: #888;
             font-size: 0.9rem;
         }
         
         .user-avatar {
             width: 32px;
             height: 32px;
-            background: #8527F0;
             border-radius: 50%;
+            background: #8B5CF6;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 12px;
-            font-weight: 500;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: bold;
         }
         
         .logout-btn {
-            background: #8527F0;
+            background: #8B5CF6;
             color: white;
             border: none;
             padding: 0.5rem 1rem;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.9rem;
             transition: background 0.3s;
+            font-size: 0.9rem;
         }
         
         .logout-btn:hover {
-            background: #7020d1;
+            background: #7C3AED;
         }
         
-        /* Dashboard Content */
-        .dashboard-content {
-            padding: 2rem;
+        .content-wrapper {
+            padding: 0 2rem 2rem;
         }
         
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #000;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        /* Content Section */
-        .content-section {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e0e0e0;
+        .dashboard-section {
+            background: #1a1a2e;
+            border-radius: 16px;
             overflow: hidden;
         }
         
-        .content-header {
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1.5rem 2rem;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        .content-title {
-            font-size: 1.3rem;
+        .section-title {
+            font-size: 1.1rem;
             font-weight: 600;
-            color: #000;
+            color: #fff;
+        }
+        
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: #888;
         }
         
         .add-client-btn {
-            background: #8527F0;
+            background: #8B5CF6;
             color: white;
             border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.9rem;
             transition: background 0.3s;
         }
         
         .add-client-btn:hover {
-            background: #7020d1;
+            background: #7C3AED;
         }
         
-        /* Filters Section */
         .filters-section {
             padding: 1.5rem 2rem;
-            background: #fafafa;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 1rem;
         }
         
-        .filters-left {
+        .filters-label {
+            color: #888;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            color: #666;
-            font-size: 0.9rem;
         }
         
-        .search-container {
+        .search-box {
+            flex: 1;
+            max-width: 300px;
             position: relative;
         }
         
         .search-input {
-            padding: 0.5rem 1rem 0.5rem 2.5rem;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 0.6rem 2.5rem 0.6rem 1rem;
+            color: #fff;
             font-size: 0.9rem;
-            width: 250px;
         }
         
-        .search-icon {
-            position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
+        .search-input::placeholder {
             color: #666;
         }
         
-        /* Table Styles */
+        .search-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #8B5CF6;
+            border: none;
+            padding: 0.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+        }
+        
         .table-container {
+            padding: 0;
             overflow-x: auto;
         }
         
@@ -279,113 +258,109 @@
         }
         
         .clients-table th {
-            background: #fafafa;
             padding: 1rem 2rem;
             text-align: left;
             font-weight: 500;
-            color: #666;
+            color: #888;
             font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid #e0e0e0;
+            background: #1a1a2e;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
         .clients-table td {
             padding: 1rem 2rem;
-            border-bottom: 1px solid #f0f0f0;
-            color: #333;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
         }
         
         .clients-table tbody tr:hover {
-            background: #fafafa;
+            background: rgba(255,255,255,0.02);
         }
         
         .client-id {
-            color: #8527F0;
+            color: #8B5CF6;
             font-weight: 500;
         }
         
         .client-name {
             font-weight: 600;
-            color: #000;
         }
         
         .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 500;
-            text-transform: lowercase;
+            text-transform: capitalize;
         }
         
         .status-active {
-            background: #e8f5e8;
-            color: #2e7d32;
+            background: rgba(34, 197, 94, 0.15);
+            color: #22C55E;
         }
         
         .status-inactive {
-            background: #ffebee;
-            color: #c62828;
+            background: rgba(239, 68, 68, 0.15);
+            color: #EF4444;
         }
         
         .action-btn {
-            background: #8527F0;
+            background: #8B5CF6;
             color: white;
             border: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.8rem;
-            transition: background 0.2s;
+            transition: background 0.3s;
         }
         
         .action-btn:hover {
-            background: #7020d1;
+            background: #7C3AED;
         }
         
-        /* Pagination */
         .pagination {
+            padding: 1.5rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 2rem;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        .pagination-info {
-            color: #666;
-            font-size: 0.9rem;
+            color: #888;
+            font-size: 0.85rem;
         }
         
         .pagination-controls {
             display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
         
-        .page-btn {
-            width: 32px;
-            height: 32px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
+        .pagination-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+            font-size: 0.85rem;
+            min-width: 32px;
+            text-align: center;
         }
         
-        .page-btn:hover {
-            border-color: #8527F0;
-            color: #8527F0;
+        .pagination-btn.active {
+            background: #8B5CF6;
+            border-color: #8B5CF6;
         }
         
-        .page-btn.active {
-            background: #8527F0;
-            color: white;
-            border-color: #8527F0;
+        .pagination-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.08);
+        }
+        
+        /* Dashboard Stats - keeping existing but hidden since not shown in reference */
+        .dashboard-grid {
+            display: none;
         }
         
         /* Modal Styles */
@@ -397,17 +372,18 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.7);
         }
         
         .modal-content {
-            background-color: white;
-            margin: 5% auto;
+            background-color: #1a1a2e;
+            margin: 10% auto;
             padding: 2rem;
-            border-radius: 12px;
+            border-radius: 15px;
             width: 90%;
             max-width: 500px;
             position: relative;
+            color: #fff;
         }
         
         .close {
@@ -416,11 +392,11 @@
             top: 1rem;
             font-size: 1.5rem;
             cursor: pointer;
-            color: #999;
+            color: #888;
         }
         
         .close:hover {
-            color: #333;
+            color: #fff;
         }
         
         .form-group {
@@ -431,34 +407,40 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
-            color: #333;
+            color: #fff;
         }
         
-        .form-input {
+        .form-input, select.form-input {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
             font-size: 1rem;
+            color: #fff;
+        }
+        
+        .form-input::placeholder {
+            color: #666;
         }
         
         .form-input:focus {
             outline: none;
-            border-color: #8527F0;
-            box-shadow: 0 0 0 2px rgba(133, 39, 240, 0.1);
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
         }
         
         .form-input:disabled {
-            background-color: #f5f5f5;
+            background-color: rgba(255,255,255,0.02);
             color: #666;
         }
         
         .btn {
-            background: #8527F0;
+            background: #8B5CF6;
             color: white;
             border: none;
             padding: 0.75rem 1.5rem;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.9rem;
             transition: background 0.3s;
@@ -466,49 +448,49 @@
         }
         
         .btn:hover {
-            background: #7020d1;
+            background: #7C3AED;
         }
         
         .btn:disabled {
-            background: #ccc;
+            background: #555;
             cursor: not-allowed;
         }
         
         .loading {
             text-align: center;
-            padding: 3rem;
+            padding: 2rem;
             color: #666;
         }
         
         .success-message {
-            background: #e8f5e8;
-            color: #2e7d32;
+            background: rgba(34, 197, 94, 0.15);
+            color: #22C55E;
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1rem;
-            border: 1px solid #c8e6c9;
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
         
         .error-message {
-            background: #ffebee;
-            color: #c62828;
+            background: rgba(239, 68, 68, 0.15);
+            color: #EF4444;
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1rem;
-            border: 1px solid #ffcdd2;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
         
         .admin-details {
-            background: #f3e5f5;
+            background: rgba(59, 130, 246, 0.15);
             padding: 1rem;
             border-radius: 8px;
             margin-top: 1rem;
-            border: 1px solid #e1bee7;
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
         
         .admin-details h4 {
             margin-bottom: 0.5rem;
-            color: #8527F0;
+            color: #3B82F6;
         }
         
         .admin-details p {
@@ -518,104 +500,109 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">🚀</div>
-            <div>
-                <div class="sidebar-title">FeedFast</div>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    🚀 FeedFast
+                </div>
                 <div class="sidebar-subtitle">Back Office</div>
             </div>
-        </div>
-        <nav class="sidebar-menu">
-            <a href="#" class="menu-item">
-                <div class="menu-icon">👥</div>
-                <span>Clients</span>
-            </a>
-        </nav>
-    </div>
-    
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Top Header -->
-        <div class="top-header">
-            <div class="page-title-section">
-                <h1>Dashboard</h1>
-                <div class="page-subtitle">Manage Clients for FeedFast</div>
-            </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <span id="userName">Loading...</span>
-                    <div class="user-avatar">R</div>
+            <div class="sidebar-menu">
+                <div class="sidebar-item">
+                    <div class="sidebar-icon">👥</div>
+                    <span>Clients</span>
                 </div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
         
-        <!-- Dashboard Content -->
-        <div class="dashboard-content">
-            <!-- Dashboard Stats -->
-            <div class="dashboard-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalClients">-</div>
-                    <div class="stat-label">Total Clients</div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1>Dashboard</h1>
+                    <p>Manage Clients for FeedFast</p>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="activeClients">-</div>
-                    <div class="stat-label">Active Clients</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalEmails">-</div>
-                    <div class="stat-label">Email Subscriptions</div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="userName">Rizky</span>
+                        <span>Super Admin</span>
+                        <div class="user-avatar">R</div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
                 </div>
             </div>
             
-            <!-- Main Content -->
-            <div class="content-section">
-                <div class="content-header">
-                    <h2 class="content-title">Dashboard</h2>
-                    <button class="add-client-btn" onclick="openCreateModal()">Add Client</button>
-                </div>
-                
-                <div class="filters-section">
-                    <div class="filters-left">
-                        <span>🔽</span>
-                        <span>Filters:</span>
+            <!-- Content Wrapper -->
+            <div class="content-wrapper">
+                <!-- Dashboard Stats (Hidden but keeping functionality) -->
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalClients">-</div>
+                        <div class="stat-label">Total Clients</div>
                     </div>
-                    <div class="search-container">
-                        <input type="text" class="search-input" placeholder="Search client">
-                        <span class="search-icon">🔍</span>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeClients">-</div>
+                        <div class="stat-label">Active Clients</div>
                     </div>
-                </div>
-                
-                <div class="table-container">
-                    <div id="loading" class="loading">Loading clients...</div>
-                    <div id="clientsContent" style="display: none;">
-                        <table class="clients-table">
-                            <thead>
-                                <tr>
-                                    <th>ClientID</th>
-                                    <th>Client Name</th>
-                                    <th>Start Date</th>
-                                    <th>Total Branch</th>
-                                    <th>Total Users</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clientsTableBody">
-                            </tbody>
-                        </table>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalEmails">-</div>
+                        <div class="stat-label">Email Subscriptions</div>
                     </div>
                 </div>
                 
-                <div class="pagination">
-                    <div class="pagination-info">Showing 1 to 5 of <span id="totalResults">0</span> results</div>
-                    <div class="pagination-controls">
-                        <button class="page-btn">‹</button>
-                        <button class="page-btn active">1</button>
-                        <button class="page-btn">2</button>
-                        <button class="page-btn">3</button>
-                        <button class="page-btn">›</button>
+                <!-- Main Dashboard Section -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <div>
+                            <div class="section-title">Dashboard</div>
+                            <div class="section-subtitle">Manage Clients for FeedFast</div>
+                        </div>
+                        <button class="add-client-btn" onclick="openCreateModal()">Add Client</button>
+                    </div>
+                    
+                    <div class="filters-section">
+                        <div class="filters-label">
+                            🔽 Filters:
+                        </div>
+                        <div class="search-box">
+                            <input type="text" class="search-input" placeholder="Search client">
+                            <button class="search-btn">🔍</button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <div id="loading" class="loading">Loading clients...</div>
+                        <div id="clientsContent" style="display: none;">
+                            <table class="clients-table">
+                                <thead>
+                                    <tr>
+                                        <th>ClientID</th>
+                                        <th>Client Name</th>
+                                        <th>Start Date</th>
+                                        <th>Total Branch</th>
+                                        <th>Total Users</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="pagination">
+                        <div>Showing 1 to 5 of 1248 results</div>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn">‹</button>
+                            <button class="pagination-btn active">1</button>
+                            <button class="pagination-btn">2</button>
+                            <button class="pagination-btn">3</button>
+                            <button class="pagination-btn">›</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -632,7 +619,8 @@
                 <div class="form-group">
                     <label class="form-label" for="clientId">Client ID</label>
                     <input type="text" id="clientId" class="form-input" 
-                           placeholder="Auto-generated" disabled>
+                           placeholder="Auto-generated" disabled 
+                           style="background-color: rgba(255,255,255,0.02); color: #666;">
                     <small style="color: #666; font-size: 0.8rem;">Client ID will be automatically generated</small>
                 </div>
                 <div class="form-group">
@@ -646,7 +634,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="clientStatus">Status</label>
-                    <select id="clientStatus" class="form-input" disabled>
+                    <select id="clientStatus" class="form-input" disabled style="background-color: rgba(255,255,255,0.02); color: #666;">
                         <option value="true" selected>Active</option>
                     </select>
                     <small style="color: #666; font-size: 0.8rem;">New clients are automatically set to Active</small>
@@ -658,126 +646,6 @@
     </div>
 
     <script>
-        // Modal management
-        function openCreateModal() {
-            document.getElementById('createClientModal').style.display = 'block';
-            document.getElementById('modalMessage').innerHTML = '';
-            document.getElementById('successDetails').style.display = 'none';
-            document.getElementById('createClientForm').reset();
-            document.getElementById('createClientForm').style.display = 'block';
-            
-            // Set minimum expiry date to tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById('expiryDate').min = tomorrow.toISOString().split('T')[0];
-            
-            // Reset the disabled fields to their default states
-            document.getElementById('clientId').placeholder = 'Auto-generated';
-            document.getElementById('clientStatus').value = 'true';
-        }
-
-        function closeCreateModal() {
-            document.getElementById('createClientModal').style.display = 'none';
-        }
-
-        // Updated create client form handler
-        document.getElementById('createClientForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const clientName = document.getElementById('clientName').value.trim();
-            const expiryDate = document.getElementById('expiryDate').value;
-            const submitBtn = document.getElementById('createClientBtn');
-            const messageDiv = document.getElementById('modalMessage');
-            
-            // Client-side validation
-            if (!clientName || !expiryDate) {
-                messageDiv.innerHTML = '<div class="error-message">Please fill in all required fields</div>';
-                return;
-            }
-            
-            if (clientName.length > 255) {
-                messageDiv.innerHTML = '<div class="error-message">Client name is too long (maximum 255 characters)</div>';
-                return;
-            }
-            
-            // Validate expiry date
-            const expiryDateObj = new Date(expiryDate);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            if (expiryDateObj <= today) {
-                messageDiv.innerHTML = '<div class="error-message">Expiry date must be in the future</div>';
-                return;
-            }
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating...';
-            messageDiv.innerHTML = '';
-            
-            try {
-                const response = await apiRequest('/api/clients', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        client_name: clientName,
-                        expiry_date: expiryDate
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    messageDiv.innerHTML = '<div class="success-message">Client created successfully!</div>';
-                    
-                    // Show admin details
-                    const successDetailsDiv = document.getElementById('successDetails');
-                    successDetailsDiv.innerHTML = `
-                        <div class="admin-details">
-                            <h4>✅ Client Created Successfully</h4>
-                            <p><strong>Client ID:</strong> ${data.data.client.client_id}</p>
-                            <p><strong>Client Name:</strong> ${data.data.client.client_name}</p>
-                            <p><strong>Status:</strong> ${data.data.client.status ? 'Active' : 'Inactive'}</p>
-                            <p><strong>Start Date:</strong> ${new Date(data.data.client.start_date).toLocaleDateString()}</p>
-                            <p><strong>Expiry Date:</strong> ${new Date(data.data.client.expiry_date).toLocaleDateString()}</p>
-                            
-                            <h4 style="margin-top: 1rem; color: #8527F0;">🔑 Client Admin Account Created</h4>
-                            <p><strong>Admin Email:</strong> ${data.data.admin.email}</p>
-                            <p><strong>Admin Password:</strong> ${data.data.admin.password}</p>
-                            <p><strong>User ID:</strong> ${data.data.admin.user_id}</p>
-                            <p style="color: #d32f2f; font-size: 0.9rem; margin-top: 0.5rem;">
-                                ⚠️ <strong>Important:</strong> Please save these credentials securely and share them with the client. 
-                                They will use these to log in at /login endpoint.
-                            </p>
-                        </div>
-                    `;
-                    successDetailsDiv.style.display = 'block';
-                    
-                    // Hide form
-                    document.getElementById('createClientForm').style.display = 'none';
-                    
-                    // Reload clients table
-                    await loadClients();
-                    
-                } else {
-                    messageDiv.innerHTML = `<div class="error-message">${data.message}</div>`;
-                }
-                
-            } catch (error) {
-                console.error('Error creating client:', error);
-                messageDiv.innerHTML = '<div class="error-message">Network error. Please try again.</div>';
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Client';
-            }
-        });
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('createClientModal');
-            if (event.target === modal) {
-                closeCreateModal();
-            }
-        }
-        
         // Auth token management
         const token = localStorage.getItem('adminToken');
         console.log('Token from localStorage:', token ? 'Token exists' : 'No token found');
@@ -899,7 +767,7 @@
             const tbody = document.getElementById('clientsTableBody');
             
             if (clients.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No clients found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No clients found</td></tr>';
             } else {
                 tbody.innerHTML = clients.map(client => `
                     <tr>
@@ -910,10 +778,12 @@
                         <td>${client.total_users || 0}</td>
                         <td>
                             <span class="status-badge ${client.status ? 'status-active' : 'status-inactive'}">
-                                ${client.status ? 'active' : 'inactive'}
+                                ${client.status ? 'Active' : 'Inactive'}
                             </span>
+                        </td>
+                        <td>
                             <button class="action-btn" onclick="toggleClientStatus(${client.client_id}, ${!client.status})">
-                                Action
+                                ${client.status ? 'Deactivate' : 'Activate'}
                             </button>
                         </td>
                     </tr>
@@ -922,7 +792,6 @@
             
             document.getElementById('loading').style.display = 'none';
             document.getElementById('clientsContent').style.display = 'block';
-            document.getElementById('totalResults').textContent = clients.length;
         }
         
         // Update client statistics
@@ -937,4 +806,107 @@
         // Toggle client status
         async function toggleClientStatus(clientId, newStatus) {
             try {
-                const response = await apiRequest(`/api
+                const response = await apiRequest(`/api/clients/${clientId}/status`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    await loadClients(); // Reload the table
+                } else {
+                    alert('Error updating client status: ' + data.message);
+                }
+                
+            } catch (error) {
+                console.error('Error toggling client status:', error);
+                alert('Error updating client status');
+            }
+        }
+        
+        // Modal management
+        function openCreateModal() {
+            document.getElementById('createClientModal').style.display = 'block';
+            document.getElementById('modalMessage').innerHTML = '';
+            document.getElementById('successDetails').style.display = 'none';
+            document.getElementById('createClientForm').reset();
+            document.getElementById('createClientForm').style.display = 'block';
+            
+            // Set minimum expiry date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('expiryDate').min = tomorrow.toISOString().split('T')[0];
+            
+            // Reset the disabled fields to their default states
+            document.getElementById('clientId').placeholder = 'Auto-generated';
+            document.getElementById('clientStatus').value = 'true';
+        }
+        
+        function closeCreateModal() {
+            document.getElementById('createClientModal').style.display = 'none';
+        }
+        
+        // Handle create client form
+        document.getElementById('createClientForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const clientName = document.getElementById('clientName').value.trim();
+            const expiryDate = document.getElementById('expiryDate').value;
+            const submitBtn = document.getElementById('createClientBtn');
+            const messageDiv = document.getElementById('modalMessage');
+            
+            // Client-side validation
+            if (!clientName || !expiryDate) {
+                messageDiv.innerHTML = '<div class="error-message">Please fill in all required fields</div>';
+                return;
+            }
+            
+            if (clientName.length > 255) {
+                messageDiv.innerHTML = '<div class="error-message">Client name is too long (maximum 255 characters)</div>';
+                return;
+            }
+            
+            // Validate expiry date
+            const expiryDateObj = new Date(expiryDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (expiryDateObj <= today) {
+                messageDiv.innerHTML = '<div class="error-message">Expiry date must be in the future</div>';
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+            messageDiv.innerHTML = '';
+            
+            try {
+                const response = await apiRequest('/api/clients', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        client_name: clientName,
+                        expiry_date: expiryDate
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    messageDiv.innerHTML = '<div class="success-message">Client created successfully!</div>';
+                    
+                    // Show admin details
+                    const successDetailsDiv = document.getElementById('successDetails');
+                    successDetailsDiv.innerHTML = `
+                        <div class="admin-details">
+                            <h4>✅ Client Created Successfully</h4>
+                            <p><strong>Client ID:</strong> ${data.data.client.client_id}</p>
+                            <p><strong>Client Name:</strong> ${data.data.client.client_name}</p>
+                            <p><strong>Status:</strong> ${data.data.client.status ? 'Active' : 'Inactive'}</p>
+                            <p><strong>Start Date:</strong> ${new Date(data.data.client.start_date).toLocaleDateString()}</p>
+                            <p><strong>Expiry Date:</strong> ${new Date(data.data.client.expiry_date).toLocaleDateString()}</p>
+                            
+                            <h4 style="margin-top: 1rem; color: #3B82F6;">🔐 Client Admin Account Created</h4>
+                            <p><strong>Admin Email:</strong> ${data.data.admin.email}</p>
+                            <p><strong>Admin Password:</strong> ${data.data.admin.password}</p>
+                            <p><strong>User ID:</strong> ${data.data.admin
