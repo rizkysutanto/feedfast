@@ -322,7 +322,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // =============================================================================
-// CLIENT MANAGEMENT ROUTES (Add these to your server.js)
+// UPDATED CLIENT MANAGEMENT ROUTES - Replace the existing ones in your server.js
 // =============================================================================
 
 // Helper function to generate admin email
@@ -351,7 +351,8 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
                 status,
                 start_date,
                 expiry_date,
-                created_at
+                created_at,
+                updated_at
             FROM clients 
             ORDER BY created_at DESC
         `);
@@ -369,7 +370,7 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
     }
 });
 
-// Create new client with auto-generated super admin (protected route)
+// Create new client with auto-generated client admin (protected route)
 app.post('/api/clients', authenticateToken, async (req, res) => {
     const client = await adminPool.connect();
     
@@ -378,6 +379,7 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
         
         const { client_name, expiry_date } = req.body;
         
+        // Validation
         if (!client_name || !expiry_date) {
             await client.query('ROLLBACK');
             return res.status(400).json({
@@ -385,11 +387,33 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
                 message: 'Client name and expiry date are required'
             });
         }
+
+        // Validate client name length
+        if (client_name.length > 255) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Client name is too long (max 255 characters)'
+            });
+        }
+
+        // Validate expiry date
+        const expiryDateObj = new Date(expiry_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (expiryDateObj <= today) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Expiry date must be in the future'
+            });
+        }
         
-        // Check if client name already exists
+        // Check if client name already exists (case-insensitive)
         const existingClient = await client.query(
             'SELECT client_id FROM clients WHERE LOWER(client_name) = LOWER($1)',
-            [client_name]
+            [client_name.trim()]
         );
         
         if (existingClient.rows.length > 0) {
@@ -417,50 +441,80 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
             });
         }
         
-        // Create client
+        // Create client record
         const clientResult = await client.query(`
-            INSERT INTO clients (client_name, expiry_date)
-            VALUES ($1, $2)
-            RETURNING client_id, client_name, start_date, expiry_date, created_at
-        `, [client_name, expiry_date]);
+            INSERT INTO clients (
+                client_name, 
+                expiry_date, 
+                status, 
+                total_branch, 
+                total_users, 
+                total_tickets
+            )
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING 
+                client_id, 
+                client_name, 
+                start_date, 
+                expiry_date, 
+                status,
+                total_branch,
+                total_users,
+                total_tickets,
+                created_at
+        `, [
+            client_name.trim(), 
+            expiry_date, 
+            true,  // status - default active
+            0,     // total_branch - default 0
+            0,     // total_users - default 0  
+            0      // total_tickets - default 0
+        ]);
         
         const newClient = clientResult.rows[0];
         
-        // Create super admin account for this client
+        // Create client admin account (for /login endpoint later)
         const defaultPassword = '12345678';
         const hashedPassword = await hashPassword(defaultPassword);
         
         const adminResult = await client.query(`
             INSERT INTO adminbo (name, email, password, client_id)
             VALUES ($1, $2, $3, $4)
-            RETURNING user_id, name, email
-        `, [`${client_name} Admin`, adminEmail, hashedPassword, newClient.client_id]);
+            RETURNING user_id, name, email, client_id
+        `, [
+            `${client_name.trim()} Admin`, 
+            adminEmail, 
+            hashedPassword, 
+            newClient.client_id
+        ]);
         
         const newAdmin = adminResult.rows[0];
         
         await client.query('COMMIT');
         
-        console.log(`✅ New client created: ${client_name} with admin: ${adminEmail}`);
+        console.log(`✅ New client created: ${client_name} (ID: ${newClient.client_id}) with admin: ${adminEmail}`);
         
         res.status(201).json({
             success: true,
             message: 'Client and admin account created successfully',
             data: {
                 client: {
-                    id: newClient.client_id,
-                    name: newClient.client_name,
+                    client_id: newClient.client_id,
+                    client_name: newClient.client_name,
                     start_date: newClient.start_date,
                     expiry_date: newClient.expiry_date,
-                    status: true,
-                    total_branch: 0,
-                    total_users: 0,
-                    total_tickets: 0
+                    status: newClient.status,
+                    total_branch: newClient.total_branch,
+                    total_users: newClient.total_users,
+                    total_tickets: newClient.total_tickets,
+                    created_at: newClient.created_at
                 },
                 admin: {
-                    id: newAdmin.user_id,
+                    user_id: newAdmin.user_id,
                     name: newAdmin.name,
                     email: newAdmin.email,
-                    password: defaultPassword // Only show in response for setup purposes
+                    password: defaultPassword, // Only show in response for setup purposes
+                    client_id: newAdmin.client_id
                 }
             }
         });
@@ -469,10 +523,18 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
         await client.query('ROLLBACK');
         console.error('❌ Error creating client:', error);
         
-        if (error.code === '23505') {
+        // Handle specific PostgreSQL errors
+        if (error.code === '23505') { // Unique constraint violation
             return res.status(409).json({
                 success: false,
-                message: 'Client with this name already exists'
+                message: 'Client name or admin email already exists'
+            });
+        }
+        
+        if (error.code === '22001') { // String data too long
+            return res.status(400).json({
+                success: false,
+                message: 'One of the fields is too long. Please check your input.'
             });
         }
         
@@ -514,7 +576,7 @@ app.patch('/api/clients/:clientId/status', authenticateToken, async (req, res) =
         
         const updatedClient = result.rows[0];
         
-        console.log(`📝 Client status updated: ${updatedClient.client_name} -> ${status ? 'Active' : 'Inactive'}`);
+        console.log(`🔄 Client status updated: ${updatedClient.client_name} -> ${status ? 'Active' : 'Inactive'}`);
         
         res.json({
             success: true,
