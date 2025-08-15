@@ -584,6 +584,43 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Add this temporary debug route to your server.js (remove it later)
+app.get('/api/debug/token', (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    console.log('Debug - Auth Header:', authHeader);
+    console.log('Debug - Extracted Token:', token);
+    console.log('Debug - JWT Secret exists:', !!process.env.JWT_SECRET);
+    
+    if (!token) {
+        return res.json({
+            success: false,
+            message: 'No token provided',
+            authHeader: authHeader
+        });
+    }
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Debug - Token decoded successfully:', decoded);
+        
+        res.json({
+            success: true,
+            message: 'Token is valid',
+            decoded: decoded
+        });
+    } catch (error) {
+        console.log('Debug - Token verification failed:', error.message);
+        
+        res.json({
+            success: false,
+            message: 'Token verification failed',
+            error: error.message
+        });
+    }
+});
+
 // Initialize databases and start server
 async function startServer() {
     await testConnections();
