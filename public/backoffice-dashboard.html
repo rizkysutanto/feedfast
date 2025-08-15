@@ -355,27 +355,165 @@
         </div>
     </div>
     
-    <!-- Create Client Modal -->
-    <div id="createClientModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeCreateModal()">&times;</span>
-            <h3>Create New Client</h3>
-            <div id="modalMessage"></div>
-            <form id="createClientForm">
-                <div class="form-group">
-                    <label class="form-label" for="clientName">Client Name *</label>
-                    <input type="text" id="clientName" class="form-input" required 
-                           placeholder="Enter client name">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="expiryDate">Expiry Date *</label>
-                    <input type="date" id="expiryDate" class="form-input" required>
-                </div>
-                <button type="submit" class="btn" id="createClientBtn">Create Client</button>
-            </form>
-            <div id="successDetails" style="display: none;"></div>
-        </div>
+    <!-- Updated Create Client Modal - Replace the existing modal in your HTML -->
+<div id="createClientModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCreateModal()">&times;</span>
+        <h3>Create New Client</h3>
+        <div id="modalMessage"></div>
+        <form id="createClientForm">
+            <div class="form-group">
+                <label class="form-label" for="clientId">Client ID</label>
+                <input type="text" id="clientId" class="form-input" 
+                       placeholder="Auto-generated" disabled 
+                       style="background-color: #f5f5f5; color: #666;">
+                <small style="color: #666; font-size: 0.8rem;">Client ID will be automatically generated</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="clientName">Client Name *</label>
+                <input type="text" id="clientName" class="form-input" required 
+                       placeholder="Enter client name" maxlength="255">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="expiryDate">Expiry Date *</label>
+                <input type="date" id="expiryDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="clientStatus">Status</label>
+                <select id="clientStatus" class="form-input" disabled style="background-color: #f5f5f5; color: #666;">
+                    <option value="true" selected>Active</option>
+                </select>
+                <small style="color: #666; font-size: 0.8rem;">New clients are automatically set to Active</small>
+            </div>
+            <button type="submit" class="btn" id="createClientBtn">Create Client</button>
+        </form>
+        <div id="successDetails" style="display: none;"></div>
     </div>
+</div>
+
+<script>
+// Updated JavaScript functions for the modal
+
+// Modal management
+function openCreateModal() {
+    document.getElementById('createClientModal').style.display = 'block';
+    document.getElementById('modalMessage').innerHTML = '';
+    document.getElementById('successDetails').style.display = 'none';
+    document.getElementById('createClientForm').reset();
+    document.getElementById('createClientForm').style.display = 'block';
+    
+    // Set minimum expiry date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('expiryDate').min = tomorrow.toISOString().split('T')[0];
+    
+    // Reset the disabled fields to their default states
+    document.getElementById('clientId').placeholder = 'Auto-generated';
+    document.getElementById('clientStatus').value = 'true';
+}
+
+function closeCreateModal() {
+    document.getElementById('createClientModal').style.display = 'none';
+}
+
+// Updated create client form handler
+document.getElementById('createClientForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const clientName = document.getElementById('clientName').value.trim();
+    const expiryDate = document.getElementById('expiryDate').value;
+    const submitBtn = document.getElementById('createClientBtn');
+    const messageDiv = document.getElementById('modalMessage');
+    
+    // Client-side validation
+    if (!clientName || !expiryDate) {
+        messageDiv.innerHTML = '<div class="error-message">Please fill in all required fields</div>';
+        return;
+    }
+    
+    if (clientName.length > 255) {
+        messageDiv.innerHTML = '<div class="error-message">Client name is too long (maximum 255 characters)</div>';
+        return;
+    }
+    
+    // Validate expiry date
+    const expiryDateObj = new Date(expiryDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (expiryDateObj <= today) {
+        messageDiv.innerHTML = '<div class="error-message">Expiry date must be in the future</div>';
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating...';
+    messageDiv.innerHTML = '';
+    
+    try {
+        const response = await apiRequest('/api/clients', {
+            method: 'POST',
+            body: JSON.stringify({
+                client_name: clientName,
+                expiry_date: expiryDate
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            messageDiv.innerHTML = '<div class="success-message">Client created successfully!</div>';
+            
+            // Show admin details
+            const successDetailsDiv = document.getElementById('successDetails');
+            successDetailsDiv.innerHTML = `
+                <div class="admin-details">
+                    <h4>✅ Client Created Successfully</h4>
+                    <p><strong>Client ID:</strong> ${data.data.client.client_id}</p>
+                    <p><strong>Client Name:</strong> ${data.data.client.client_name}</p>
+                    <p><strong>Status:</strong> ${data.data.client.status ? 'Active' : 'Inactive'}</p>
+                    <p><strong>Start Date:</strong> ${new Date(data.data.client.start_date).toLocaleDateString()}</p>
+                    <p><strong>Expiry Date:</strong> ${new Date(data.data.client.expiry_date).toLocaleDateString()}</p>
+                    
+                    <h4 style="margin-top: 1rem; color: #1976d2;">🔐 Client Admin Account Created</h4>
+                    <p><strong>Admin Email:</strong> ${data.data.admin.email}</p>
+                    <p><strong>Admin Password:</strong> ${data.data.admin.password}</p>
+                    <p><strong>User ID:</strong> ${data.data.admin.user_id}</p>
+                    <p style="color: #d32f2f; font-size: 0.9rem; margin-top: 0.5rem;">
+                        ⚠️ <strong>Important:</strong> Please save these credentials securely and share them with the client. 
+                        They will use these to log in at /login endpoint.
+                    </p>
+                </div>
+            `;
+            successDetailsDiv.style.display = 'block';
+            
+            // Hide form
+            document.getElementById('createClientForm').style.display = 'none';
+            
+            // Reload clients table
+            await loadClients();
+            
+        } else {
+            messageDiv.innerHTML = `<div class="error-message">${data.message}</div>`;
+        }
+        
+    } catch (error) {
+        console.error('Error creating client:', error);
+        messageDiv.innerHTML = '<div class="error-message">Network error. Please try again.</div>';
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Client';
+    }
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('createClientModal');
+    if (event.target === modal) {
+        closeCreateModal();
+    }
+}
+</script>
     
     <script>
         // Auth token management
