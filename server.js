@@ -321,6 +321,216 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// =============================================================================
+// CLIENT MANAGEMENT ROUTES (Add these to your server.js)
+// =============================================================================
+
+// Helper function to generate admin email
+function generateAdminEmail(clientName) {
+    // Get first 3 letters, remove spaces and special chars
+    const prefix = clientName.replace(/[^a-zA-Z]/g, '').substring(0, 3).toLowerCase();
+    return `adm${prefix}@yopmail.com`;
+}
+
+// Helper function to hash password
+async function hashPassword(password) {
+    const saltRounds = 10;
+    return await bcrypt.hash(password, saltRounds);
+}
+
+// Get all clients (protected route)
+app.get('/api/clients', authenticateToken, async (req, res) => {
+    try {
+        const result = await adminPool.query(`
+            SELECT 
+                client_id,
+                client_name,
+                total_branch,
+                total_users,
+                total_tickets,
+                status,
+                start_date,
+                expiry_date,
+                created_at
+            FROM clients 
+            ORDER BY created_at DESC
+        `);
+        
+        res.json({
+            success: true,
+            clients: result.rows
+        });
+    } catch (error) {
+        console.error('❌ Error fetching clients:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching clients'
+        });
+    }
+});
+
+// Create new client with auto-generated super admin (protected route)
+app.post('/api/clients', authenticateToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const { client_name, expiry_date } = req.body;
+        
+        if (!client_name || !expiry_date) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Client name and expiry date are required'
+            });
+        }
+        
+        // Check if client name already exists
+        const existingClient = await client.query(
+            'SELECT client_id FROM clients WHERE LOWER(client_name) = LOWER($1)',
+            [client_name]
+        );
+        
+        if (existingClient.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({
+                success: false,
+                message: 'Client name already exists'
+            });
+        }
+        
+        // Generate admin email
+        const adminEmail = generateAdminEmail(client_name);
+        
+        // Check if admin email already exists
+        const existingAdmin = await client.query(
+            'SELECT user_id FROM adminbo WHERE email = $1',
+            [adminEmail]
+        );
+        
+        if (existingAdmin.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({
+                success: false,
+                message: `Admin email ${adminEmail} already exists. Please choose a different client name.`
+            });
+        }
+        
+        // Create client
+        const clientResult = await client.query(`
+            INSERT INTO clients (client_name, expiry_date)
+            VALUES ($1, $2)
+            RETURNING client_id, client_name, start_date, expiry_date, created_at
+        `, [client_name, expiry_date]);
+        
+        const newClient = clientResult.rows[0];
+        
+        // Create super admin account for this client
+        const defaultPassword = '12345678';
+        const hashedPassword = await hashPassword(defaultPassword);
+        
+        const adminResult = await client.query(`
+            INSERT INTO adminbo (name, email, password, client_id)
+            VALUES ($1, $2, $3, $4)
+            RETURNING user_id, name, email
+        `, [`${client_name} Admin`, adminEmail, hashedPassword, newClient.client_id]);
+        
+        const newAdmin = adminResult.rows[0];
+        
+        await client.query('COMMIT');
+        
+        console.log(`✅ New client created: ${client_name} with admin: ${adminEmail}`);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Client and admin account created successfully',
+            data: {
+                client: {
+                    id: newClient.client_id,
+                    name: newClient.client_name,
+                    start_date: newClient.start_date,
+                    expiry_date: newClient.expiry_date,
+                    status: true,
+                    total_branch: 0,
+                    total_users: 0,
+                    total_tickets: 0
+                },
+                admin: {
+                    id: newAdmin.user_id,
+                    name: newAdmin.name,
+                    email: newAdmin.email,
+                    password: defaultPassword // Only show in response for setup purposes
+                }
+            }
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error creating client:', error);
+        
+        if (error.code === '23505') {
+            return res.status(409).json({
+                success: false,
+                message: 'Client with this name already exists'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error while creating client'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Update client status (protected route)
+app.patch('/api/clients/:clientId/status', authenticateToken, async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const { status } = req.body;
+        
+        if (typeof status !== 'boolean') {
+            return res.status(400).json({
+                success: false,
+                message: 'Status must be true or false'
+            });
+        }
+        
+        const result = await adminPool.query(`
+            UPDATE clients 
+            SET status = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE client_id = $2
+            RETURNING client_id, client_name, status
+        `, [status, clientId]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Client not found'
+            });
+        }
+        
+        const updatedClient = result.rows[0];
+        
+        console.log(`📝 Client status updated: ${updatedClient.client_name} -> ${status ? 'Active' : 'Inactive'}`);
+        
+        res.json({
+            success: true,
+            message: 'Client status updated successfully',
+            data: updatedClient
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating client status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating client status'
+        });
+    }
+});
+
 // Protected backoffice dashboard route
 app.get('/backoffice/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'backoffice-dashboard.html'));
