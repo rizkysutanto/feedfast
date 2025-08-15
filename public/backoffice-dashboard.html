@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FeedFast - Dashboard</title>
+    <title>FeedFast - Back Office Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -13,558 +13,617 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000000;
-            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
             display: flex;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            width: 200px;
-            background: #000000;
-            min-height: 100vh;
-            padding: 1rem 0;
-        }
-        
-        .sidebar-header {
-            padding: 0 1.5rem 2rem;
-            border-bottom: 1px solid #333;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
         }
         
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #fff;
-        }
-        
-        .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: #8527F0;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        
-        .sidebar-subtitle {
-            font-size: 0.8rem;
-            color: #888;
-            margin-top: 0.25rem;
-        }
-        
-        .sidebar-nav {
-            padding: 1rem 0;
-        }
-        
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #fff;
-            text-decoration: none;
-            transition: background 0.2s;
-            font-size: 0.9rem;
-        }
-        
-        .nav-item:hover {
-            background: #333;
-        }
-        
-        .nav-item.active {
-            background: #8527F0;
-            color: #fff;
-        }
-        
-        .nav-icon {
-            width: 16px;
-            height: 16px;
-            margin-right: 0.75rem;
-            background: currentColor;
-            border-radius: 2px;
-        }
-        
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            background: #f5f5f5;
-            color: #333;
-        }
-        
-        /* Top Bar */
-        .top-bar {
-            background: #000000;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 1rem;
+            color: #667eea;
         }
         
         .user-info {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            color: #fff;
-        }
-        
-        .user-name {
-            font-size: 0.9rem;
-        }
-        
-        .user-role {
-            font-size: 0.8rem;
-            color: #888;
-        }
-        
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: #8527F0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 0.8rem;
-            font-weight: bold;
+            gap: 1rem;
         }
         
         .logout-btn {
-            background: #8527F0;
-            color: #fff;
+            background: #ff4757;
+            color: white;
             border: none;
             padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.3s;
         }
         
         .logout-btn:hover {
-            background: #7119d1;
+            background: #ff3742;
         }
         
-        /* Dashboard Content */
-        .dashboard-content {
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: white;
             padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
         }
         
-        .dashboard-header {
-            margin-bottom: 2rem;
-        }
-        
-        .dashboard-title {
-            font-size: 1.8rem;
+        .stat-number {
+            font-size: 2.5rem;
             font-weight: bold;
-            color: #8527F0;
+            color: #667eea;
             margin-bottom: 0.5rem;
         }
         
-        .dashboard-subtitle {
+        .stat-label {
             color: #666;
             font-size: 1rem;
         }
         
-        /* Controls */
-        .controls {
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .content-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
         }
         
-        .filters {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
         }
         
-        .filter-label {
-            font-size: 0.9rem;
-            color: #666;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .filter-icon {
-            width: 16px;
-            height: 16px;
-            background: #666;
-        }
-        
-        .search-container {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-        
-        .search-input {
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            width: 250px;
-        }
-        
-        .search-btn {
-            background: #8527F0;
-            color: #fff;
-            border: none;
-            padding: 0.75rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .search-btn:hover {
-            background: #7119d1;
-        }
-        
-        .add-client-btn {
-            background: #8527F0;
-            color: #fff;
+        .btn {
+            background: #667eea;
+            color: white;
             border: none;
             padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .add-client-btn:hover {
-            background: #7119d1;
-        }
-        
-        /* Table */
-        .table-container {
-            background: #fff;
             border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
         }
         
-        .table {
+        .btn:hover {
+            background: #5a67d8;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .table-container {
+            padding: 2rem;
+            overflow-x: auto;
+        }
+        
+        .clients-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 1rem;
         }
         
-        .table th {
-            background: #f8f9fa;
+        .clients-table th,
+        .clients-table td {
             padding: 1rem;
             text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .clients-table th {
+            background: #f8f9fa;
             font-weight: 600;
             color: #333;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #e9ecef;
         }
         
-        .table td {
-            padding: 1rem;
-            border-bottom: 1px solid #f1f3f4;
-            font-size: 0.9rem;
-        }
-        
-        .table tbody tr:hover {
+        .clients-table tbody tr:hover {
             background: #f8f9fa;
-        }
-        
-        .client-id {
-            color: #8527F0;
-            font-weight: 500;
         }
         
         .status-badge {
             padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
             font-weight: 500;
         }
         
-        .status-inactive {
-            background: #fee2e2;
-            color: #dc2626;
+        .status-active {
+            background: #d4edda;
+            color: #155724;
         }
         
-        .status-active {
-            background: #dcfce7;
-            color: #16a34a;
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
         }
         
         .action-btn {
-            background: #8527F0;
-            color: #fff;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .action-btn:hover {
-            background: #7119d1;
-        }
-        
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 2rem;
-            background: #fff;
-            border-top: 1px solid #f1f3f4;
-        }
-        
-        .pagination-info {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .pagination-controls {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        
-        .pagination-btn {
-            padding: 0.5rem 0.75rem;
+            background: none;
             border: 1px solid #ddd;
-            background: #fff;
-            color: #666;
-            border-radius: 4px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 0.8rem;
+            margin: 0 0.2rem;
+        }
+        
+        .toggle-btn {
+            color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .toggle-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .admin-details {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .admin-details h4 {
+            margin-bottom: 0.5rem;
+            color: #1976d2;
+        }
+        
+        .admin-details p {
+            margin: 0.25rem 0;
             font-size: 0.9rem;
-        }
-        
-        .pagination-btn:hover {
-            background: #f8f9fa;
-        }
-        
-        .pagination-btn.active {
-            background: #8527F0;
-            color: #fff;
-            border-color: #8527F0;
-        }
-        
-        .pagination-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">🚀</div>
-                <div>
-                    <div>FeedFast</div>
-                    <div class="sidebar-subtitle">Back Office</div>
-                </div>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="#" class="nav-item active">
-                <div class="nav-icon"></div>
-                Clients
-            </a>
-        </nav>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Bar -->
-        <div class="top-bar">
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🚀 FeedFast Back Office</div>
             <div class="user-info">
-                <div>
-                    <div class="user-name">Rizky</div>
-                    <div class="user-role">Super Admin</div>
-                </div>
-                <div class="user-avatar">R</div>
+                <span id="userName">Loading...</span>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
-
-        <!-- Dashboard Content -->
-        <div class="dashboard-content">
-            <div class="dashboard-header">
-                <h1 class="dashboard-title">Dashboard</h1>
-                <p class="dashboard-subtitle">Manage Clients for FeedFast</p>
+        
+        <!-- Dashboard Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalClients">-</div>
+                <div class="stat-label">Total Clients</div>
             </div>
-
-            <!-- Controls -->
-            <div class="controls">
-                <div class="filters">
-                    <div class="filter-label">
-                        <div class="filter-icon"></div>
-                        Filters:
-                    </div>
-                </div>
-                <div class="search-container">
-                    <input type="text" class="search-input" placeholder="Search client">
-                    <button class="search-btn">🔍</button>
-                    <button class="add-client-btn">Add Client</button>
-                </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeClients">-</div>
+                <div class="stat-label">Active Clients</div>
             </div>
-
-            <!-- Table -->
+            <div class="stat-card">
+                <div class="stat-number" id="totalEmails">-</div>
+                <div class="stat-label">Email Subscriptions</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h2 class="content-title">Client Management</h2>
+                <button class="btn" onclick="openCreateModal()">+ Create New Client</button>
+            </div>
+            
             <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ClientID</th>
-                            <th>Client Name</th>
-                            <th>Total Branch</th>
-                            <th>Total Users</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><span class="client-id">#Client0001</span></td>
-                            <td>Alfamart</td>
-                            <td>32</td>
-                            <td>100</td>
-                            <td><span class="status-badge status-inactive">Inactive</span></td>
-                            <td><button class="action-btn">Action</button></td>
-                        </tr>
-                        <tr>
-                            <td><span class="client-id">#Client0001</span></td>
-                            <td>Alfamart</td>
-                            <td>32</td>
-                            <td>100</td>
-                            <td><span class="status-badge status-inactive">Inactive</span></td>
-                            <td><button class="action-btn">Action</button></td>
-                        </tr>
-                        <tr>
-                            <td><span class="client-id">#Client0001</span></td>
-                            <td>Alfamart</td>
-                            <td>32</td>
-                            <td>100</td>
-                            <td><span class="status-badge status-inactive">Inactive</span></td>
-                            <td><button class="action-btn">Action</button></td>
-                        </tr>
-                        <tr>
-                            <td><span class="client-id">#Client0001</span></td>
-                            <td>Alfamart</td>
-                            <td>32</td>
-                            <td>100</td>
-                            <td><span class="status-badge status-inactive">Inactive</span></td>
-                            <td><button class="action-btn">Action</button></td>
-                        </tr>
-                        <tr>
-                            <td><span class="client-id">#Client0001</span></td>
-                            <td>Alfamart</td>
-                            <td>32</td>
-                            <td>100</td>
-                            <td><span class="status-badge status-inactive">Inactive</span></td>
-                            <td><button class="action-btn">Action</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <!-- Pagination -->
-                <div class="pagination">
-                    <div class="pagination-info">
-                        Showing 1 to 5 of 1248 results
-                    </div>
-                    <div class="pagination-controls">
-                        <button class="pagination-btn" disabled>‹</button>
-                        <button class="pagination-btn active">1</button>
-                        <button class="pagination-btn">2</button>
-                        <button class="pagination-btn">3</button>
-                        <button class="pagination-btn">›</button>
-                    </div>
+                <div id="loading" class="loading">Loading clients...</div>
+                <div id="clientsContent" style="display: none;">
+                    <table class="clients-table">
+                        <thead>
+                            <tr>
+                                <th>Client ID</th>
+                                <th>Client Name</th>
+                                <th>Start Date</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                                <th>Branches</th>
+                                <th>Users</th>
+                                <th>Tickets</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsTableBody">
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-
+    
+    <!-- Create Client Modal -->
+    <div id="createClientModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateModal()">&times;</span>
+            <h3>Create New Client</h3>
+            <div id="modalMessage"></div>
+            <form id="createClientForm">
+                <div class="form-group">
+                    <label class="form-label" for="clientName">Client Name *</label>
+                    <input type="text" id="clientName" class="form-input" required 
+                           placeholder="Enter client name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="expiryDate">Expiry Date *</label>
+                    <input type="date" id="expiryDate" class="form-input" required>
+                </div>
+                <button type="submit" class="btn" id="createClientBtn">Create Client</button>
+            </form>
+            <div id="successDetails" style="display: none;"></div>
+        </div>
+    </div>
+    
     <script>
-        // Check if user is authenticated - Use correct token name
-        const token = localStorage.getItem('feedfast_admin_token');
+        // Auth token management
+        const token = localStorage.getItem('adminToken');
         if (!token) {
             window.location.href = '/backoffice';
         }
         
-        // Set authorization header for all requests
-        const authHeaders = {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        };
-
-        // Basic interactivity - no real functionality yet
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('FeedFast Dashboard loaded');
+        // API request helper
+        async function apiRequest(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
             
-            // Add hover effects and basic interactions
-            const tableRows = document.querySelectorAll('.table tbody tr');
-            tableRows.forEach(row => {
-                row.addEventListener('click', () => {
-                    console.log('Row clicked');
-                });
-            });
+            const response = await fetch(url, { ...defaultOptions, ...options });
             
-            // Search functionality placeholder
-            const searchInput = document.querySelector('.search-input');
-            const searchBtn = document.querySelector('.search-btn');
-            
-            searchBtn.addEventListener('click', () => {
-                console.log('Search clicked:', searchInput.value);
-            });
-            
-            // Add client button
-            const addClientBtn = document.querySelector('.add-client-btn');
-            addClientBtn.addEventListener('click', () => {
-                console.log('Add client clicked');
-            });
-            
-            // Action buttons
-            const actionBtns = document.querySelectorAll('.action-btn');
-            actionBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    console.log('Action clicked');
-                });
-            });
-            
-            // Pagination
-            const paginationBtns = document.querySelectorAll('.pagination-btn');
-            paginationBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (!btn.disabled) {
-                        console.log('Pagination clicked:', btn.textContent);
-                    }
-                });
-            });
-        });
-
-        // Logout function - FIXED: Use correct token name
-        async function logout() {
-            try {
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    headers: authHeaders
-                });
-            } catch (error) {
-                console.error('Logout error:', error);
-            } finally {
-                localStorage.removeItem('feedfast_admin_token');
+            if (response.status === 401) {
+                localStorage.removeItem('adminToken');
                 window.location.href = '/backoffice';
+                return;
+            }
+            
+            return response;
+        }
+        
+        // Load user info and dashboard data
+        async function loadDashboard() {
+            try {
+                // Verify token and get user info
+                const userResponse = await apiRequest('/api/auth/verify');
+                const userData = await userResponse.json();
+                
+                if (userData.success) {
+                    document.getElementById('userName').textContent = userData.user.name;
+                }
+                
+                // Load stats
+                await loadStats();
+                
+                // Load clients
+                await loadClients();
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
             }
         }
+        
+        // Load dashboard statistics
+        async function loadStats() {
+            try {
+                // Load email stats
+                const emailResponse = await apiRequest('/api/stats');
+                const emailData = await emailResponse.json();
+                
+                if (emailData.success) {
+                    document.getElementById('totalEmails').textContent = emailData.stats.total;
+                }
+                
+                // Client stats will be calculated after loading clients
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Load clients data
+        async function loadClients() {
+            try {
+                const response = await apiRequest('/api/clients');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayClients(data.clients);
+                    updateClientStats(data.clients);
+                } else {
+                    document.getElementById('loading').textContent = 'Error loading clients';
+                }
+                
+            } catch (error) {
+                console.error('Error loading clients:', error);
+                document.getElementById('loading').textContent = 'Error loading clients';
+            }
+        }
+        
+        // Display clients in table
+        function displayClients(clients) {
+            const tbody = document.getElementById('clientsTableBody');
+            
+            if (clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No clients found</td></tr>';
+            } else {
+                tbody.innerHTML = clients.map(client => `
+                    <tr>
+                        <td>${client.client_id}</td>
+                        <td><strong>${client.client_name}</strong></td>
+                        <td>${new Date(client.start_date).toLocaleDateString()}</td>
+                        <td>${new Date(client.expiry_date).toLocaleDateString()}</td>
+                        <td>
+                            <span class="status-badge ${client.status ? 'status-active' : 'status-inactive'}">
+                                ${client.status ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>${client.total_branch || 0}</td>
+                        <td>${client.total_users || 0}</td>
+                        <td>${client.total_tickets || 0}</td>
+                        <td>
+                            <button class="action-btn toggle-btn" onclick="toggleClientStatus(${client.client_id}, ${!client.status})">
+                                ${client.status ? 'Deactivate' : 'Activate'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('clientsContent').style.display = 'block';
+        }
+        
+        // Update client statistics
+        function updateClientStats(clients) {
+            const totalClients = clients.length;
+            const activeClients = clients.filter(client => client.status).length;
+            
+            document.getElementById('totalClients').textContent = totalClients;
+            document.getElementById('activeClients').textContent = activeClients;
+        }
+        
+        // Toggle client status
+        async function toggleClientStatus(clientId, newStatus) {
+            try {
+                const response = await apiRequest(`/api/clients/${clientId}/status`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    await loadClients(); // Reload the table
+                } else {
+                    alert('Error updating client status: ' + data.message);
+                }
+                
+            } catch (error) {
+                console.error('Error toggling client status:', error);
+                alert('Error updating client status');
+            }
+        }
+        
+        // Modal management
+        function openCreateModal() {
+            document.getElementById('createClientModal').style.display = 'block';
+            document.getElementById('modalMessage').innerHTML = '';
+            document.getElementById('successDetails').style.display = 'none';
+            document.getElementById('createClientForm').reset();
+            
+            // Set minimum expiry date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('expiryDate').min = tomorrow.toISOString().split('T')[0];
+        }
+        
+        function closeCreateModal() {
+            document.getElementById('createClientModal').style.display = 'none';
+        }
+        
+        // Handle create client form
+        document.getElementById('createClientForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const clientName = document.getElementById('clientName').value.trim();
+            const expiryDate = document.getElementById('expiryDate').value;
+            const submitBtn = document.getElementById('createClientBtn');
+            const messageDiv = document.getElementById('modalMessage');
+            
+            if (!clientName || !expiryDate) {
+                messageDiv.innerHTML = '<div class="error-message">Please fill in all required fields</div>';
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+            messageDiv.innerHTML = '';
+            
+            try {
+                const response = await apiRequest('/api/clients', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        client_name: clientName,
+                        expiry_date: expiryDate
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    messageDiv.innerHTML = '<div class="success-message">Client created successfully!</div>';
+                    
+                    // Show admin details
+                    const successDetailsDiv = document.getElementById('successDetails');
+                    successDetailsDiv.innerHTML = `
+                        <div class="admin-details">
+                            <h4>Super Admin Account Created</h4>
+                            <p><strong>Email:</strong> ${data.data.admin.email}</p>
+                            <p><strong>Password:</strong> ${data.data.admin.password}</p>
+                            <p><small>Please save these credentials and share them securely with the client.</small></p>
+                        </div>
+                    `;
+                    successDetailsDiv.style.display = 'block';
+                    
+                    // Hide form
+                    document.getElementById('createClientForm').style.display = 'none';
+                    
+                    // Reload clients table
+                    await loadClients();
+                    
+                } else {
+                    messageDiv.innerHTML = `<div class="error-message">${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                console.error('Error creating client:', error);
+                messageDiv.innerHTML = '<div class="error-message">Network error. Please try again.</div>';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Client';
+            }
+        });
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/backoffice';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('createClientModal');
+            if (event.target === modal) {
+                closeCreateModal();
+            }
+        }
+        
+        // Initialize dashboard
+        loadDashboard();
     </script>
 </body>
 </html>
