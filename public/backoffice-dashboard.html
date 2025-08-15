@@ -378,52 +378,86 @@
     </div>
     
     <script>
-        // Auth token management
-        const token = localStorage.getItem('adminToken');
-        if (!token) {
+        // Replace the existing auth check and loadDashboard function in your dashboard HTML
+
+// Auth token management
+const token = localStorage.getItem('adminToken');
+console.log('Token from localStorage:', token ? 'Token exists' : 'No token found');
+
+if (!token) {
+    console.log('No token found, redirecting to login');
+    window.location.href = '/backoffice';
+}
+
+// API request helper
+async function apiRequest(url, options = {}) {
+    const defaultOptions = {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    };
+    
+    console.log(`Making request to: ${url}`);
+    
+    try {
+        const response = await fetch(url, { ...defaultOptions, ...options });
+        console.log(`Response status for ${url}: ${response.status}`);
+        
+        if (response.status === 401) {
+            console.log('Unauthorized - removing token and redirecting');
+            localStorage.removeItem('adminToken');
             window.location.href = '/backoffice';
+            return null;
         }
         
-        // API request helper
-        async function apiRequest(url, options = {}) {
-            const defaultOptions = {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            };
-            
-            const response = await fetch(url, { ...defaultOptions, ...options });
-            
-            if (response.status === 401) {
-                localStorage.removeItem('adminToken');
-                window.location.href = '/backoffice';
-                return;
-            }
-            
-            return response;
+        return response;
+    } catch (error) {
+        console.error(`Network error for ${url}:`, error);
+        throw error;
+    }
+}
+
+// Load user info and dashboard data
+async function loadDashboard() {
+    try {
+        console.log('Starting dashboard load...');
+        
+        // Verify token and get user info
+        const userResponse = await apiRequest('/api/auth/verify');
+        
+        if (!userResponse) {
+            console.log('No response from verify endpoint');
+            return;
         }
         
-        // Load user info and dashboard data
-        async function loadDashboard() {
-            try {
-                // Verify token and get user info
-                const userResponse = await apiRequest('/api/auth/verify');
-                const userData = await userResponse.json();
-                
-                if (userData.success) {
-                    document.getElementById('userName').textContent = userData.user.name;
-                }
-                
-                // Load stats
-                await loadStats();
-                
-                // Load clients
-                await loadClients();
-                
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-            }
+        const userData = await userResponse.json();
+        console.log('User verification response:', userData);
+        
+        if (userData.success) {
+            console.log('Token verified successfully');
+            document.getElementById('userName').textContent = userData.user.name;
+        } else {
+            console.log('Token verification failed:', userData.message);
+            localStorage.removeItem('adminToken');
+            window.location.href = '/backoffice';
+            return;
+        }
+        
+        // Load stats
+        console.log('Loading stats...');
+        await loadStats();
+        
+        // Load clients
+        console.log('Loading clients...');
+        await loadClients();
+        
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        // Don't redirect on network errors, just show the error
+        document.getElementById('loading').textContent = 'Error loading dashboard. Please refresh.';
+    }
+}
         }
         
         // Load dashboard statistics
