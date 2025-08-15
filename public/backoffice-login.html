@@ -255,7 +255,7 @@
                     id="email"
                     name="email"
                     class="form-input"
-                    placeholder="Email"
+                    placeholder="Enter your email"
                     required
                     autocomplete="username"
                 >
@@ -270,7 +270,7 @@
                     id="password"
                     name="password"
                     class="form-input"
-                    placeholder="Phone Number"
+                    placeholder="Enter your password"
                     required
                     autocomplete="current-password"
                 >
@@ -309,8 +309,9 @@
                 password: formData.get('password')
             };
             
+            console.log('Attempting login with:', credentials.email);
+            
             try {
-                // Simulate API call (replace with actual endpoint)
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
@@ -319,12 +320,14 @@
                     body: JSON.stringify(credentials)
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Store token if provided
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (response.ok && data.success) {
+                    // Store token with the correct key that dashboard expects
                     if (data.token) {
-                        localStorage.setItem('feedfast_admin_token', data.token);
+                        localStorage.setItem('adminToken', data.token);
+                        console.log('Token stored successfully');
                     }
                     
                     // Redirect to dashboard
@@ -332,7 +335,7 @@
                 } else {
                     // Show error message
                     errorMessage.style.display = 'block';
-                    errorMessage.textContent = 'Invalid credentials. Please try again.';
+                    errorMessage.textContent = data.message || 'Invalid credentials. Please try again.';
                 }
             } catch (error) {
                 console.error('Login error:', error);
@@ -356,6 +359,11 @@
         document.getElementById('password').addEventListener('input', () => {
             errorMessage.style.display = 'none';
         });
+        
+        // Check if already logged in
+        if (localStorage.getItem('adminToken')) {
+            window.location.href = '/backoffice/dashboard';
+        }
     </script>
 </body>
 </html>
