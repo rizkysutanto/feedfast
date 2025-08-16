@@ -330,19 +330,42 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'client-login.html'));
 });
 
-// Client login endpoint (reads from users table)
+// Client login endpoint (reads from users table) - WITH DETAILED DEBUGGING
 app.post('/api/auth/client-login', async (req, res) => {
+    console.log('🔍 CLIENT LOGIN DEBUG - Request started');
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
+    
     try {
         const { email, password } = req.body;
+        console.log('📧 Extracted credentials:', { email: email, passwordLength: password?.length });
         
         if (!email || !password) {
+            console.log('❌ Missing credentials');
             return res.status(400).json({
                 success: false,
                 message: 'Email and password are required'
             });
         }
         
+        console.log('🔍 About to query database...');
+        console.log('Database pool status:', { 
+            totalCount: adminPool.totalCount,
+            idleCount: adminPool.idleCount,
+            waitingCount: adminPool.waitingCount 
+        });
+        
+        // Test database connection first
+        try {
+            await adminPool.query('SELECT 1 as test');
+            console.log('✅ Database connection test passed');
+        } catch (dbTestError) {
+            console.error('❌ Database connection test failed:', dbTestError);
+            throw new Error('Database connection failed');
+        }
+        
         // Find user in users table (client users)
+        console.log('🔍 Executing user query...');
         const userQuery = await adminPool.query(
             `SELECT 
                 u.user_id, 
@@ -361,7 +384,20 @@ app.post('/api/auth/client-login', async (req, res) => {
             [email]
         );
         
+        console.log('📊 Query result:', {
+            rowCount: userQuery.rows.length,
+            firstRow: userQuery.rows[0] ? {
+                user_id: userQuery.rows[0].user_id,
+                email: userQuery.rows[0].email,
+                status: userQuery.rows[0].status,
+                client_status: userQuery.rows[0].client_status,
+                role: userQuery.rows[0].role,
+                client_name: userQuery.rows[0].client_name
+            } : 'No rows returned'
+        });
+        
         if (userQuery.rows.length === 0) {
+            console.log('❌ User not found with email:', email);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
@@ -369,9 +405,11 @@ app.post('/api/auth/client-login', async (req, res) => {
         }
         
         const user = userQuery.rows[0];
+        console.log('👤 User found:', user.email, 'Role:', user.role);
         
         // Check if user is active
         if (!user.status) {
+            console.log('❌ User account is inactive:', user.email);
             return res.status(401).json({
                 success: false,
                 message: 'Account is inactive. Please contact administrator.'
@@ -380,22 +418,27 @@ app.post('/api/auth/client-login', async (req, res) => {
         
         // Check if client is active
         if (!user.client_status) {
+            console.log('❌ Client account is inactive:', user.client_name);
             return res.status(401).json({
                 success: false,
                 message: 'Client account is inactive. Please contact support.'
             });
         }
         
+        console.log('🔐 Verifying password...');
         // Check password
         const isValidPassword = await bcrypt.compare(password, user.password);
+        console.log('🔐 Password verification result:', isValidPassword);
         
         if (!isValidPassword) {
+            console.log('❌ Invalid password for user:', user.email);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
             });
         }
         
+        console.log('🎫 Generating JWT token...');
         // Generate JWT token with client info
         const token = jwt.sign(
             {
@@ -412,15 +455,16 @@ app.post('/api/auth/client-login', async (req, res) => {
             { expiresIn: '24h' }
         );
         
+        console.log('🔄 Updating last_login timestamp...');
         // Update last_login timestamp
         await adminPool.query(
             'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1',
             [user.user_id]
         );
         
-        console.log(`🔑 Client login: ${email} (Client: ${user.client_name})`);
+        console.log(`✅ Client login successful: ${email} (Client: ${user.client_name})`);
         
-        res.json({
+        const responseData = {
             success: true,
             message: 'Login successful',
             token: token,
@@ -434,13 +478,109 @@ app.post('/api/auth/client-login', async (req, res) => {
                 role: user.role,
                 type: 'client'
             }
+        };
+        
+        console.log('📤 Sending response:', {
+            success: responseData.success,
+            message: responseData.message,
+            user: responseData.user,
+            tokenLength: responseData.token.length
+        });
+        
+        res.json(responseData);
+        
+    } catch (error) {
+        console.error('💥 CLIENT LOGIN ERROR - Full error details:');
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Error code:', error.code);
+        console.error('Error name:', error.name);
+        
+        // Check if it's a database error
+        if (error.code) {
+            console.error('🔍 Database error details:');
+            console.error('- Code:', error.code);
+            console.error('- Detail:', error.detail);
+            console.error('- Hint:', error.hint);
+            console.error('- Position:', error.position);
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            debug: process.env.NODE_ENV === 'development' ? {
+                error: error.message,
+                stack: error.stack
+            } : undefined
+        });
+    }
+});
+
+// Add this test endpoint to verify your database structure
+app.get('/api/debug/test-db', async (req, res) => {
+    try {
+        console.log('🔍 Testing database structure...');
+        
+        // Test 1: Check if users table exists and has data
+        const usersTest = await adminPool.query(`
+            SELECT 
+                u.user_id, 
+                u.email, 
+                u.client_id, 
+                u.status, 
+                u.role,
+                u.created_at
+            FROM users u 
+            LIMIT 5
+        `);
+        
+        // Test 2: Check if clients table exists and has data  
+        const clientsTest = await adminPool.query(`
+            SELECT 
+                client_id, 
+                client_name, 
+                status 
+            FROM clients 
+            LIMIT 5
+        `);
+        
+        // Test 3: Test the JOIN query
+        const joinTest = await adminPool.query(`
+            SELECT 
+                u.user_id, 
+                u.email, 
+                u.status as user_status,
+                c.client_name,
+                c.status as client_status
+            FROM users u
+            JOIN clients c ON u.client_id = c.client_id
+            LIMIT 5
+        `);
+        
+        res.json({
+            success: true,
+            tests: {
+                users: {
+                    count: usersTest.rows.length,
+                    sample: usersTest.rows
+                },
+                clients: {
+                    count: clientsTest.rows.length,
+                    sample: clientsTest.rows
+                },
+                join: {
+                    count: joinTest.rows.length,
+                    sample: joinTest.rows
+                }
+            }
         });
         
     } catch (error) {
-        console.error('❌ Client login error:', error);
+        console.error('💥 DB TEST ERROR:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            error: error.message,
+            stack: error.stack
         });
     }
 });
