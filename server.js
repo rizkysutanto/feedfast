@@ -681,15 +681,15 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
 });
 
 // =============================================================================
-// BRANCH MANAGEMENT ROUTES - ADD THESE TO YOUR SERVER.JS
+// BRANCH MANAGEMENT ROUTES - FIXED VERSION
 // =============================================================================
 
-// Serve branch management page (protected)
-app.get('/branch', authenticateClientToken, (req, res) => {
+// Serve branch management page (NOT protected - let client-side handle auth)
+app.get('/branch', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'branch-management.html'));
 });
 
-// Get all branches for the authenticated client
+// Get all branches for the authenticated client (API route - protected)
 app.get('/api/branches', authenticateClientToken, async (req, res) => {
     try {
         const clientId = req.user.clientId;
