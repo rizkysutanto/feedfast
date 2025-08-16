@@ -286,7 +286,9 @@
         </div>
     </div>
 
-    <script>
+    // REPLACE the entire script section in client-login.html with this:
+
+<script>
         const loginForm = document.getElementById('loginForm');
         const errorMessage = document.getElementById('errorMessage');
         const submitBtn = document.querySelector('.submit-btn');
@@ -309,10 +311,10 @@
                 password: formData.get('password')
             };
             
-            console.log('Attempting login with:', credentials.email);
+            console.log('Attempting client login with:', credentials.email);
             
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch('/api/auth/client-login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -321,16 +323,16 @@
                 });
                 
                 const data = await response.json();
-                console.log('Login response:', data);
+                console.log('Client login response:', data);
                 
                 if (response.ok && data.success) {
-                    // Store token with the correct key that dashboard expects
+                    // Store token with CLIENT-specific key (different from adminToken)
                     if (data.token) {
-                        localStorage.setItem('adminToken', data.token);
-                        console.log('Token stored successfully');
+                        localStorage.setItem('clientToken', data.token);
+                        console.log('Client token stored successfully');
                     }
                     
-                    // Redirect to dashboard
+                    // Redirect to client dashboard
                     window.location.href = '/dashboard';
                 } else {
                     // Show error message
@@ -338,7 +340,7 @@
                     errorMessage.textContent = data.message || 'Invalid credentials. Please try again.';
                 }
             } catch (error) {
-                console.error('Login error:', error);
+                console.error('Client login error:', error);
                 errorMessage.style.display = 'block';
                 errorMessage.textContent = 'Connection error. Please try again.';
             } finally {
@@ -360,10 +362,10 @@
             errorMessage.style.display = 'none';
         });
         
-        // Check if already logged in
-        if (localStorage.getItem('adminToken')) {
+        // FIXED: Check if already logged in as CLIENT (not admin)
+        if (localStorage.getItem('clientToken')) {
             window.location.href = '/dashboard';
         }
-    </script>
+</script>
 </body>
 </html>
