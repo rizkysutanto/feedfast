@@ -631,6 +631,385 @@ app.get('/api/auth/client-verify', authenticateClientToken, (req, res) => {
     });
 });
 
+// Function to generate feedback form HTML
+function generateFeedbackFormHTML(client, branches) {
+  const clientNameForUrl = client.client_name.toLowerCase().replace(/\s+/g, '');
+  
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - ${client.client_name} | FeedFast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+        
+        .feedback-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .type-option {
+            position: relative;
+        }
+        
+        .type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .type-option label {
+            display: block;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .type-option input[type="radio"]:checked + label {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+        
+        .type-option label:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .powered-by {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .powered-by a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Share Your Feedback</h1>
+            <p>Help us improve our service for <strong>${client.client_name}</strong></p>
+        </div>
+        
+        <div class="form-container">
+            <div class="success-message" id="successMessage"></div>
+            <div class="error-message" id="errorMessage"></div>
+            
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label>Feedback Type <span class="required">*</span></label>
+                    <div class="feedback-types">
+                        <div class="type-option">
+                            <input type="radio" id="complaint" name="type" value="complaint" required>
+                            <label for="complaint">Complaint</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="suggestion" name="type" value="suggestion" required>
+                            <label for="suggestion">Suggestion</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="compliment" name="type" value="compliment" required>
+                            <label for="compliment">Compliment</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="inquiry" name="type" value="inquiry" required>
+                            <label for="inquiry">Inquiry</label>
+                        </div>
+                    </div>
+                </div>
+                
+                ${branches.length > 0 ? `
+                <div class="form-group">
+                    <label for="branch">Branch/Location</label>
+                    <select name="branch_id" id="branch">
+                        <option value="">Select a branch (optional)</option>
+                        ${branches.map(branch => 
+                          `<option value="${branch.branch_id}">${branch.branch_name} ${branch.branch_code ? '(' + branch.branch_code + ')' : ''}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                ` : ''}
+                
+                <div class="form-group">
+                    <label for="title">Subject <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" required 
+                           placeholder="Brief description of your feedback">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Message <span class="required">*</span></label>
+                    <textarea id="description" name="description" required 
+                              placeholder="Please provide detailed information about your feedback..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Your Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="cust_name" required 
+                               placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="cust_email" 
+                               placeholder="your.email@example.com">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="cust_phone" 
+                           placeholder="Your phone number">
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Submit Feedback
+                </button>
+                
+                <div class="loading" id="loading">
+                    Submitting your feedback...
+                </div>
+            </form>
+        </div>
+        
+        <div class="powered-by">
+            Powered by <a href="#" target="_blank">FeedFast</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('feedbackForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Clear previous messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            loading.style.display = 'block';
+
+            try {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                data.client_name = '${clientNameForUrl}';
+
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    successMessage.innerHTML = \`
+                        <strong>Thank you!</strong> Your feedback has been submitted successfully. 
+                        Ticket ID: #\${result.ticket_id}
+                    \`;
+                    successMessage.style.display = 'block';
+                    form.reset();
+                    
+                    // Scroll to success message
+                    successMessage.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(result.error || 'Failed to submit feedback');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.innerHTML = \`
+                    <strong>Error!</strong> \${error.message || 'Failed to submit feedback. Please try again.'}
+                \`;
+                errorMessage.style.display = 'block';
+                errorMessage.scrollIntoView({ behavior: 'smooth' });
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+  `;
+}
+
 // =============================================================================
 // UPDATED CLIENT MANAGEMENT ROUTES - Replace the existing ones in your server.js
 // =============================================================================
@@ -1861,6 +2240,140 @@ app.patch('/api/tickets/bulk-update', authenticateClientToken, async (req, res) 
 // =============================================================================
 // END OF TICKET MANAGEMENT ROUTES
 // =============================================================================
+// =============================================================================
+// PUBLIC FEEDBACK FORM ROUTES - Add these after the ticket management routes
+// =============================================================================
+
+// Dynamic feedback route - serves feedback form for specific client
+app.get('/feedback/:clientname', async (req, res) => {
+  const { clientname } = req.params;
+  
+  try {
+    // Query to find client by name (case-insensitive)
+    const clientQuery = `
+      SELECT client_id, client_name, status 
+      FROM clients 
+      WHERE LOWER(REPLACE(client_name, ' ', '')) = LOWER($1) 
+      AND status = true
+    `;
+    
+    const clientResult = await adminPool.query(clientQuery, [clientname.toLowerCase()]);
+    
+    if (clientResult.rows.length === 0) {
+      return res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Client Not Found - FeedFast</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: #dc3545; }
+          </style>
+        </head>
+        <body>
+          <h1 class="error">Client Not Found</h1>
+          <p>The feedback form for "${clientname}" is not available.</p>
+          <p>Please check the URL or contact support.</p>
+        </body>
+        </html>
+      `);
+    }
+
+    const client = clientResult.rows[0];
+    
+    // Get client's branches for dropdown
+    const branchesQuery = `
+      SELECT branch_id, branch_name, branch_code 
+      FROM branches 
+      WHERE client_id = $1 AND status = true 
+      ORDER BY branch_name
+    `;
+    
+    const branchesResult = await adminPool.query(branchesQuery, [client.client_id]);
+    const branches = branchesResult.rows;
+    
+    // Serve the feedback form HTML
+    res.send(generateFeedbackFormHTML(client, branches));
+    
+  } catch (error) {
+    console.error('❌ Error loading feedback form:', error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+// API endpoint to submit feedback (PUBLIC - no authentication required)
+app.post('/api/feedback', async (req, res) => {
+  const {
+    client_name,
+    branch_id,
+    cust_name,
+    cust_email,
+    cust_phone,
+    type,
+    title,
+    description,
+    attachment
+  } = req.body;
+
+  try {
+    // Get client_id from client_name
+    const clientQuery = `
+      SELECT client_id FROM clients 
+      WHERE LOWER(REPLACE(client_name, ' ', '')) = LOWER($1) 
+      AND status = true
+    `;
+    
+    const clientResult = await adminPool.query(clientQuery, [client_name.toLowerCase()]);
+    
+    if (clientResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+    
+    const client_id = clientResult.rows[0].client_id;
+    
+    // Insert ticket
+    const insertTicketQuery = `
+      INSERT INTO tickets (
+        client_id, branch_id, cust_name, cust_email, cust_phone,
+        type, title, description, attachment, status, submitted_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'open', NOW())
+      RETURNING ticket_id
+    `;
+    
+    const values = [
+      client_id,
+      branch_id || null,
+      cust_name,
+      cust_email || null,
+      cust_phone || null,
+      type,
+      title,
+      description,
+      attachment || null
+    ];
+    
+    const result = await adminPool.query(insertTicketQuery, values);
+    const ticket_id = result.rows[0].ticket_id;
+    
+    // Update client total_tickets count
+    await adminPool.query(
+      'UPDATE clients SET total_tickets = total_tickets + 1 WHERE client_id = $1',
+      [client_id]
+    );
+    
+    console.log(`✅ Public feedback submitted: Ticket #${ticket_id} for client ${client_id}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Feedback submitted successfully',
+      ticket_id: ticket_id
+    });
+    
+  } catch (error) {
+    console.error('❌ Error submitting feedback:', error);
+    res.status(500).json({ error: 'Failed to submit feedback' });
+  }
+});
 
 app.post('/api/clients', authenticateToken, async (req, res) => {
     const client = await adminPool.connect();
