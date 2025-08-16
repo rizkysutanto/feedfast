@@ -322,6 +322,176 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // =============================================================================
+// CLIENT AUTH ROUTES (ADD THESE TO YOUR SERVER.JS)
+// =============================================================================
+
+// Serve client login page
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'client-login.html'));
+});
+
+// Client login endpoint (reads from users table)
+app.post('/api/auth/client-login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and password are required'
+            });
+        }
+        
+        // Find user in users table (client users)
+        const userQuery = await adminPool.query(
+            `SELECT 
+                u.user_id, 
+                u.client_id, 
+                u.branch_id,
+                u.user_name, 
+                u.email, 
+                u.password, 
+                u.status, 
+                u.role,
+                c.client_name,
+                c.status as client_status
+            FROM users u
+            JOIN clients c ON u.client_id = c.client_id
+            WHERE u.email = $1`,
+            [email]
+        );
+        
+        if (userQuery.rows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+        
+        const user = userQuery.rows[0];
+        
+        // Check if user is active
+        if (!user.status) {
+            return res.status(401).json({
+                success: false,
+                message: 'Account is inactive. Please contact administrator.'
+            });
+        }
+        
+        // Check if client is active
+        if (!user.client_status) {
+            return res.status(401).json({
+                success: false,
+                message: 'Client account is inactive. Please contact support.'
+            });
+        }
+        
+        // Check password
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        
+        if (!isValidPassword) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+        
+        // Generate JWT token with client info
+        const token = jwt.sign(
+            {
+                userId: user.user_id,
+                email: user.email,
+                name: user.user_name,
+                clientId: user.client_id,
+                clientName: user.client_name,
+                branchId: user.branch_id,
+                role: user.role,
+                type: 'client' // Important: distinguish from admin tokens
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+        
+        // Update last_login timestamp
+        await adminPool.query(
+            'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1',
+            [user.user_id]
+        );
+        
+        console.log(`🔑 Client login: ${email} (Client: ${user.client_name})`);
+        
+        res.json({
+            success: true,
+            message: 'Login successful',
+            token: token,
+            user: {
+                id: user.user_id,
+                name: user.user_name,
+                email: user.email,
+                clientId: user.client_id,
+                clientName: user.client_name,
+                branchId: user.branch_id,
+                role: user.role,
+                type: 'client'
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Client login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+});
+
+// Middleware for client token authentication
+function authenticateClientToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: 'Access token required'
+        });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({
+                success: false,
+                message: 'Invalid or expired token'
+            });
+        }
+        
+        // Check if it's a client token
+        if (user.type !== 'client') {
+            return res.status(403).json({
+                success: false,
+                message: 'Invalid token type'
+            });
+        }
+        
+        req.user = user;
+        next();
+    });
+}
+
+// Client dashboard route (protected)
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'client-dashboard.html'));
+});
+
+// API endpoint to verify client token
+app.get('/api/auth/client-verify', authenticateClientToken, (req, res) => {
+    res.json({
+        success: true,
+        user: req.user
+    });
+});
+
+// =============================================================================
 // UPDATED CLIENT MANAGEMENT ROUTES - Replace the existing ones in your server.js
 // =============================================================================
 
@@ -370,7 +540,6 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
     }
 });
 
-// Create new client with auto-generated client admin (protected route)
 app.post('/api/clients', authenticateToken, async (req, res) => {
     const client = await adminPool.connect();
     
@@ -427,9 +596,9 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
         // Generate admin email
         const adminEmail = generateAdminEmail(client_name);
         
-        // Check if admin email already exists
+        // Check if admin email already exists in both tables
         const existingAdmin = await client.query(
-            'SELECT user_id FROM adminbo WHERE email = $1',
+            'SELECT user_id FROM adminbo WHERE email = $1 UNION SELECT user_id FROM users WHERE email = $1',
             [adminEmail]
         );
         
@@ -467,13 +636,13 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
             expiry_date, 
             true,  // status - default active
             0,     // total_branch - default 0
-            0,     // total_users - default 0  
+            1,     // total_users - default 1 (the admin we're creating)
             0      // total_tickets - default 0
         ]);
         
         const newClient = clientResult.rows[0];
         
-        // Create client admin account (for /login endpoint later)
+        // Create client admin account in adminbo table (for super admin management)
         const defaultPassword = '12345678';
         const hashedPassword = await hashPassword(defaultPassword);
         
@@ -490,13 +659,42 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
         
         const newAdmin = adminResult.rows[0];
         
+        // *** NEW: Also create user record in users table for client login ***
+        const clientUserResult = await client.query(`
+            INSERT INTO users (
+                client_id, 
+                branch_id, 
+                user_name, 
+                email, 
+                password, 
+                status, 
+                role, 
+                created_by
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING user_id, user_name, email, role
+        `, [
+            newClient.client_id,
+            null,                                    // branch_id: null for all branches access
+            `${client_name.trim()} Admin`,           // user_name
+            adminEmail,                              // email (same as adminbo)
+            hashedPassword,                          // password (same as adminbo)
+            true,                                    // status: active
+            'client_admin',                          // role
+            'System'                                 // created_by
+        ]);
+        
+        const newClientUser = clientUserResult.rows[0];
+        
         await client.query('COMMIT');
         
-        console.log(`✅ New client created: ${client_name} (ID: ${newClient.client_id}) with admin: ${adminEmail}`);
+        console.log(`✅ New client created: ${client_name} (ID: ${newClient.client_id})`);
+        console.log(`✅ Admin created in adminbo: ${adminEmail}`);
+        console.log(`✅ User created in users: ${adminEmail}`);
         
         res.status(201).json({
             success: true,
-            message: 'Client and admin account created successfully',
+            message: 'Client and admin accounts created successfully',
             data: {
                 client: {
                     client_id: newClient.client_id,
@@ -510,11 +708,13 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
                     created_at: newClient.created_at
                 },
                 admin: {
-                    user_id: newAdmin.user_id,
+                    adminbo_id: newAdmin.user_id,
+                    users_id: newClientUser.user_id,
                     name: newAdmin.name,
                     email: newAdmin.email,
                     password: defaultPassword, // Only show in response for setup purposes
-                    client_id: newAdmin.client_id
+                    client_id: newAdmin.client_id,
+                    role: newClientUser.role
                 }
             }
         });
