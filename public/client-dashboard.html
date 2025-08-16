@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeedFast - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --primary-light: #a855f7;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --bg-card: #ffffff;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .client-name {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .welcome-section {
+            margin-bottom: 2rem;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.tickets {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .stat-icon.branches {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .stat-icon.users {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .stat-icon.pending {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .stat-content {
+            flex: 1;
+            margin-left: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Recent Activity */
+        .activity-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .activity-list {
+            space-y: 0.75rem;
+        }
+
+        .activity-item {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .activity-item:hover {
+            background: #f8fafc;
+            border-color: var(--primary);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .activity-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .status-badge.new {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.resolved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .action-button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .action-button:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .action-button:last-child {
+            margin-bottom: 0;
+        }
+
+        .action-icon {
+            margin-right: 0.75rem;
+            font-size: 1rem;
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Error States */
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 1rem;
+            }
+
+            .main-container {
+                padding: 1.5rem 1rem;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .user-section {
+                gap: 0.5rem;
+            }
+
+            .user-info {
+                display: none;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="logo"></div>
+                <div class="brand-name">FeedFast</div>
+            </div>
+            
+            <div class="user-section">
+                <div class="user-info">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="client-name" id="clientName">Loading...</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- Welcome Section -->
+        <div class="welcome-section fade-in">
+            <h1 class="welcome-title">Welcome back, <span id="welcomeUserName">User</span>!</h1>
+            <p class="welcome-subtitle">Here's what's happening with your feedback system today.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid fade-in">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon tickets">🎫</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalTickets">0</div>
+                        <div class="stat-label">Total Tickets</div>
+                        <div class="stat-change positive">+12% from last month</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon branches">🏢</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalBranches">0</div>
+                        <div class="stat-label">Active Branches</div>
+                        <div class="stat-change positive">All locations</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon users">👥</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-label">Team Members</div>
+                        <div class="stat-change positive">Active users</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon pending">⏰</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="pendingTickets">0</div>
+                        <div class="stat-label">Pending Reviews</div>
+                        <div class="stat-change negative">Needs attention</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid fade-in">
+            <!-- Recent Activity -->
+            <div class="activity-section">
+                <h2 class="section-title">
+                    📋 Recent Activity
+                </h2>
+                <div class="activity-list" id="activityList">
+                    <!-- Activity items will be populated by JavaScript -->
+                    <div class="activity-item">
+                        <div class="activity-header">
+                            <span class="activity-title">Loading recent activity...</span>
+                            <span class="spinner"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2 class="section-title">
+                    ⚡ Quick Actions
+                </h2>
+                <button class="action-button" onclick="newTicket()">
+                    <span class="action-icon">➕</span>
+                    Create New Ticket
+                </button>
+                <button class="action-button" onclick="viewReports()">
+                    <span class="action-icon">📊</span>
+                    View Reports
+                </button>
+                <button class="action-button" onclick="manageUsers()">
+                    <span class="action-icon">👥</span>
+                    Manage Users
+                </button>
+                <button class="action-button" onclick="settings()">
+                    <span class="action-icon">⚙️</span>
+                    Settings
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let clientToken = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Dashboard initializing...');
+            
+            // Check authentication
+            if (!checkAuth()) {
+                return;
+            }
+
+            // Load user data
+            await loadUserData();
+            
+            // Load dashboard data
+            await loadDashboardData();
+        });
+
+        // Check authentication
+        function checkAuth() {
+            clientToken = localStorage.getItem('clientToken');
+            const clientUserData = localStorage.getItem('clientUser');
+
+            if (!clientToken) {
+                console.log('❌ No client token found, redirecting to login');
+                window.location.href = '/login';
+                return false;
+            }
+
+            if (clientUserData) {
+                try {
+                    currentUser = JSON.parse(clientUserData);
+                    console.log('✅ User data loaded:', currentUser);
+                } catch (error) {
+                    console.error('❌ Error parsing user data:', error);
+                    localStorage.removeItem('clientUser');
+                }
+            }
+
+            return true;
+        }
+
+        // Load user data from server
+        async function loadUserData() {
+            try {
+                console.log('📡 Verifying token with server...');
+                
+                const response = await fetch('/api/auth/client-verify', {
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Token verification failed');
+                }
+
+                const data = await response.json();
+                
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem('clientUser', JSON.stringify(data.user));
+                    
+                    // Update UI with user info
+                    updateUserUI();
+                    
+                    console.log('✅ User data verified and updated');
+                } else {
+                    throw new Error('Invalid user data received');
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading user data:', error);
+                showError('Failed to load user data. Please try logging in again.');
+                
+                // Clear invalid tokens and redirect
+                setTimeout(() => {
+                    logout();
+                }, 2000);
+            }
+        }
+
+        // Update UI with user information
+        function updateUserUI() {
+            if (!currentUser) return;
+
+            const userName = document.getElementById('userName');
+            const clientName = document.getElementById('clientName');
+            const welcomeUserName = document.getElementById('welcomeUserName');
+
+            if (userName) userName.textContent = currentUser.name || 'User';
+            if (clientName) clientName.textContent = currentUser.clientName || 'Client';
+            if (welcomeUserName) welcomeUserName.textContent = currentUser.name || 'User';
+
+            console.log('✅ UI updated with user info');
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                console.log('📊 Loading dashboard data...');
+
+                // For now, we'll use mock data since the tickets system isn't built yet
+                // Later, you can replace this with actual API calls
+                
+                // Update stats (mock data for now)
+                updateStats({
+                    totalTickets: Math.floor(Math.random() * 150) + 50,
+                    totalBranches: Math.floor(Math.random() * 10) + 1,
+                    totalUsers: Math.floor(Math.random() * 25) + 5,
+                    pendingTickets: Math.floor(Math.random() * 20) + 2
+                });
+
+                // Load recent activity (mock data)
+                loadRecentActivity();
+
+                console.log('✅ Dashboard data loaded');
+
+            } catch (error) {
+                console.error('❌ Error loading dashboard data:', error);
+                showError('Failed to load dashboard data.');
+            }
+        }
+
+        // Update statistics
+        function updateStats(stats) {
+            const elements = {
+                totalTickets: document.getElementById('totalTickets'),
+                totalBranches: document.getElementById('totalBranches'),
+                totalUsers: document.getElementById('totalUsers'),
+                pendingTickets: document.getElementById('pendingTickets')
+            };
+
+            Object.keys(elements).forEach(key => {
+                if (elements[key] && stats[key] !== undefined) {
+                    // Animate number counting
+                    animateNumber(elements[key], 0, stats[key], 1000);
+                }
+            });
+        }
+
+        // Animate number counting
+        function animateNumber(element, start, end, duration) {
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const current = Math.floor(start + (end - start) * progress);
+                element.textContent = current.toLocaleString();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // Load recent activity (mock data for now)
+        function loadRecentActivity() {
+            const activityList = document.getElementById('activityList');
+            
+            const mockActivities = [
+                {
+                    title: 'New feedback received',
+                    description: 'Customer feedback from Branch #1 - Product Quality',
+                    time: '2 hours ago',
+                    status: 'new'
+                },
+                {
+                    title: 'Complaint resolved',
+                    description: 'Service complaint from Branch #2 has been resolved',
+                    time: '4 hours ago',
+                    status: 'resolved'
+                },
+                {
+                    title: 'Review pending',
+                    description: 'Multiple feedbacks require manager review',
+                    time: '6 hours ago',
+                    status: 'pending'
+                },
+                {
+                    title: 'New team member added',
+                    description: 'John Doe joined as staff member for Branch #3',
+                    time: '1 day ago',
+                    status: 'new'
+                }
+            ];
+
+            const activityHTML = mockActivities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <span class="activity-title">${activity.title}</span>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="status-badge ${activity.status}">${activity.status}</span>
+                            <span class="activity-time">${activity.time}</span>
+                        </div>
+                    </div>
+                    <div class="activity-description">${activity.description}</div>
+                </div>
+            `).join('');
+
+            activityList.innerHTML = activityHTML;
+        }
+
+        // Quick action functions (placeholder for now)
+        function newTicket() {
+            alert('Create New Ticket feature coming soon!');
+        }
+
+        function viewReports() {
+            alert('Reports feature coming soon!');
+        }
+
+        function manageUsers() {
+            alert('User Management feature coming soon!');
+        }
+
+        function settings() {
+            alert('Settings feature coming soon!');
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            console.log('🚪 Logging out...');
+            
+            // Clear local storage
+            localStorage.removeItem('clientToken');
+            localStorage.removeItem('clientUser');
+            
+            // Redirect to login
+            window.location.href = '/login';
+        }
+
+        // Handle errors globally
+        window.addEventListener('error', (event) => {
+            console.error('💥 Global error:', event.error);
+        });
+
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('💥 Unhandled promise rejection:', event.reason);
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>
