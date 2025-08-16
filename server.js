@@ -680,6 +680,591 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
     }
 });
 
+// =============================================================================
+// BRANCH MANAGEMENT ROUTES - ADD THESE TO YOUR SERVER.JS
+// =============================================================================
+
+// Serve branch management page (protected)
+app.get('/branch', authenticateClientToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'branch-management.html'));
+});
+
+// Get all branches for the authenticated client
+app.get('/api/branches', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        
+        const result = await adminPool.query(`
+            SELECT 
+                branch_id,
+                client_id,
+                branch_name,
+                branch_code,
+                address,
+                phone,
+                email,
+                pic_name,
+                pic_phone,
+                pic_email,
+                status,
+                created_at,
+                updated_at,
+                created_by
+            FROM branches 
+            WHERE client_id = $1
+            ORDER BY created_at DESC
+        `, [clientId]);
+        
+        console.log(`📋 Fetched ${result.rows.length} branches for client ${clientId}`);
+        
+        res.json({
+            success: true,
+            branches: result.rows,
+            count: result.rows.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching branches:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching branches'
+        });
+    }
+});
+
+// Create new branch
+app.post('/api/branches', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const clientId = req.user.clientId;
+        const createdBy = req.user.name || req.user.email;
+        
+        const {
+            branch_name,
+            branch_code,
+            address,
+            phone,
+            email,
+            pic_name,
+            pic_phone,
+            pic_email
+        } = req.body;
+        
+        // Validation
+        if (!branch_name || branch_name.trim().length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Branch name is required'
+            });
+        }
+
+        if (branch_name.trim().length > 255) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Branch name is too long (max 255 characters)'
+            });
+        }
+
+        // Validate email format if provided
+        if (email && email.trim() && !isValidEmail(email.trim())) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid branch email address'
+            });
+        }
+
+        // Validate PIC email format if provided
+        if (pic_email && pic_email.trim() && !isValidEmail(pic_email.trim())) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid PIC email address'
+            });
+        }
+        
+        // Check if branch name already exists for this client (case-insensitive)
+        const existingBranch = await client.query(
+            'SELECT branch_id FROM branches WHERE client_id = $1 AND LOWER(branch_name) = LOWER($2)',
+            [clientId, branch_name.trim()]
+        );
+        
+        if (existingBranch.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({
+                success: false,
+                message: 'Branch name already exists for your organization'
+            });
+        }
+
+        // Check if branch code already exists for this client (if provided)
+        if (branch_code && branch_code.trim()) {
+            const existingCode = await client.query(
+                'SELECT branch_id FROM branches WHERE client_id = $1 AND LOWER(branch_code) = LOWER($2)',
+                [clientId, branch_code.trim()]
+            );
+            
+            if (existingCode.rows.length > 0) {
+                await client.query('ROLLBACK');
+                return res.status(409).json({
+                    success: false,
+                    message: 'Branch code already exists for your organization'
+                });
+            }
+        }
+        
+        // Create branch record
+        const result = await client.query(`
+            INSERT INTO branches (
+                client_id,
+                branch_name, 
+                branch_code,
+                address,
+                phone,
+                email,
+                pic_name,
+                pic_phone,
+                pic_email,
+                status,
+                created_by
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            RETURNING 
+                branch_id,
+                client_id,
+                branch_name,
+                branch_code,
+                address,
+                phone,
+                email,
+                pic_name,
+                pic_phone,
+                pic_email,
+                status,
+                created_at,
+                updated_at,
+                created_by
+        `, [
+            clientId,
+            branch_name.trim(),
+            branch_code?.trim() || null,
+            address?.trim() || null,
+            phone?.trim() || null,
+            email?.trim() || null,
+            pic_name?.trim() || null,
+            pic_phone?.trim() || null,
+            pic_email?.trim() || null,
+            true, // status - default active
+            createdBy
+        ]);
+        
+        const newBranch = result.rows[0];
+
+        // Update client's total_branch count
+        await client.query(
+            'UPDATE clients SET total_branch = total_branch + 1, updated_at = CURRENT_TIMESTAMP WHERE client_id = $1',
+            [clientId]
+        );
+        
+        await client.query('COMMIT');
+        
+        console.log(`✅ New branch created: ${newBranch.branch_name} (ID: ${newBranch.branch_id}) for client ${clientId}`);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Branch created successfully',
+            data: newBranch
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error creating branch:', error);
+        
+        // Handle specific PostgreSQL errors
+        if (error.code === '23505') { // Unique constraint violation
+            return res.status(409).json({
+                success: false,
+                message: 'Branch name or code already exists'
+            });
+        }
+        
+        if (error.code === '22001') { // String data too long
+            return res.status(400).json({
+                success: false,
+                message: 'One of the fields is too long. Please check your input.'
+            });
+        }
+
+        if (error.code === '23503') { // Foreign key constraint violation
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid client reference'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error while creating branch'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Update branch
+app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const { branchId } = req.params;
+        const clientId = req.user.clientId;
+        
+        const {
+            branch_name,
+            branch_code,
+            address,
+            phone,
+            email,
+            pic_name,
+            pic_phone,
+            pic_email
+        } = req.body;
+        
+        // Validation
+        if (!branch_name || branch_name.trim().length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Branch name is required'
+            });
+        }
+
+        if (branch_name.trim().length > 255) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Branch name is too long (max 255 characters)'
+            });
+        }
+
+        // Validate email format if provided
+        if (email && email.trim() && !isValidEmail(email.trim())) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid branch email address'
+            });
+        }
+
+        // Validate PIC email format if provided
+        if (pic_email && pic_email.trim() && !isValidEmail(pic_email.trim())) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid PIC email address'
+            });
+        }
+
+        // Check if branch exists and belongs to this client
+        const existingBranch = await client.query(
+            'SELECT branch_id, branch_name FROM branches WHERE branch_id = $1 AND client_id = $2',
+            [branchId, clientId]
+        );
+        
+        if (existingBranch.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                success: false,
+                message: 'Branch not found or access denied'
+            });
+        }
+        
+        // Check if new branch name already exists for this client (excluding current branch)
+        const duplicateName = await client.query(
+            'SELECT branch_id FROM branches WHERE client_id = $1 AND LOWER(branch_name) = LOWER($2) AND branch_id != $3',
+            [clientId, branch_name.trim(), branchId]
+        );
+        
+        if (duplicateName.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({
+                success: false,
+                message: 'Branch name already exists for your organization'
+            });
+        }
+
+        // Check if new branch code already exists for this client (if provided, excluding current branch)
+        if (branch_code && branch_code.trim()) {
+            const duplicateCode = await client.query(
+                'SELECT branch_id FROM branches WHERE client_id = $1 AND LOWER(branch_code) = LOWER($2) AND branch_id != $3',
+                [clientId, branch_code.trim(), branchId]
+            );
+            
+            if (duplicateCode.rows.length > 0) {
+                await client.query('ROLLBACK');
+                return res.status(409).json({
+                    success: false,
+                    message: 'Branch code already exists for your organization'
+                });
+            }
+        }
+        
+        // Update branch record
+        const result = await client.query(`
+            UPDATE branches SET
+                branch_name = $1,
+                branch_code = $2,
+                address = $3,
+                phone = $4,
+                email = $5,
+                pic_name = $6,
+                pic_phone = $7,
+                pic_email = $8,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE branch_id = $9 AND client_id = $10
+            RETURNING 
+                branch_id,
+                client_id,
+                branch_name,
+                branch_code,
+                address,
+                phone,
+                email,
+                pic_name,
+                pic_phone,
+                pic_email,
+                status,
+                created_at,
+                updated_at,
+                created_by
+        `, [
+            branch_name.trim(),
+            branch_code?.trim() || null,
+            address?.trim() || null,
+            phone?.trim() || null,
+            email?.trim() || null,
+            pic_name?.trim() || null,
+            pic_phone?.trim() || null,
+            pic_email?.trim() || null,
+            branchId,
+            clientId
+        ]);
+        
+        await client.query('COMMIT');
+        
+        const updatedBranch = result.rows[0];
+        
+        console.log(`🔄 Branch updated: ${updatedBranch.branch_name} (ID: ${branchId}) for client ${clientId}`);
+        
+        res.json({
+            success: true,
+            message: 'Branch updated successfully',
+            data: updatedBranch
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error updating branch:', error);
+        
+        // Handle specific PostgreSQL errors
+        if (error.code === '23505') {
+            return res.status(409).json({
+                success: false,
+                message: 'Branch name or code already exists'
+            });
+        }
+        
+        if (error.code === '22001') {
+            return res.status(400).json({
+                success: false,
+                message: 'One of the fields is too long. Please check your input.'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating branch'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Update branch status (activate/deactivate)
+app.patch('/api/branches/:branchId/status', authenticateClientToken, async (req, res) => {
+    try {
+        const { branchId } = req.params;
+        const { status } = req.body;
+        const clientId = req.user.clientId;
+        
+        if (typeof status !== 'boolean') {
+            return res.status(400).json({
+                success: false,
+                message: 'Status must be true or false'
+            });
+        }
+        
+        // Check if branch exists and belongs to this client
+        const existingBranch = await adminPool.query(
+            'SELECT branch_id, branch_name FROM branches WHERE branch_id = $1 AND client_id = $2',
+            [branchId, clientId]
+        );
+        
+        if (existingBranch.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Branch not found or access denied'
+            });
+        }
+        
+        const result = await adminPool.query(`
+            UPDATE branches 
+            SET status = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE branch_id = $2 AND client_id = $3
+            RETURNING branch_id, branch_name, status
+        `, [status, branchId, clientId]);
+        
+        const updatedBranch = result.rows[0];
+        
+        console.log(`🔄 Branch status updated: ${updatedBranch.branch_name} -> ${status ? 'Active' : 'Inactive'}`);
+        
+        res.json({
+            success: true,
+            message: `Branch ${status ? 'activated' : 'deactivated'} successfully`,
+            data: updatedBranch
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating branch status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating branch status'
+        });
+    }
+});
+
+// Get single branch details
+app.get('/api/branches/:branchId', authenticateClientToken, async (req, res) => {
+    try {
+        const { branchId } = req.params;
+        const clientId = req.user.clientId;
+        
+        const result = await adminPool.query(`
+            SELECT 
+                branch_id,
+                client_id,
+                branch_name,
+                branch_code,
+                address,
+                phone,
+                email,
+                pic_name,
+                pic_phone,
+                pic_email,
+                status,
+                created_at,
+                updated_at,
+                created_by
+            FROM branches 
+            WHERE branch_id = $1 AND client_id = $2
+        `, [branchId, clientId]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Branch not found or access denied'
+            });
+        }
+        
+        res.json({
+            success: true,
+            branch: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching branch:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching branch'
+        });
+    }
+});
+
+// Delete branch (soft delete - set status to false instead of actual deletion)
+app.delete('/api/branches/:branchId', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const { branchId } = req.params;
+        const clientId = req.user.clientId;
+        
+        // Check if branch exists and belongs to this client
+        const existingBranch = await client.query(
+            'SELECT branch_id, branch_name FROM branches WHERE branch_id = $1 AND client_id = $2',
+            [branchId, clientId]
+        );
+        
+        if (existingBranch.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                success: false,
+                message: 'Branch not found or access denied'
+            });
+        }
+        
+        // Soft delete: set status to false instead of actual deletion
+        await client.query(
+            'UPDATE branches SET status = false, updated_at = CURRENT_TIMESTAMP WHERE branch_id = $1',
+            [branchId]
+        );
+
+        // Update client's total_branch count (only count active branches)
+        await client.query(`
+            UPDATE clients 
+            SET total_branch = (
+                SELECT COUNT(*) FROM branches 
+                WHERE client_id = $1 AND status = true
+            ),
+            updated_at = CURRENT_TIMESTAMP
+            WHERE client_id = $1
+        `, [clientId]);
+        
+        await client.query('COMMIT');
+        
+        const branchName = existingBranch.rows[0].branch_name;
+        
+        console.log(`🗑️ Branch soft deleted: ${branchName} (ID: ${branchId}) for client ${clientId}`);
+        
+        res.json({
+            success: true,
+            message: 'Branch deactivated successfully'
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error deleting branch:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while deleting branch'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// =============================================================================
+// END OF BRANCH MANAGEMENT ROUTES
+// =============================================================================
+
 app.post('/api/clients', authenticateToken, async (req, res) => {
     const client = await adminPool.connect();
     
