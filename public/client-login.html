@@ -286,9 +286,7 @@
         </div>
     </div>
 
-    // REPLACE the entire script section in client-login.html with this:
-
-<script>
+    <script>
         const loginForm = document.getElementById('loginForm');
         const errorMessage = document.getElementById('errorMessage');
         const submitBtn = document.querySelector('.submit-btn');
@@ -314,6 +312,7 @@
             console.log('Attempting client login with:', credentials.email);
             
             try {
+                // FIXED: Use the correct client login endpoint
                 const response = await fetch('/api/auth/client-login', {
                     method: 'POST',
                     headers: {
@@ -326,10 +325,16 @@
                 console.log('Client login response:', data);
                 
                 if (response.ok && data.success) {
-                    // Store token with CLIENT-specific key (different from adminToken)
+                    // FIXED: Store as clientToken instead of adminToken
                     if (data.token) {
                         localStorage.setItem('clientToken', data.token);
                         console.log('Client token stored successfully');
+                    }
+                    
+                    // Store user info for dashboard use
+                    if (data.user) {
+                        localStorage.setItem('clientUser', JSON.stringify(data.user));
+                        console.log('Client user info stored:', data.user);
                     }
                     
                     // Redirect to client dashboard
@@ -362,10 +367,30 @@
             errorMessage.style.display = 'none';
         });
         
-        // FIXED: Check if already logged in as CLIENT (not admin)
+        // FIXED: Check for clientToken instead of adminToken
         if (localStorage.getItem('clientToken')) {
-            window.location.href = '/dashboard';
+            // Verify token is still valid before redirecting
+            fetch('/api/auth/client-verify', {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('clientToken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    // Token is invalid, remove it
+                    localStorage.removeItem('clientToken');
+                    localStorage.removeItem('clientUser');
+                }
+            })
+            .catch(error => {
+                // If verification fails, remove tokens
+                localStorage.removeItem('clientToken');
+                localStorage.removeItem('clientUser');
+            });
         }
-</script>
+    </script>
 </body>
 </html>
