@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Management - FeedFast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .status-open { 
+            background: linear-gradient(135deg, #fef3c7, #fbbf24);
+            color: #92400e;
+        }
+        .status-in_progress { 
+            background: linear-gradient(135deg, #dbeafe, #3b82f6);
+            color: #1e40af;
+        }
+        .status-resolved { 
+            background: linear-gradient(135deg, #d1fae5, #10b981);
+            color: #065f46;
+        }
+        .status-closed { 
+            background: linear-gradient(135deg, #f3f4f6, #6b7280);
+            color: #374151;
+        }
+
+        .ticket-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .ticket-card.priority-high {
+            border-left-color: #ef4444;
+        }
+        .ticket-card.priority-medium {
+            border-left-color: #f59e0b;
+        }
+        .ticket-card.priority-low {
+            border-left-color: #10b981;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+        }
+        .nav-item.active {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-2 rounded-lg font-bold text-lg">
+                            FF
+                        </div>
+                        <span class="ml-2 text-xl font-bold text-gray-800">FeedFast</span>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="/dashboard" class="nav-item px-4 py-2 text-gray-600 hover:text-blue-600 font-medium">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                        </a>
+                        <a href="/branch" class="nav-item px-4 py-2 text-gray-600 hover:text-blue-600 font-medium">
+                            <i class="fas fa-code-branch mr-2"></i>Branches
+                        </a>
+                        <a href="/ticket" class="nav-item active px-4 py-2 font-medium">
+                            <i class="fas fa-ticket-alt mr-2"></i>Tickets
+                        </a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600">
+                        <span id="user-name">Loading...</span>
+                        <br>
+                        <span id="client-name" class="text-xs text-blue-600">Loading...</span>
+                    </div>
+                    <button onclick="logout()" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        <i class="fas fa-ticket-alt text-blue-600 mr-3"></i>Ticket Management
+                    </h1>
+                    <p class="text-gray-600">Manage customer feedback and support tickets</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6" id="stats-cards">
+                <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-yellow-100 text-sm font-medium">Open</p>
+                            <p class="text-2xl font-bold" id="stat-open">0</p>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-2">
+                            <i class="fas fa-exclamation-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-100 text-sm font-medium">In Progress</p>
+                            <p class="text-2xl font-bold" id="stat-in-progress">0</p>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-2">
+                            <i class="fas fa-clock text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-green-100 text-sm font-medium">Resolved</p>
+                            <p class="text-2xl font-bold" id="stat-resolved">0</p>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-2">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-100 text-sm font-medium">Closed</p>
+                            <p class="text-2xl font-bold" id="stat-closed">0</p>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-2">
+                            <i class="fas fa-archive text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <input type="text" id="search-input" placeholder="Search tickets..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <select id="status-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="type-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Types</option>
+                        <option value="complaint">Complaint</option>
+                        <option value="suggestion">Suggestion</option>
+                        <option value="compliment">Compliment</option>
+                        <option value="inquiry">Inquiry</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="branch-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Branches</option>
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <button onclick="resetFilters()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-undo mr-2"></i>Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets Table -->
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">All Tickets</h2>
+                    <div class="text-sm text-gray-500">
+                        <span id="tickets-count">0 tickets</span>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading-state" class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p class="mt-2 text-gray-500">Loading tickets...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="text-center py-12 hidden">
+                    <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-ticket-alt text-2xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No tickets found</h3>
+                    <p class="text-gray-500">No tickets match your current filters.</p>
+                </div>
+
+                <!-- Tickets List -->
+                <div id="tickets-container" class="space-y-4 hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-50 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900" id="modal-title">Ticket Details</h2>
+                        <p class="text-gray-600 mt-1" id="modal-ticket-id">Loading...</p>
+                    </div>
+                    <button onclick="closeTicketModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div id="modal-content">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let allTickets = [];
+        let allBranches = [];
+        let currentUser = null;
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+
+        // Check authentication
+        async function checkAuth() {
+            const token = localStorage.getItem('clientToken');
+            
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/client-verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+
+                const data = await response.json();
+                currentUser = data.user;
+                
+                // Update UI with user info
+                document.getElementById('user-name').textContent = currentUser.name;
+                document.getElementById('client-name').textContent = currentUser.clientName;
+                
+                // Load data
+                await loadBranches();
+                await loadTickets();
+                
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('clientToken');
+                window.location.href = '/login';
+            }
+        }
+
+        // Load branches for filter dropdown
+        async function loadBranches() {
+            const token = localStorage.getItem('clientToken');
+            
+            try {
+                const response = await fetch('/api/branches', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load branches');
+                }
+
+                const data = await response.json();
+                allBranches = data.branches;
+                
+                // Populate branch filter
+                const branchFilter = document.getElementById('branch-filter');
+                branchFilter.innerHTML = '<option value="">All Branches</option>';
+                
+                allBranches.forEach(branch => {
+                    const option = document.createElement('option');
+                    option.value = branch.branch_id;
+                    option.textContent = branch.branch_name;
+                    branchFilter.appendChild(option);
+                });
+                
+            } catch (error) {
+                console.error('Failed to load branches:', error);
+            }
+        }
+
+        // Load tickets
+        async function loadTickets() {
+            const token = localStorage.getItem('clientToken');
+            
+            try {
+                const response = await fetch('/api/tickets', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load tickets');
+                }
+
+                const data = await response.json();
+                allTickets = data.tickets || [];
+                
+                updateStats();
+                displayTickets(allTickets);
+                
+            } catch (error) {
+                console.error('Failed to load tickets:', error);
+                showEmptyState();
+            } finally {
+                document.getElementById('loading-state').classList.add('hidden');
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const stats = {
+                open: 0,
+                in_progress: 0,
+                resolved: 0,
+                closed: 0
+            };
+
+            allTickets.forEach(ticket => {
+                if (stats.hasOwnProperty(ticket.status)) {
+                    stats[ticket.status]++;
+                }
+            });
+
+            document.getElementById('stat-open').textContent = stats.open;
+            document.getElementById('stat-in-progress').textContent = stats.in_progress;
+            document.getElementById('stat-resolved').textContent = stats.resolved;
+            document.getElementById('stat-closed').textContent = stats.closed;
+        }
+
+        // Display tickets
+        function displayTickets(tickets) {
+            const container = document.getElementById('tickets-container');
+            const emptyState = document.getElementById('empty-state');
+            const countElement = document.getElementById('tickets-count');
+            
+            if (tickets.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+            countElement.textContent = `${tickets.length} ticket${tickets.length !== 1 ? 's' : ''}`;
+
+            container.innerHTML = tickets.map(ticket => {
+                const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown Branch';
+                const statusClass = `status-${ticket.status}`;
+                const typeIcon = getTypeIcon(ticket.type);
+                const submittedDate = new Date(ticket.submitted_at).toLocaleDateString();
+                
+                return `
+                    <div class="ticket-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all cursor-pointer" 
+                         onclick="openTicketModal(${ticket.ticket_id})">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-2xl">${typeIcon}</span>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">${ticket.title}</h3>
+                                        <p class="text-sm text-gray-500">Ticket #${ticket.ticket_id}</p>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 mb-3 line-clamp-2">${ticket.description}</p>
+                                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span><i class="fas fa-user mr-1"></i>${ticket.cust_name}</span>
+                                    <span><i class="fas fa-code-branch mr-1"></i>${branchName}</span>
+                                    <span><i class="fas fa-calendar mr-1"></i>${submittedDate}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+                                    ${ticket.status.replace('_', ' ').toUpperCase()}
+                                </span>
+                                <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs uppercase">
+                                    ${ticket.type}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Show empty state
+        function showEmptyState() {
+            document.getElementById('tickets-container').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('tickets-count').textContent = '0 tickets';
+        }
+
+        // Get type icon
+        function getTypeIcon(type) {
+            const icons = {
+                'complaint': '😞',
+                'suggestion': '💡',
+                'compliment': '😊',
+                'inquiry': '❓'
+            };
+            return icons[type] || '📝';
+        }
+
+        // Filter tickets
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+            const branchFilter = document.getElementById('branch-filter').value;
+
+            let filtered = allTickets.filter(ticket => {
+                const matchesSearch = !searchTerm || 
+                    ticket.title.toLowerCase().includes(searchTerm) ||
+                    ticket.description.toLowerCase().includes(searchTerm) ||
+                    ticket.cust_name.toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || ticket.status === statusFilter;
+                const matchesType = !typeFilter || ticket.type === typeFilter;
+                const matchesBranch = !branchFilter || ticket.branch_id == branchFilter;
+
+                return matchesSearch && matchesStatus && matchesType && matchesBranch;
+            });
+
+            displayTickets(filtered);
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('type-filter').value = '';
+            document.getElementById('branch-filter').value = '';
+            displayTickets(allTickets);
+        }
+
+        // Add event listeners for filters
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+        document.getElementById('status-filter').addEventListener('change', applyFilters);
+        document.getElementById('type-filter').addEventListener('change', applyFilters);
+        document.getElementById('branch-filter').addEventListener('change', applyFilters);
+
+        // Open ticket modal
+        async function openTicketModal(ticketId) {
+            const modal = document.getElementById('ticket-modal');
+            const ticket = allTickets.find(t => t.ticket_id === ticketId);
+            
+            if (!ticket) return;
+
+            // Update modal title
+            document.getElementById('modal-title').textContent = ticket.title;
+            document.getElementById('modal-ticket-id').textContent = `Ticket #${ticket.ticket_id}`;
+
+            // Load full ticket details
+            await loadTicketDetails(ticketId);
+
+            // Show modal
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Load ticket details
+        async function loadTicketDetails(ticketId) {
+            const token = localStorage.getItem('clientToken');
+            
+            try {
+                const response = await fetch(`/api/tickets/${ticketId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load ticket details');
+                }
+
+                const data = await response.json();
+                const ticket = data.ticket;
+                const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown Branch';
+                const typeIcon = getTypeIcon(ticket.type);
+                
+                const content = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-3">Ticket Information</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <span class="text-xl mr-2">${typeIcon}</span>
+                                    <span class="font-medium">${ticket.type.toUpperCase()}</span>
+                                </div>
+                                <p><strong>Branch:</strong> ${branchName}</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="px-2 py-1 rounded text-xs status-${ticket.status}">
+                                        ${ticket.status.replace('_', ' ').toUpperCase()}
+                                    </span>
+                                </p>
+                                <p><strong>Submitted:</strong> ${new Date(ticket.submitted_at).toLocaleString()}</p>
+                                ${ticket.responded_at ? `<p><strong>Responded:</strong> ${new Date(ticket.responded_at).toLocaleString()}</p>` : ''}
+                                ${ticket.resolved_at ? `<p><strong>Resolved:</strong> ${new Date(ticket.resolved_at).toLocaleString()}</p>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-3">Customer Information</h3>
+                            <div class="space-y-2">
+                                <p><strong>Name:</strong> ${ticket.cust_name}</p>
+                                <p><strong>Email:</strong> ${ticket.cust_email || 'Not provided'}</p>
+                                <p><strong>Phone:</strong> ${ticket.cust_phone || 'Not provided'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-gray-900 mb-3">Description</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-700 whitespace-pre-wrap">${ticket.description}</p>
+                        </div>
+                    </div>
+                    
+                    ${ticket.attachment ? `
+                        <div class="mb-6">
+                            <h3 class="font-semibold text-gray-900 mb-3">Attachment</h3>
+                            <a href="${ticket.attachment}" target="_blank" 
+                               class="inline-flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors">
+                                <i class="fas fa-paperclip mr-2"></i>View Attachment
+                            </a>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="border-t pt-6">
+                        <h3 class="font-semibold text-gray-900 mb-4">Actions</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <select id="status-update" class="px-3 py-2 border rounded-lg mr-2">
+                                <option value="open" ${ticket.status === 'open' ? 'selected' : ''}>Open</option>
+                                <option value="in_progress" ${ticket.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                                <option value="closed" ${ticket.status === 'closed' ? 'selected' : ''}>Closed</option>
+                            </select>
+                            <button onclick="updateTicketStatus(${ticket.ticket_id})" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-save mr-2"></i>Update Status
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('modal-content').innerHTML = content;
+                
+            } catch (error) {
+                console.error('Failed to load ticket details:', error);
+                document.getElementById('modal-content').innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-red-500 mb-2">
+                            <i class="fas fa-exclamation-triangle text-2xl"></i>
+                        </div>
+                        <p class="text-gray-600">Failed to load ticket details</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Update ticket status
+        async function updateTicketStatus(ticketId) {
+            const token = localStorage.getItem('clientToken');
+            const newStatus = document.getElementById('status-update').value;
+            
+            try {
+                const response = await fetch(`/api/tickets/${ticketId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update ticket status');
+                }
+
+                // Reload tickets and close modal
+                await loadTickets();
+                closeTicketModal();
+                
+                // Show success message
+                showNotification('Ticket status updated successfully', 'success');
+                
+            } catch (error) {
+                console.error('Failed to update ticket status:', error);
+                showNotification('Failed to update ticket status', 'error');
+            }
+        }
+
+        // Close ticket modal
+        function closeTicketModal() {
+            const modal = document.getElementById('ticket-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('clientToken');
+            window.location.href = '/login';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('ticket-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTicketModal();
+            }
+        });
+    </script>
+</body>
+</html>
