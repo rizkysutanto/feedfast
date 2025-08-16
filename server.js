@@ -683,6 +683,11 @@ app.get('/api/debug/token', (req, res) => {
     }
 });
 
+// Serve client login page
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'client-login.html'));
+});
+
 // Initialize databases and start server
 async function startServer() {
     await testConnections();
