@@ -1265,6 +1265,603 @@ app.delete('/api/branches/:branchId', authenticateClientToken, async (req, res) 
 // END OF BRANCH MANAGEMENT ROUTES
 // =============================================================================
 
+// =============================================================================
+// TICKET MANAGEMENT ROUTES - Add these to your existing server.js
+// =============================================================================
+
+// Serve ticket management page
+app.get('/ticket', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'ticket-management.html'));
+});
+
+// Get all tickets for the authenticated client (API route - protected)
+app.get('/api/tickets', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        
+        const result = await adminPool.query(`
+            SELECT 
+                t.ticket_id,
+                t.client_id,
+                t.branch_id,
+                t.cust_name,
+                t.cust_email,
+                t.cust_phone,
+                t.type,
+                t.title,
+                t.description,
+                t.attachment,
+                t.pic_ticket,
+                t.status,
+                t.submitted_at,
+                t.responded_at,
+                t.resolved_at,
+                b.branch_name,
+                u.user_name as pic_name
+            FROM tickets t
+            LEFT JOIN branches b ON t.branch_id = b.branch_id
+            LEFT JOIN users u ON t.pic_ticket = u.user_id
+            WHERE t.client_id = $1
+            ORDER BY t.submitted_at DESC
+        `, [clientId]);
+        
+        console.log(`🎫 Fetched ${result.rows.length} tickets for client ${clientId}`);
+        
+        res.json({
+            success: true,
+            tickets: result.rows,
+            count: result.rows.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching tickets:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching tickets'
+        });
+    }
+});
+
+// Get single ticket details
+app.get('/api/tickets/:ticketId', authenticateClientToken, async (req, res) => {
+    try {
+        const { ticketId } = req.params;
+        const clientId = req.user.clientId;
+        
+        const result = await adminPool.query(`
+            SELECT 
+                t.ticket_id,
+                t.client_id,
+                t.branch_id,
+                t.cust_name,
+                t.cust_email,
+                t.cust_phone,
+                t.type,
+                t.title,
+                t.description,
+                t.attachment,
+                t.pic_ticket,
+                t.status,
+                t.submitted_at,
+                t.responded_at,
+                t.resolved_at,
+                b.branch_name,
+                b.branch_code,
+                u.user_name as pic_name
+            FROM tickets t
+            LEFT JOIN branches b ON t.branch_id = b.branch_id
+            LEFT JOIN users u ON t.pic_ticket = u.user_id
+            WHERE t.ticket_id = $1 AND t.client_id = $2
+        `, [ticketId, clientId]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ticket not found or access denied'
+            });
+        }
+        
+        res.json({
+            success: true,
+            ticket: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching ticket:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching ticket'
+        });
+    }
+});
+
+// Update ticket status
+app.patch('/api/tickets/:ticketId/status', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const { ticketId } = req.params;
+        const { status } = req.body;
+        const clientId = req.user.clientId;
+        
+        // Validate status
+        const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
+        if (!validStatuses.includes(status)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status. Must be one of: ' + validStatuses.join(', ')
+            });
+        }
+        
+        // Check if ticket exists and belongs to this client
+        const existingTicket = await client.query(
+            'SELECT ticket_id, status FROM tickets WHERE ticket_id = $1 AND client_id = $2',
+            [ticketId, clientId]
+        );
+        
+        if (existingTicket.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                success: false,
+                message: 'Ticket not found or access denied'
+            });
+        }
+        
+        const currentStatus = existingTicket.rows[0].status;
+        
+        // Prepare update fields
+        let updateFields = ['status = $1', 'updated_at = CURRENT_TIMESTAMP'];
+        let updateValues = [status];
+        let valueIndex = 2;
+        
+        // Set timestamps based on status changes
+        if (status === 'in_progress' && currentStatus === 'open') {
+            updateFields.push(`responded_at = CURRENT_TIMESTAMP`);
+        }
+        
+        if (status === 'resolved' && currentStatus !== 'resolved') {
+            updateFields.push(`resolved_at = CURRENT_TIMESTAMP`);
+        }
+        
+        // Update ticket status
+        const result = await client.query(`
+            UPDATE tickets 
+            SET ${updateFields.join(', ')}
+            WHERE ticket_id = $${valueIndex} AND client_id = $${valueIndex + 1}
+            RETURNING ticket_id, status, responded_at, resolved_at
+        `, [...updateValues, ticketId, clientId]);
+        
+        await client.query('COMMIT');
+        
+        const updatedTicket = result.rows[0];
+        
+        console.log(`📝 Ticket status updated: #${ticketId} -> ${status}`);
+        
+        res.json({
+            success: true,
+            message: `Ticket status updated to ${status}`,
+            data: updatedTicket
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error updating ticket status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating ticket status'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Assign ticket to user
+app.patch('/api/tickets/:ticketId/assign', authenticateClientToken, async (req, res) => {
+    try {
+        const { ticketId } = req.params;
+        const { userId } = req.body;
+        const clientId = req.user.clientId;
+        
+        // If userId is provided, validate that the user belongs to the same client
+        if (userId) {
+            const userCheck = await adminPool.query(
+                'SELECT user_id FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
+                [userId, clientId]
+            );
+            
+            if (userCheck.rows.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid user assignment. User not found or inactive.'
+                });
+            }
+        }
+        
+        // Check if ticket exists and belongs to this client
+        const existingTicket = await adminPool.query(
+            'SELECT ticket_id FROM tickets WHERE ticket_id = $1 AND client_id = $2',
+            [ticketId, clientId]
+        );
+        
+        if (existingTicket.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ticket not found or access denied'
+            });
+        }
+        
+        // Update ticket assignment
+        const result = await adminPool.query(`
+            UPDATE tickets 
+            SET pic_ticket = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE ticket_id = $2 AND client_id = $3
+            RETURNING ticket_id, pic_ticket
+        `, [userId || null, ticketId, clientId]);
+        
+        console.log(`👤 Ticket assigned: #${ticketId} -> User ${userId || 'Unassigned'}`);
+        
+        res.json({
+            success: true,
+            message: userId ? 'Ticket assigned successfully' : 'Ticket unassigned successfully',
+            data: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error assigning ticket:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while assigning ticket'
+        });
+    }
+});
+
+// Create new ticket (for testing purposes - normally this would be from public form)
+app.post('/api/tickets', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const clientId = req.user.clientId;
+        
+        const {
+            branch_id,
+            cust_name,
+            cust_email,
+            cust_phone,
+            type,
+            title,
+            description,
+            attachment
+        } = req.body;
+        
+        // Validation
+        if (!cust_name || !type || !title || !description) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Customer name, type, title, and description are required'
+            });
+        }
+        
+        // Validate type
+        const validTypes = ['complaint', 'suggestion', 'compliment', 'inquiry'];
+        if (!validTypes.includes(type)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid type. Must be one of: ' + validTypes.join(', ')
+            });
+        }
+        
+        // Validate email format if provided
+        if (cust_email && !isValidEmail(cust_email)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid email address'
+            });
+        }
+        
+        // If branch_id is provided, validate it belongs to this client
+        if (branch_id) {
+            const branchCheck = await client.query(
+                'SELECT branch_id FROM branches WHERE branch_id = $1 AND client_id = $2 AND status = true',
+                [branch_id, clientId]
+            );
+            
+            if (branchCheck.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid branch selection'
+                });
+            }
+        }
+        
+        // Create ticket record
+        const result = await client.query(`
+            INSERT INTO tickets (
+                client_id,
+                branch_id,
+                cust_name,
+                cust_email,
+                cust_phone,
+                type,
+                title,
+                description,
+                attachment,
+                status
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING 
+                ticket_id,
+                client_id,
+                branch_id,
+                cust_name,
+                cust_email,
+                cust_phone,
+                type,
+                title,
+                description,
+                attachment,
+                status,
+                submitted_at
+        `, [
+            clientId,
+            branch_id || null,
+            cust_name.trim(),
+            cust_email?.trim() || null,
+            cust_phone?.trim() || null,
+            type,
+            title.trim(),
+            description.trim(),
+            attachment?.trim() || null,
+            'open' // Default status
+        ]);
+        
+        const newTicket = result.rows[0];
+
+        // Update client's total_tickets count
+        await client.query(
+            'UPDATE clients SET total_tickets = total_tickets + 1, updated_at = CURRENT_TIMESTAMP WHERE client_id = $1',
+            [clientId]
+        );
+        
+        await client.query('COMMIT');
+        
+        console.log(`✅ New ticket created: ${newTicket.title} (ID: ${newTicket.ticket_id}) for client ${clientId}`);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Ticket created successfully',
+            data: newTicket
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error creating ticket:', error);
+        
+        // Handle specific PostgreSQL errors
+        if (error.code === '23503') { // Foreign key constraint violation
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid reference (client or branch not found)'
+            });
+        }
+        
+        if (error.code === '22001') { // String data too long
+            return res.status(400).json({
+                success: false,
+                message: 'One of the fields is too long. Please check your input.'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error while creating ticket'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Get ticket statistics for dashboard
+app.get('/api/tickets/stats', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        
+        const result = await adminPool.query(`
+            SELECT 
+                status,
+                COUNT(*) as count,
+                type,
+                DATE_TRUNC('day', submitted_at) as date
+            FROM tickets 
+            WHERE client_id = $1
+            GROUP BY status, type, DATE_TRUNC('day', submitted_at)
+            ORDER BY date DESC
+        `, [clientId]);
+        
+        // Process the results into a more usable format
+        const stats = {
+            byStatus: {},
+            byType: {},
+            byDate: {},
+            total: 0
+        };
+        
+        result.rows.forEach(row => {
+            // Count by status
+            stats.byStatus[row.status] = (stats.byStatus[row.status] || 0) + parseInt(row.count);
+            
+            // Count by type
+            stats.byType[row.type] = (stats.byType[row.type] || 0) + parseInt(row.count);
+            
+            // Count by date
+            const dateKey = row.date.toISOString().split('T')[0];
+            stats.byDate[dateKey] = (stats.byDate[dateKey] || 0) + parseInt(row.count);
+            
+            // Total count
+            stats.total += parseInt(row.count);
+        });
+        
+        res.json({
+            success: true,
+            stats: stats
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching ticket stats:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching ticket statistics'
+        });
+    }
+});
+
+// Get users for ticket assignment dropdown
+app.get('/api/users', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        
+        const result = await adminPool.query(`
+            SELECT 
+                user_id,
+                user_name,
+                email,
+                role,
+                status
+            FROM users 
+            WHERE client_id = $1 AND status = true
+            ORDER BY user_name ASC
+        `, [clientId]);
+        
+        res.json({
+            success: true,
+            users: result.rows,
+            count: result.rows.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching users:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching users'
+        });
+    }
+});
+
+// Bulk update ticket statuses (for advanced operations)
+app.patch('/api/tickets/bulk-update', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const { ticketIds, status, assignTo } = req.body;
+        const clientId = req.user.clientId;
+        
+        if (!ticketIds || !Array.isArray(ticketIds) || ticketIds.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Ticket IDs array is required'
+            });
+        }
+        
+        // Validate status if provided
+        if (status) {
+            const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
+            if (!validStatuses.includes(status)) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid status. Must be one of: ' + validStatuses.join(', ')
+                });
+            }
+        }
+        
+        // Validate assignTo user if provided
+        if (assignTo) {
+            const userCheck = await client.query(
+                'SELECT user_id FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
+                [assignTo, clientId]
+            );
+            
+            if (userCheck.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid user assignment. User not found or inactive.'
+                });
+            }
+        }
+        
+        // Build update query dynamically
+        let updateFields = ['updated_at = CURRENT_TIMESTAMP'];
+        let updateValues = [];
+        let valueIndex = 1;
+        
+        if (status) {
+            updateFields.push(`status = $${valueIndex}`);
+            updateValues.push(status);
+            valueIndex++;
+            
+            // Add timestamp updates based on status
+            if (status === 'in_progress') {
+                updateFields.push('responded_at = CURRENT_TIMESTAMP');
+            } else if (status === 'resolved') {
+                updateFields.push('resolved_at = CURRENT_TIMESTAMP');
+            }
+        }
+        
+        if (assignTo !== undefined) {
+            updateFields.push(`pic_ticket = $${valueIndex}`);
+            updateValues.push(assignTo);
+            valueIndex++;
+        }
+        
+        // Create placeholders for ticket IDs
+        const ticketPlaceholders = ticketIds.map((_, index) => `$${valueIndex + index}`).join(', ');
+        
+        // Update tickets
+        const result = await client.query(`
+            UPDATE tickets 
+            SET ${updateFields.join(', ')}
+            WHERE ticket_id IN (${ticketPlaceholders}) AND client_id = $${valueIndex + ticketIds.length}
+            RETURNING ticket_id, status, pic_ticket
+        `, [...updateValues, ...ticketIds, clientId]);
+        
+        await client.query('COMMIT');
+        
+        console.log(`📋 Bulk updated ${result.rows.length} tickets for client ${clientId}`);
+        
+        res.json({
+            success: true,
+            message: `Successfully updated ${result.rows.length} tickets`,
+            data: result.rows
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error bulk updating tickets:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while bulk updating tickets'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// =============================================================================
+// END OF TICKET MANAGEMENT ROUTES
+// =============================================================================
+
 app.post('/api/clients', authenticateToken, async (req, res) => {
     const client = await adminPool.connect();
     
