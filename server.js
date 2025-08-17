@@ -4,6 +4,10 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const path = require('path');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +26,171 @@ const mainPool = new Pool({
     ssl: process.env.NODE_ENV === 'production' ? {
         rejectUnauthorized: false
     } : false
+});
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only allow image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  }
+});
+
+// Helper function to upload to Cloudinary
+const uploadToCloudinary = (buffer, originalName) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'feedfast-attachments',
+        resource_type: 'image',
+        public_id: `${Date.now()}-${originalName.split('.')[0]}`,
+        transformation: [
+          { quality: 'auto' },
+          { fetch_format: 'auto' }
+        ]
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+    uploadStream.end(buffer);
+  });
+};
+
+// Update your feedback submission endpoint
+app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
+  try {
+    console.log('📝 Feedback submission received');
+    const { client_name, branch_id, cust_name, cust_email, cust_phone, type, title, description } = req.body;
+    
+    // Validate required fields
+    if (!client_name || !cust_name || !cust_email || !type || !title || !description) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Missing required fields' 
+      });
+    }
+
+    // Find client by name (fuzzy matching)
+    const clientQuery = `
+      SELECT client_id, client_name, status 
+      FROM clients 
+      WHERE LOWER(REPLACE(client_name, ' ', '')) = LOWER(REPLACE($1, ' ', '')) 
+      AND status = true
+    `;
+    const clientResult = await adminPool.query(clientQuery, [client_name]);
+    
+    if (clientResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Client not found or inactive' 
+      });
+    }
+
+    const client = clientResult.rows[0];
+    let attachmentUrl = null;
+
+    // Handle file upload if attachment exists
+    if (req.file) {
+      try {
+        console.log('📎 Processing file upload:', req.file.originalname);
+        const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+        attachmentUrl = uploadResult.secure_url;
+        console.log('✅ File uploaded successfully:', attachmentUrl);
+      } catch (uploadError) {
+        console.error('❌ File upload failed:', uploadError);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Failed to upload attachment' 
+        });
+      }
+    }
+
+    // Create ticket
+    const ticketQuery = `
+      INSERT INTO tickets (
+        client_id, branch_id, cust_name, cust_email, cust_phone, 
+        type, title, description, attachment, status, submitted_at
+      ) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'open', NOW())
+      RETURNING ticket_id
+    `;
+
+    const ticketValues = [
+      client.client_id,
+      branch_id || null,
+      cust_name,
+      cust_email,
+      cust_phone,
+      type,
+      title,
+      description,
+      attachmentUrl
+    ];
+
+    const ticketResult = await adminPool.query(ticketQuery, ticketValues);
+    const ticketId = ticketResult.rows[0].ticket_id;
+
+    // Update client's total_tickets counter
+    await adminPool.query(
+      'UPDATE clients SET total_tickets = total_tickets + 1, updated_at = NOW() WHERE client_id = $1',
+      [client.client_id]
+    );
+
+    console.log(`✅ Ticket created successfully: #${ticketId}`);
+
+    res.json({
+      success: true,
+      message: 'Feedback submitted successfully!',
+      ticket_id: ticketId,
+      attachment_url: attachmentUrl
+    });
+
+  } catch (error) {
+    console.error('❌ Feedback submission error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to submit feedback' 
+    });
+  }
+});
+
+// Add error handling middleware for multer errors
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        success: false,
+        error: 'File too large. Maximum size is 5MB.'
+      });
+    }
+  } else if (error.message === 'Only image files are allowed!') {
+    return res.status(400).json({
+      success: false,
+      error: 'Only image files are allowed.'
+    });
+  }
+  next(error);
 });
 
 // Admin database (new)
