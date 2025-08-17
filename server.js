@@ -108,7 +108,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     console.log('📝 Feedback submission received');
     const { client_name, branch_id, cust_name, cust_email, cust_phone, type, title, description } = req.body;
     
-    // Validate required fields
+    // Validation - make sure these fields are required
     if (!client_name || !cust_name || !type || !title || !description) {
       return res.status(400).json({ 
         success: false, 
@@ -136,19 +136,19 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     let attachmentUrl = null;
 
     // Handle file upload if attachment exists and Cloudinary is configured
-    if (req.file && cloudinary) {
+    if (req.file && cloudinary && process.env.CLOUDINARY_CLOUD_NAME) {
       try {
-        console.log('📎 Processing file upload:', req.file.originalname);
+        console.log('🔄 Processing file upload:', req.file.originalname);
         const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname);
         attachmentUrl = uploadResult.secure_url;
         console.log('✅ File uploaded successfully:', attachmentUrl);
       } catch (uploadError) {
         console.error('❌ File upload failed:', uploadError);
         // Continue without attachment rather than failing completely
-        console.log('⚠️  Continuing without file attachment...');
+        console.log('⚠️ Continuing without file attachment...');
       }
     } else if (req.file && !cloudinary) {
-      console.log('⚠️  File uploaded but Cloudinary not configured - skipping file storage');
+      console.log('⚠️ File uploaded but Cloudinary not configured - skipping file storage');
     }
 
     // Create ticket
@@ -1042,6 +1042,72 @@ function generateFeedbackFormHTML(client, branches) {
             text-decoration: none;
             font-weight: 600;
         }
+        .file-upload-area {
+    position: relative;
+    border: 2px dashed #e1e5e9;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.file-upload-area.dragover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.file-upload-area input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-placeholder {
+    pointer-events: none;
+}
+
+.upload-note {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+.file-preview {
+    position: relative;
+    display: inline-block;
+}
+
+.file-preview img {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.remove-file {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+}
     </style>
 </head>
 <body>
@@ -1121,6 +1187,21 @@ function generateFeedbackFormHTML(client, branches) {
                     <input type="tel" id="phone" name="cust_phone" 
                            placeholder="Your phone number">
                 </div>
+
+                <div class="form-group">
+    <label for="attachment">Attach Image (Optional)</label>
+    <div class="file-upload-area" id="fileUploadArea">
+        <input type="file" id="attachment" name="attachment" accept="image/*">
+        <div class="upload-placeholder">
+            <p>📷 Click to upload or drag & drop an image</p>
+            <p class="upload-note">Max 5MB • JPG, PNG, GIF supported</p>
+        </div>
+        <div class="file-preview" id="filePreview" style="display: none;">
+            <img id="previewImage" src="" alt="Preview">
+            <button type="button" class="remove-file" id="removeFile">×</button>
+        </div>
+    </div>
+</div>
                 
                 <button type="submit" class="submit-btn" id="submitBtn">
                     Submit Feedback
@@ -1138,68 +1219,136 @@ function generateFeedbackFormHTML(client, branches) {
     </div>
 
     <script>
-        const form = document.getElementById('feedbackForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const loading = document.getElementById('loading');
-        const successMessage = document.getElementById('successMessage');
-        const errorMessage = document.getElementById('errorMessage');
+    const form = document.getElementById('feedbackForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const fileInput = document.getElementById('attachment');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const filePreview = document.getElementById('filePreview');
+    const previewImage = document.getElementById('previewImage');
+    const removeFileBtn = document.getElementById('removeFile');
+    const uploadPlaceholder = fileUploadArea.querySelector('.upload-placeholder');
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Clear previous messages
-            successMessage.style.display = 'none';
-            errorMessage.style.display = 'none';
-            
-            // Show loading
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
-            loading.style.display = 'block';
+    // File upload handling
+    fileInput.addEventListener('change', handleFileSelect);
+    fileUploadArea.addEventListener('dragover', handleDragOver);
+    fileUploadArea.addEventListener('dragleave', handleDragLeave);
+    fileUploadArea.addEventListener('drop', handleDrop);
+    removeFileBtn.addEventListener('click', removeFile);
 
-            try {
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                data.client_name = '${clientNameForUrl}';
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+            displayFilePreview(file);
+        }
+    }
 
-                const response = await fetch('/api/feedback', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
+    function handleDragOver(e) {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+    }
 
-                const result = await response.json();
+    function handleDragLeave(e) {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+    }
 
-                if (result.success) {
-                    successMessage.innerHTML = \`
-                        <strong>Thank you!</strong> Your feedback has been submitted successfully. 
-                        Ticket ID: #\${result.ticket_id}
-                    \`;
-                    successMessage.style.display = 'block';
-                    form.reset();
-                    
-                    // Scroll to success message
-                    successMessage.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    throw new Error(result.error || 'Failed to submit feedback');
-                }
-
-            } catch (error) {
-                console.error('Error:', error);
-                errorMessage.innerHTML = \`
-                    <strong>Error!</strong> \${error.message || 'Failed to submit feedback. Please try again.'}
-                \`;
-                errorMessage.style.display = 'block';
-                errorMessage.scrollIntoView({ behavior: 'smooth' });
-            } finally {
-                // Reset button state
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Feedback';
-                loading.style.display = 'none';
+    function handleDrop(e) {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                fileInput.files = files;
+                displayFilePreview(file);
+            } else {
+                showError('Please select an image file only.');
             }
-        });
-    </script>
+        }
+    }
+
+    function displayFilePreview(file) {
+        if (file.size > 5 * 1024 * 1024) {
+            showError('File size must be less than 5MB.');
+            fileInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            uploadPlaceholder.style.display = 'none';
+            filePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeFile() {
+        fileInput.value = '';
+        filePreview.style.display = 'none';
+        uploadPlaceholder.style.display = 'block';
+    }
+
+    function showError(message) {
+        errorMessage.innerHTML = \`<strong>Error!</strong> \${message}\`;
+        errorMessage.style.display = 'block';
+        errorMessage.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Clear previous messages
+        successMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+        
+        // Show loading
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+        loading.style.display = 'block';
+
+        try {
+            const formData = new FormData(form);
+            formData.append('client_name', '${clientNameForUrl}');
+
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                body: formData // Use FormData instead of JSON for file uploads
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                successMessage.innerHTML = \`
+                    <strong>Thank you!</strong> Your feedback has been submitted successfully. 
+                    Ticket ID: #\${result.ticket_id}
+                    \${result.attachment_url ? '<br>📎 Image uploaded successfully!' : ''}
+                \`;
+                successMessage.style.display = 'block';
+                form.reset();
+                removeFile(); // Clear file preview
+                
+                // Scroll to success message
+                successMessage.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                throw new Error(result.error || 'Failed to submit feedback');
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            showError(error.message || 'Failed to submit feedback. Please try again.');
+        } finally {
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Feedback';
+            loading.style.display = 'none';
+        }
+    });
+</script>
 </body>
 </html>
   `;
