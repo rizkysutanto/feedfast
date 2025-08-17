@@ -2584,6 +2584,384 @@ app.patch('/api/tickets/bulk-update', authenticateClientToken, async (req, res) 
 // =============================================================================
 // END OF TICKET MANAGEMENT ROUTES
 // =============================================================================
+
+// =============================================================================
+// REPORTS AND ANALYTICS ROUTES - Add these to your existing server.js
+// =============================================================================
+
+// Serve reports page (protected by client authentication)
+app.get('/report', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'report.html'));
+});
+
+// Analytics API endpoint - comprehensive report data
+app.get('/api/reports/analytics', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        const { 
+            days, 
+            startDate, 
+            endDate, 
+            branchId, 
+            type 
+        } = req.query;
+
+        console.log(`📊 Generating analytics report for client ${clientId}`);
+        
+        // Build date filter
+        let dateFilter = '';
+        let dateParams = [];
+        let paramIndex = 2; // Starting from $2 since $1 will be clientId
+        
+        if (days && days !== 'custom') {
+            dateFilter = `AND t.submitted_at >= CURRENT_DATE - INTERVAL '${parseInt(days)} days'`;
+        } else if (startDate && endDate) {
+            dateFilter = `AND t.submitted_at >= $${paramIndex} AND t.submitted_at <= $${paramIndex + 1}`;
+            dateParams.push(startDate, endDate + ' 23:59:59');
+            paramIndex += 2;
+        } else {
+            // Default to last 30 days if no date filter specified
+            dateFilter = `AND t.submitted_at >= CURRENT_DATE - INTERVAL '30 days'`;
+        }
+        
+        // Build additional filters
+        let additionalFilters = '';
+        let additionalParams = [];
+        
+        if (branchId && branchId !== 'all') {
+            additionalFilters += ` AND t.branch_id = $${paramIndex}`;
+            additionalParams.push(branchId);
+            paramIndex++;
+        }
+        
+        if (type && type !== 'all') {
+            additionalFilters += ` AND t.type = $${paramIndex}`;
+            additionalParams.push(type);
+            paramIndex++;
+        }
+
+        // Main query to get tickets with all necessary data
+        const ticketsQuery = `
+            SELECT 
+                t.ticket_id,
+                t.client_id,
+                t.branch_id,
+                t.cust_name,
+                t.cust_email,
+                t.cust_phone,
+                t.type,
+                t.title,
+                t.description,
+                t.status,
+                t.submitted_at,
+                t.responded_at,
+                t.resolved_at,
+                b.branch_name,
+                b.branch_code,
+                u.user_name as pic_name,
+                EXTRACT(EPOCH FROM (
+                    COALESCE(t.responded_at, NOW()) - t.submitted_at
+                )) / 3600 as response_time_hours
+            FROM tickets t
+            LEFT JOIN branches b ON t.branch_id = b.branch_id
+            LEFT JOIN users u ON t.pic_ticket = u.user_id
+            WHERE t.client_id = $1 ${dateFilter} ${additionalFilters}
+            ORDER BY t.submitted_at DESC
+        `;
+
+        const allParams = [clientId, ...dateParams, ...additionalParams];
+        const ticketsResult = await adminPool.query(ticketsQuery, allParams);
+        const tickets = ticketsResult.rows;
+
+        console.log(`📈 Found ${tickets.length} tickets for analysis`);
+
+        // Calculate statistics
+        const stats = calculateAnalyticsStats(tickets);
+
+        // Prepare response
+        const responseData = {
+            success: true,
+            data: {
+                tickets: tickets,
+                stats: stats,
+                filters: {
+                    dateRange: days || 'custom',
+                    startDate: startDate,
+                    endDate: endDate,
+                    branchId: branchId || 'all',
+                    type: type || 'all'
+                },
+                generatedAt: new Date().toISOString()
+            }
+        };
+
+        res.json(responseData);
+
+    } catch (error) {
+        console.error('❌ Error generating analytics report:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while generating analytics report',
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        });
+    }
+});
+
+// Helper function to calculate comprehensive statistics
+function calculateAnalyticsStats(tickets) {
+    const stats = {
+        totalTickets: tickets.length,
+        byStatus: {},
+        byType: {},
+        byBranch: {},
+        avgResponseTime: 0,
+        resolutionRate: 0,
+        satisfactionScore: 0,
+        // Additional metrics for change indicators (mock data for now)
+        totalTicketsChange: Math.random() * 20 - 10, // Random change for demo
+        responseTimeChange: Math.random() * 30 - 15,
+        resolutionRateChange: Math.random() * 10 - 5,
+        satisfactionChange: Math.random() * 15 - 7
+    };
+
+    if (tickets.length === 0) {
+        return stats;
+    }
+
+    // Count by status
+    tickets.forEach(ticket => {
+        stats.byStatus[ticket.status] = (stats.byStatus[ticket.status] || 0) + 1;
+    });
+
+    // Count by type
+    tickets.forEach(ticket => {
+        stats.byType[ticket.type] = (stats.byType[ticket.type] || 0) + 1;
+    });
+
+    // Count by branch
+    tickets.forEach(ticket => {
+        const branchKey = ticket.branch_name || 'Unassigned';
+        stats.byBranch[branchKey] = (stats.byBranch[branchKey] || 0) + 1;
+    });
+
+    // Calculate average response time (for tickets that have been responded to)
+    const respondedTickets = tickets.filter(ticket => ticket.responded_at);
+    if (respondedTickets.length > 0) {
+        const totalResponseTime = respondedTickets.reduce((sum, ticket) => {
+            return sum + (ticket.response_time_hours || 0);
+        }, 0);
+        stats.avgResponseTime = totalResponseTime / respondedTickets.length;
+    }
+
+    // Calculate resolution rate
+    const resolvedTickets = tickets.filter(ticket => 
+        ticket.status === 'resolved' || ticket.status === 'closed'
+    );
+    stats.resolutionRate = tickets.length > 0 ? 
+        (resolvedTickets.length / tickets.length) * 100 : 0;
+
+    // Calculate satisfaction score (based on compliments vs complaints ratio)
+    const compliments = stats.byType.compliment || 0;
+    const complaints = stats.byType.complaint || 0;
+    const totalFeedback = compliments + complaints;
+    
+    if (totalFeedback > 0) {
+        stats.satisfactionScore = (compliments / totalFeedback) * 100;
+    } else {
+        // If no complaints/compliments, base on resolution rate
+        stats.satisfactionScore = stats.resolutionRate;
+    }
+
+    return stats;
+}
+
+// Summary statistics API - lightweight version for dashboards
+app.get('/api/reports/summary', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        const { days = 30 } = req.query;
+
+        const summaryQuery = `
+            SELECT 
+                COUNT(*) as total_tickets,
+                COUNT(CASE WHEN status = 'resolved' OR status = 'closed' THEN 1 END) as resolved_tickets,
+                COUNT(CASE WHEN type = 'complaint' THEN 1 END) as complaints,
+                COUNT(CASE WHEN type = 'compliment' THEN 1 END) as compliments,
+                AVG(
+                    CASE 
+                        WHEN responded_at IS NOT NULL 
+                        THEN EXTRACT(EPOCH FROM (responded_at - submitted_at)) / 3600 
+                    END
+                ) as avg_response_hours
+            FROM tickets 
+            WHERE client_id = $1 
+            AND submitted_at >= CURRENT_DATE - INTERVAL '${parseInt(days)} days'
+        `;
+
+        const result = await adminPool.query(summaryQuery, [clientId]);
+        const row = result.rows[0];
+
+        const summary = {
+            totalTickets: parseInt(row.total_tickets) || 0,
+            resolvedTickets: parseInt(row.resolved_tickets) || 0,
+            resolutionRate: row.total_tickets > 0 ? 
+                (parseInt(row.resolved_tickets) / parseInt(row.total_tickets)) * 100 : 0,
+            avgResponseTime: parseFloat(row.avg_response_hours) || 0,
+            complaints: parseInt(row.complaints) || 0,
+            compliments: parseInt(row.compliments) || 0,
+            satisfactionScore: (parseInt(row.complaints) + parseInt(row.compliments)) > 0 ?
+                (parseInt(row.compliments) / (parseInt(row.complaints) + parseInt(row.compliments))) * 100 : 0
+        };
+
+        res.json({
+            success: true,
+            data: summary,
+            period: `Last ${days} days`
+        });
+
+    } catch (error) {
+        console.error('❌ Error generating summary report:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while generating summary report'
+        });
+    }
+});
+
+// Top performers report - branches/users with best metrics
+app.get('/api/reports/top-performers', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        const { days = 30, limit = 10 } = req.query;
+
+        // Top performing branches by resolution rate
+        const branchQuery = `
+            SELECT 
+                b.branch_name,
+                b.branch_code,
+                COUNT(t.ticket_id) as total_tickets,
+                COUNT(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 END) as resolved_tickets,
+                ROUND(
+                    (COUNT(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 END)::decimal / 
+                     NULLIF(COUNT(t.ticket_id), 0)) * 100, 
+                    2
+                ) as resolution_rate
+            FROM branches b
+            LEFT JOIN tickets t ON b.branch_id = t.branch_id 
+                AND t.submitted_at >= CURRENT_DATE - INTERVAL '${parseInt(days)} days'
+            WHERE b.client_id = $1 AND b.status = true
+            GROUP BY b.branch_id, b.branch_name, b.branch_code
+            HAVING COUNT(t.ticket_id) > 0
+            ORDER BY resolution_rate DESC, total_tickets DESC
+            LIMIT $2
+        `;
+
+        const branchResult = await adminPool.query(branchQuery, [clientId, limit]);
+
+        // Top performing users by response time
+        const userQuery = `
+            SELECT 
+                u.user_name,
+                u.email,
+                COUNT(t.ticket_id) as handled_tickets,
+                ROUND(
+                    AVG(
+                        EXTRACT(EPOCH FROM (t.responded_at - t.submitted_at)) / 3600
+                    )::numeric, 
+                    2
+                ) as avg_response_hours
+            FROM users u
+            INNER JOIN tickets t ON u.user_id = t.pic_ticket
+            WHERE u.client_id = $1 
+                AND u.status = true
+                AND t.responded_at IS NOT NULL
+                AND t.submitted_at >= CURRENT_DATE - INTERVAL '${parseInt(days)} days'
+            GROUP BY u.user_id, u.user_name, u.email
+            HAVING COUNT(t.ticket_id) >= 3
+            ORDER BY avg_response_hours ASC, handled_tickets DESC
+            LIMIT $2
+        `;
+
+        const userResult = await adminPool.query(userQuery, [clientId, limit]);
+
+        res.json({
+            success: true,
+            data: {
+                topBranches: branchResult.rows,
+                topUsers: userResult.rows,
+                period: `Last ${days} days`
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error generating top performers report:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while generating top performers report'
+        });
+    }
+});
+
+// Trend analysis - tickets over time
+app.get('/api/reports/trends', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        const { days = 30, groupBy = 'day' } = req.query;
+
+        let dateFormat;
+        switch (groupBy) {
+            case 'hour':
+                dateFormat = 'YYYY-MM-DD HH24:00:00';
+                break;
+            case 'week':
+                dateFormat = 'YYYY-"W"WW';
+                break;
+            case 'month':
+                dateFormat = 'YYYY-MM';
+                break;
+            default:
+                dateFormat = 'YYYY-MM-DD';
+        }
+
+        const trendQuery = `
+            SELECT 
+                TO_CHAR(submitted_at, '${dateFormat}') as period,
+                COUNT(*) as ticket_count,
+                COUNT(CASE WHEN type = 'complaint' THEN 1 END) as complaints,
+                COUNT(CASE WHEN type = 'suggestion' THEN 1 END) as suggestions,
+                COUNT(CASE WHEN type = 'compliment' THEN 1 END) as compliments,
+                COUNT(CASE WHEN type = 'inquiry' THEN 1 END) as inquiries
+            FROM tickets
+            WHERE client_id = $1 
+                AND submitted_at >= CURRENT_DATE - INTERVAL '${parseInt(days)} days'
+            GROUP BY TO_CHAR(submitted_at, '${dateFormat}')
+            ORDER BY period ASC
+        `;
+
+        const result = await adminPool.query(trendQuery, [clientId]);
+
+        res.json({
+            success: true,
+            data: {
+                trends: result.rows,
+                groupBy: groupBy,
+                period: `Last ${days} days`
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error generating trend analysis:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while generating trend analysis'
+        });
+    }
+});
+
+// =============================================================================
+// END OF REPORTS AND ANALYTICS ROUTES
+// =============================================================================
+
 // =============================================================================
 // PUBLIC FEEDBACK FORM ROUTES - Add these after the ticket management routes
 // =============================================================================
