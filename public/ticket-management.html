@@ -4,267 +4,897 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket Management - FeedFast</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .modal-overlay {
-            backdrop-filter: blur(4px);
-            animation: fadeIn 0.2s ease-out;
+        :root {
+            --primary: #8527F0;
+            --primary-dark: #7c3aed;
+            --primary-light: #a855f7;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #000000;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --bg-card: #ffffff;
+            --sidebar-bg: var(--dark);
+            --sidebar-active: var(--primary);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
 
-        .status-open { 
-            background: linear-gradient(135deg, #fef3c7, #fbbf24);
-            color: #92400e;
-        }
-        .status-in_progress { 
-            background: linear-gradient(135deg, #dbeafe, #3b82f6);
-            color: #1e40af;
-        }
-        .status-resolved { 
-            background: linear-gradient(135deg, #d1fae5, #10b981);
-            color: #065f46;
-        }
-        .status-closed { 
-            background: linear-gradient(135deg, #f3f4f6, #6b7280);
-            color: #374151;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--light);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
         }
 
-        .ticket-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: var(--sidebar-bg);
+            min-height: 100vh;
+            padding: 1.5rem 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
         }
-        .ticket-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+
+        .sidebar-header {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
         }
-        .ticket-card.priority-high {
-            border-left-color: #ef4444;
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
-        .ticket-card.priority-medium {
-            border-left-color: #f59e0b;
+
+        .logo {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
-        .ticket-card.priority-low {
-            border-left-color: #10b981;
+
+        .logo::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.025em;
+        }
+
+        .company-name {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.25rem;
+        }
+
+        /* Navigation */
+        .nav-menu {
+            list-style: none;
+            padding: 0;
         }
 
         .nav-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: var(--sidebar-active);
+            color: white;
+            border-right-color: var(--primary-light);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        .top-header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 1rem;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* Page Content */
+        .page-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.open {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .stat-icon.progress {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .stat-icon.resolved {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .stat-icon.closed {
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: white;
+        }
+
+        .stat-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-content p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+        }
+
+        .filter-input, .filter-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.875rem;
             transition: all 0.2s ease;
         }
-        .nav-item:hover {
-            background: rgba(59, 130, 246, 0.1);
-            border-radius: 8px;
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
-        .nav-item.active {
-            background: linear-gradient(135deg, #3b82f6, #1e40af);
-            color: white;
+
+        .reset-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #f1f5f9;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
             border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn:hover {
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        /* Tickets Section */
+        .tickets-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .tickets-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tickets-count {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .tickets-content {
+            padding: 1.5rem;
+        }
+
+        /* Ticket Card */
+        .ticket-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+
+        .ticket-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-1px);
+            border-color: var(--primary);
+        }
+
+        .ticket-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .ticket-info {
+            flex: 1;
+        }
+
+        .ticket-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ticket-icon {
+            font-size: 1.5rem;
+        }
+
+        .ticket-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .ticket-id {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .ticket-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .ticket-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .ticket-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .ticket-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: capitalize;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .status-badge.open {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.in_progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-badge.resolved {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-badge.closed {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .type-badge {
+            background: #f1f5f9;
+            color: var(--text-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 4xl;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: between;
+            align-items: start;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+            background: #f1f5f9;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* Loading and Empty States */
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid var(--border);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .empty-icon {
+            background: #f1f5f9;
+            border-radius: 50%;
+            width: 4rem;
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .top-header {
+                padding: 1rem;
+            }
+
+            .page-content {
+                padding: 1rem;
+            }
+
+            .user-info {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .ticket-badges {
+                flex-direction: row;
+            }
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1100;
+            font-weight: 500;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .notification.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .notification.error {
+            background: var(--danger);
+            color: white;
+        }
+
+        .notification.info {
+            background: var(--primary);
+            color: white;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
-    <!-- Navigation Header -->
-    <nav class="bg-white shadow-lg border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center space-x-8">
-                    <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-2 rounded-lg font-bold text-lg">
-                            FF
-                        </div>
-                        <span class="ml-2 text-xl font-bold text-gray-800">FeedFast</span>
-                    </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden md:flex items-center space-x-1">
-                        <a href="/dashboard" class="nav-item px-4 py-2 text-gray-600 hover:text-blue-600 font-medium">
-                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
-                        </a>
-                        <a href="/branch" class="nav-item px-4 py-2 text-gray-600 hover:text-blue-600 font-medium">
-                            <i class="fas fa-code-branch mr-2"></i>Branches
-                        </a>
-                        <a href="/ticket" class="nav-item active px-4 py-2 font-medium">
-                            <i class="fas fa-ticket-alt mr-2"></i>Tickets
-                        </a>
-                    </div>
-                </div>
-
-                <!-- User Menu -->
-                <div class="flex items-center space-x-4">
-                    <div class="text-sm text-gray-600">
-                        <span id="user-name">Loading...</span>
-                        <br>
-                        <span id="client-name" class="text-xs text-blue-600">Loading...</span>
-                    </div>
-                    <button onclick="logout()" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg transition-all">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                    </button>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-section">
+                <div class="logo"></div>
+                <div>
+                    <div class="brand-name">FeedFast</div>
+                    <div class="company-name" id="sidebarClientName">[Company Name]</div>
                 </div>
             </div>
         </div>
-    </nav>
+        
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/ticket" class="nav-link active">
+                        <span class="nav-icon">🎫</span>
+                        Ticket
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/branch" class="nav-link">
+                        <span class="nav-icon">🏢</span>
+                        Branch
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/report" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="manageUsers()">
+                        <span class="nav-icon">👥</span>
+                        User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="settings()">
+                        <span class="nav-icon">⚙️</span>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                        <i class="fas fa-ticket-alt text-blue-600 mr-3"></i>Ticket Management
-                    </h1>
-                    <p class="text-gray-600">Manage customer feedback and support tickets</p>
+    <div class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-info">
+                <h1 class="header-title">Ticket Management</h1>
+                <p class="header-subtitle">Manage customer feedback and support tickets</p>
+            </div>
+            
+            <div class="user-section">
+                <div class="user-info">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="user-role" id="userRole">[User Role]</div>
+                </div>
+                <div class="user-avatar" id="userAvatar">R</div>
+                <button class="logout-btn" onclick="logout()">Logout ↗</button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="page-content">
+            <!-- Stats Grid -->
+            <div class="stats-grid fade-in">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon open">⚠️</div>
+                        <div class="stat-content">
+                            <h3 id="stat-open">0</h3>
+                            <p>Open</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon progress">⏳</div>
+                        <div class="stat-content">
+                            <h3 id="stat-in-progress">0</h3>
+                            <p>In Progress</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon resolved">✅</div>
+                        <div class="stat-content">
+                            <h3 id="stat-resolved">0</h3>
+                            <p>Resolved</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon closed">📁</div>
+                        <div class="stat-content">
+                            <h3 id="stat-closed">0</h3>
+                            <p>Closed</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6" id="stats-cards">
-                <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-yellow-100 text-sm font-medium">Open</p>
-                            <p class="text-2xl font-bold" id="stat-open">0</p>
-                        </div>
-                        <div class="bg-white/20 rounded-lg p-2">
-                            <i class="fas fa-exclamation-circle text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-blue-100 text-sm font-medium">In Progress</p>
-                            <p class="text-2xl font-bold" id="stat-in-progress">0</p>
-                        </div>
-                        <div class="bg-white/20 rounded-lg p-2">
-                            <i class="fas fa-clock text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-green-100 text-sm font-medium">Resolved</p>
-                            <p class="text-2xl font-bold" id="stat-resolved">0</p>
-                        </div>
-                        <div class="bg-white/20 rounded-lg p-2">
-                            <i class="fas fa-check-circle text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl p-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-100 text-sm font-medium">Closed</p>
-                            <p class="text-2xl font-bold" id="stat-closed">0</p>
-                        </div>
-                        <div class="bg-white/20 rounded-lg p-2">
-                            <i class="fas fa-archive text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filters and Search -->
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div>
-                    <input type="text" id="search-input" placeholder="Search tickets..." 
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                <div>
-                    <select id="status-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <!-- Filters Section -->
+            <div class="filters-section fade-in">
+                <div class="filters-grid">
+                    <input type="text" id="search-input" placeholder="Search tickets..." class="filter-input">
+                    <select id="status-filter" class="filter-select">
                         <option value="">All Status</option>
                         <option value="open">Open</option>
                         <option value="in_progress">In Progress</option>
                         <option value="resolved">Resolved</option>
                         <option value="closed">Closed</option>
                     </select>
-                </div>
-                <div>
-                    <select id="type-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="type-filter" class="filter-select">
                         <option value="">All Types</option>
                         <option value="complaint">Complaint</option>
                         <option value="suggestion">Suggestion</option>
                         <option value="compliment">Compliment</option>
                         <option value="inquiry">Inquiry</option>
                     </select>
-                </div>
-                <div>
-                    <select id="branch-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="branch-filter" class="filter-select">
                         <option value="">All Branches</option>
-                        <!-- Will be populated dynamically -->
                     </select>
-                </div>
-                <div>
-                    <button onclick="resetFilters()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-undo mr-2"></i>Reset
+                    <button onclick="resetFilters()" class="reset-btn">
+                        🔄 Reset
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Tickets Table -->
-        <div class="bg-white rounded-lg shadow-sm">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-800">All Tickets</h2>
-                    <div class="text-sm text-gray-500">
-                        <span id="tickets-count">0 tickets</span>
+            <!-- Tickets Section -->
+            <div class="tickets-section fade-in">
+                <div class="tickets-header">
+                    <h2 class="section-title">All Tickets</h2>
+                    <div class="tickets-count" id="tickets-count">0 tickets</div>
+                </div>
+                
+                <div class="tickets-content">
+                    <!-- Loading State -->
+                    <div id="loading-state" class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading tickets...</p>
                     </div>
-                </div>
 
-                <!-- Loading State -->
-                <div id="loading-state" class="text-center py-8">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p class="mt-2 text-gray-500">Loading tickets...</p>
-                </div>
-
-                <!-- Empty State -->
-                <div id="empty-state" class="text-center py-12 hidden">
-                    <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-ticket-alt text-2xl text-gray-400"></i>
+                    <!-- Empty State -->
+                    <div id="empty-state" class="empty-state hidden">
+                        <div class="empty-icon">🎫</div>
+                        <h3 style="margin-bottom: 0.5rem; font-weight: 600;">No tickets found</h3>
+                        <p>No tickets match your current filters.</p>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No tickets found</h3>
-                    <p class="text-gray-500">No tickets match your current filters.</p>
-                </div>
 
-                <!-- Tickets List -->
-                <div id="tickets-container" class="space-y-4 hidden"></div>
+                    <!-- Tickets List -->
+                    <div id="tickets-container" class="hidden"></div>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <!-- Ticket Detail Modal -->
-    <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-50 modal-overlay hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="p-6">
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900" id="modal-title">Ticket Details</h2>
-                        <p class="text-gray-600 mt-1" id="modal-ticket-id">Loading...</p>
-                    </div>
-                    <button onclick="closeTicketModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
+    <div id="ticket-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="modal-title">Ticket Details</h2>
+                    <p class="modal-subtitle" id="modal-ticket-id">Loading...</p>
                 </div>
-
-                <div id="modal-content">
-                    <!-- Content will be loaded dynamically -->
-                </div>
+                <button class="modal-close" onclick="closeTicketModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Content will be loaded dynamically -->
             </div>
         </div>
     </div>
@@ -304,8 +934,7 @@
                 currentUser = data.user;
                 
                 // Update UI with user info
-                document.getElementById('user-name').textContent = currentUser.name;
-                document.getElementById('client-name').textContent = currentUser.clientName;
+                updateUserUI();
                 
                 // Load data
                 await loadBranches();
@@ -315,6 +944,27 @@
                 console.error('Auth check failed:', error);
                 localStorage.removeItem('clientToken');
                 window.location.href = '/login';
+            }
+        }
+
+        // Update UI with user information
+        function updateUserUI() {
+            if (!currentUser) return;
+
+            const elements = {
+                userName: document.getElementById('userName'),
+                userRole: document.getElementById('userRole'),
+                userAvatar: document.getElementById('userAvatar'),
+                sidebarClientName: document.getElementById('sidebarClientName')
+            };
+
+            if (elements.userName) elements.userName.textContent = currentUser.name || 'User';
+            if (elements.userRole) elements.userRole.textContent = currentUser.role || '[User Role]';
+            if (elements.sidebarClientName) elements.sidebarClientName.textContent = currentUser.clientName || '[Company Name]';
+            
+            if (elements.userAvatar) {
+                const initials = (currentUser.name || 'U').substring(0, 1).toUpperCase();
+                elements.userAvatar.textContent = initials;
             }
         }
 
@@ -396,10 +1046,32 @@
                 }
             });
 
-            document.getElementById('stat-open').textContent = stats.open;
-            document.getElementById('stat-in-progress').textContent = stats.in_progress;
-            document.getElementById('stat-resolved').textContent = stats.resolved;
-            document.getElementById('stat-closed').textContent = stats.closed;
+            // Animate number counting
+            animateNumber(document.getElementById('stat-open'), 0, stats.open, 1000);
+            animateNumber(document.getElementById('stat-in-progress'), 0, stats.in_progress, 1000);
+            animateNumber(document.getElementById('stat-resolved'), 0, stats.resolved, 1000);
+            animateNumber(document.getElementById('stat-closed'), 0, stats.closed, 1000);
+        }
+
+        // Animate number counting
+        function animateNumber(element, start, end, duration) {
+            if (!element) return;
+            
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const current = Math.floor(start + (end - start) * progress);
+                element.textContent = current.toLocaleString();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
         }
 
         // Display tickets
@@ -419,34 +1091,32 @@
 
             container.innerHTML = tickets.map(ticket => {
                 const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown Branch';
-                const statusClass = `status-${ticket.status}`;
                 const typeIcon = getTypeIcon(ticket.type);
                 const submittedDate = new Date(ticket.submitted_at).toLocaleDateString();
                 
                 return `
-                    <div class="ticket-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all cursor-pointer" 
-                         onclick="openTicketModal(${ticket.ticket_id})">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <span class="text-2xl">${typeIcon}</span>
+                    <div class="ticket-card" onclick="openTicketModal(${ticket.ticket_id})">
+                        <div class="ticket-header">
+                            <div class="ticket-info">
+                                <div class="ticket-title-row">
+                                    <span class="ticket-icon">${typeIcon}</span>
                                     <div>
-                                        <h3 class="font-semibold text-gray-900">${ticket.title}</h3>
-                                        <p class="text-sm text-gray-500">Ticket #${ticket.ticket_id}</p>
+                                        <div class="ticket-title">${ticket.title}</div>
+                                        <div class="ticket-id">Ticket #${ticket.ticket_id}</div>
                                     </div>
                                 </div>
-                                <p class="text-gray-600 mb-3 line-clamp-2">${ticket.description}</p>
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="fas fa-user mr-1"></i>${ticket.cust_name}</span>
-                                    <span><i class="fas fa-code-branch mr-1"></i>${branchName}</span>
-                                    <span><i class="fas fa-calendar mr-1"></i>${submittedDate}</span>
+                                <p class="ticket-description">${ticket.description.substring(0, 150)}${ticket.description.length > 150 ? '...' : ''}</p>
+                                <div class="ticket-meta">
+                                    <span>👤 ${ticket.cust_name}</span>
+                                    <span>🏢 ${branchName}</span>
+                                    <span>📅 ${submittedDate}</span>
                                 </div>
                             </div>
-                            <div class="flex flex-col items-end space-y-2">
-                                <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
-                                    ${ticket.status.replace('_', ' ').toUpperCase()}
+                            <div class="ticket-badges">
+                                <span class="status-badge ${ticket.status}">
+                                    ${ticket.status.replace('_', ' ')}
                                 </span>
-                                <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs uppercase">
+                                <span class="type-badge">
                                     ${ticket.type}
                                 </span>
                             </div>
@@ -528,7 +1198,6 @@
 
             // Show modal
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
         }
 
         // Load ticket details
@@ -552,65 +1221,65 @@
                 const typeIcon = getTypeIcon(ticket.type);
                 
                 const content = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
                         <div>
-                            <h3 class="font-semibold text-gray-900 mb-3">Ticket Information</h3>
-                            <div class="space-y-2">
-                                <div class="flex items-center">
-                                    <span class="text-xl mr-2">${typeIcon}</span>
-                                    <span class="font-medium">${ticket.type.toUpperCase()}</span>
+                            <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Ticket Information</h3>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="font-size: 1.25rem;">${typeIcon}</span>
+                                    <span style="font-weight: 500; text-transform: uppercase;">${ticket.type}</span>
                                 </div>
-                                <p><strong>Branch:</strong> ${branchName}</p>
-                                <p><strong>Status:</strong> 
-                                    <span class="px-2 py-1 rounded text-xs status-${ticket.status}">
-                                        ${ticket.status.replace('_', ' ').toUpperCase()}
+                                <div><strong>Branch:</strong> ${branchName}</div>
+                                <div><strong>Status:</strong> 
+                                    <span class="status-badge ${ticket.status}">
+                                        ${ticket.status.replace('_', ' ')}
                                     </span>
-                                </p>
-                                <p><strong>Submitted:</strong> ${new Date(ticket.submitted_at).toLocaleString()}</p>
-                                ${ticket.responded_at ? `<p><strong>Responded:</strong> ${new Date(ticket.responded_at).toLocaleString()}</p>` : ''}
-                                ${ticket.resolved_at ? `<p><strong>Resolved:</strong> ${new Date(ticket.resolved_at).toLocaleString()}</p>` : ''}
+                                </div>
+                                <div><strong>Submitted:</strong> ${new Date(ticket.submitted_at).toLocaleString()}</div>
+                                ${ticket.responded_at ? `<div><strong>Responded:</strong> ${new Date(ticket.responded_at).toLocaleString()}</div>` : ''}
+                                ${ticket.resolved_at ? `<div><strong>Resolved:</strong> ${new Date(ticket.resolved_at).toLocaleString()}</div>` : ''}
                             </div>
                         </div>
                         
                         <div>
-                            <h3 class="font-semibold text-gray-900 mb-3">Customer Information</h3>
-                            <div class="space-y-2">
-                                <p><strong>Name:</strong> ${ticket.cust_name}</p>
-                                <p><strong>Email:</strong> ${ticket.cust_email || 'Not provided'}</p>
-                                <p><strong>Phone:</strong> ${ticket.cust_phone || 'Not provided'}</p>
+                            <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Customer Information</h3>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <div><strong>Name:</strong> ${ticket.cust_name}</div>
+                                <div><strong>Email:</strong> ${ticket.cust_email || 'Not provided'}</div>
+                                <div><strong>Phone:</strong> ${ticket.cust_phone || 'Not provided'}</div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="mb-6">
-                        <h3 class="font-semibold text-gray-900 mb-3">Description</h3>
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <p class="text-gray-700 whitespace-pre-wrap">${ticket.description}</p>
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Description</h3>
+                        <div style="background: var(--light); border-radius: 8px; padding: 1rem; border: 1px solid var(--border);">
+                            <p style="color: var(--text-primary); white-space: pre-wrap; line-height: 1.5;">${ticket.description}</p>
                         </div>
                     </div>
                     
                     ${ticket.attachment ? `
-                        <div class="mb-6">
-                            <h3 class="font-semibold text-gray-900 mb-3">Attachment</h3>
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Attachment</h3>
                             <a href="${ticket.attachment}" target="_blank" 
-                               class="inline-flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors">
-                                <i class="fas fa-paperclip mr-2"></i>View Attachment
+                               style="display: inline-flex; align-items: center; padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; color: var(--primary); text-decoration: none; font-weight: 500; transition: all 0.2s ease;">
+                                📎 View Attachment
                             </a>
                         </div>
                     ` : ''}
                     
-                    <div class="border-t pt-6">
-                        <h3 class="font-semibold text-gray-900 mb-4">Actions</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <select id="status-update" class="px-3 py-2 border rounded-lg mr-2">
+                    <div style="border-top: 1px solid var(--border); padding-top: 2rem;">
+                        <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Actions</h3>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <select id="status-update" style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem;">
                                 <option value="open" ${ticket.status === 'open' ? 'selected' : ''}>Open</option>
                                 <option value="in_progress" ${ticket.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
                                 <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Resolved</option>
                                 <option value="closed" ${ticket.status === 'closed' ? 'selected' : ''}>Closed</option>
                             </select>
                             <button onclick="updateTicketStatus(${ticket.ticket_id})" 
-                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                <i class="fas fa-save mr-2"></i>Update Status
+                                    style="background: var(--primary); color: white; padding: 0.75rem 1rem; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+                                💾 Update Status
                             </button>
                         </div>
                     </div>
@@ -621,11 +1290,9 @@
             } catch (error) {
                 console.error('Failed to load ticket details:', error);
                 document.getElementById('modal-content').innerHTML = `
-                    <div class="text-center py-8">
-                        <div class="text-red-500 mb-2">
-                            <i class="fas fa-exclamation-triangle text-2xl"></i>
-                        </div>
-                        <p class="text-gray-600">Failed to load ticket details</p>
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="color: var(--danger); margin-bottom: 1rem; font-size: 2rem;">⚠️</div>
+                        <p style="color: var(--text-secondary);">Failed to load ticket details</p>
                     </div>
                 `;
             }
@@ -667,17 +1334,12 @@
         function closeTicketModal() {
             const modal = document.getElementById('ticket-modal');
             modal.classList.add('hidden');
-            modal.classList.remove('flex');
         }
 
         // Show notification
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
-                type === 'success' ? 'bg-green-500 text-white' :
-                type === 'error' ? 'bg-red-500 text-white' :
-                'bg-blue-500 text-white'
-            }`;
+            notification.className = `notification ${type}`;
             notification.textContent = message;
             
             document.body.appendChild(notification);
@@ -687,9 +1349,19 @@
             }, 3000);
         }
 
+        // Navigation functions (placeholder for now)
+        function manageUsers() {
+            alert('User Management feature coming soon!');
+        }
+
+        function settings() {
+            alert('Settings feature coming soon!');
+        }
+
         // Logout function
         function logout() {
             localStorage.removeItem('clientToken');
+            localStorage.removeItem('clientUser');
             window.location.href = '/login';
         }
 
@@ -698,6 +1370,17 @@
             if (e.target === this) {
                 closeTicketModal();
             }
+        });
+
+        // Handle errors globally
+        window.addEventListener('error', (event) => {
+            console.error('💥 Global error:', event.error);
+        });
+
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('💥 Unhandled promise rejection:', event.reason);
+            event.preventDefault();
         });
     </script>
 </body>
