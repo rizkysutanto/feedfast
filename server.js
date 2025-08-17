@@ -4,10 +4,14 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
-const cloudinary = require('cloudinary').v2;
-const multer = require('multer');
-const path = require('path');
 
+let cloudinary, multer, upload;
+try {
+  cloudinary = require('cloudinary').v2;
+  multer = require('multer');
+} catch (error) {
+  console.log('⚠️  Cloudinary/Multer not installed yet - file upload disabled');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,25 +39,46 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Configure multer for file uploads
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Only allow image files
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
+// ✅ Configure Cloudinary only if available
+if (cloudinary && process.env.CLOUDINARY_CLOUD_NAME) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+  
+  // Configure multer for file uploads
+  const storage = multer.memoryStorage();
+  upload = multer({
+    storage: storage,
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed!'), false);
+      }
     }
-  }
-});
+  });
+} else {
+  console.log('⚠️  Cloudinary not configured - using fallback upload handler');
+  // Create a dummy upload middleware for now
+  upload = {
+    single: (fieldName) => (req, res, next) => {
+      console.log('⚠️  File upload attempted but Cloudinary not configured');
+      next();
+    }
+  };
+}
 
-// Helper function to upload to Cloudinary
+// Helper function to upload to Cloudinary (only if configured)
 const uploadToCloudinary = (buffer, originalName) => {
+  if (!cloudinary) {
+    return Promise.reject(new Error('Cloudinary not configured'));
+  }
+  
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -77,21 +102,21 @@ const uploadToCloudinary = (buffer, originalName) => {
   });
 };
 
-// Update your feedback submission endpoint
+// ✅ Enhanced feedback endpoint with better error handling
 app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
   try {
     console.log('📝 Feedback submission received');
     const { client_name, branch_id, cust_name, cust_email, cust_phone, type, title, description } = req.body;
     
     // Validate required fields
-    if (!client_name || !cust_name || !cust_email || !type || !title || !description) {
+    if (!client_name || !cust_name || !type || !title || !description) {
       return res.status(400).json({ 
         success: false, 
         error: 'Missing required fields' 
       });
     }
 
-    // Find client by name (fuzzy matching)
+    // Find client by name
     const clientQuery = `
       SELECT client_id, client_name, status 
       FROM clients 
@@ -110,8 +135,8 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     const client = clientResult.rows[0];
     let attachmentUrl = null;
 
-    // Handle file upload if attachment exists
-    if (req.file) {
+    // Handle file upload if attachment exists and Cloudinary is configured
+    if (req.file && cloudinary) {
       try {
         console.log('📎 Processing file upload:', req.file.originalname);
         const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname);
@@ -119,11 +144,11 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
         console.log('✅ File uploaded successfully:', attachmentUrl);
       } catch (uploadError) {
         console.error('❌ File upload failed:', uploadError);
-        return res.status(500).json({ 
-          success: false, 
-          error: 'Failed to upload attachment' 
-        });
+        // Continue without attachment rather than failing completely
+        console.log('⚠️  Continuing without file attachment...');
       }
+    } else if (req.file && !cloudinary) {
+      console.log('⚠️  File uploaded but Cloudinary not configured - skipping file storage');
     }
 
     // Create ticket
@@ -140,8 +165,8 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
       client.client_id,
       branch_id || null,
       cust_name,
-      cust_email,
-      cust_phone,
+      cust_email || null,
+      cust_phone || null,
       type,
       title,
       description,
@@ -174,6 +199,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     });
   }
 });
+
 
 // Add error handling middleware for multer errors
 app.use((error, req, res, next) => {
@@ -2898,12 +2924,13 @@ async function startServer() {
     await initDatabase();
     
     app.listen(PORT, () => {
-        console.log(`🚀 FeedFast server running on port ${PORT}`);
-        console.log(`📱 Local: http://localhost:${PORT}`);
-        console.log(`🌐 Network: http://0.0.0.0:${PORT}`);
-        console.log(`🏠 Landing Page: http://localhost:${PORT}`);
-        console.log(`🔐 Back Office: http://localhost:${PORT}/backoffice`);
-    });
+            console.log(`🚀 FeedFast server running on port ${PORT}`);
+            console.log(`📱 Local: http://localhost:${PORT}`);
+            console.log(`🌍 Network: http://0.0.0.0:${PORT}`);
+            console.log(`🏠 Landing Page: http://localhost:${PORT}`);
+            console.log(`🔒 Back Office: http://localhost:${PORT}/backoffice`);
+            console.log(`📝 File Upload: ${cloudinary ? 'Enabled' : 'Disabled (install cloudinary/multer)'}`);
+        });
 }
 
 startServer().catch(console.error);
