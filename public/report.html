@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - FeedFast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .nav-container {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0 2rem;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            padding: 1rem 0;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: #764ba2;
+            border-bottom-color: #764ba2;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .filters {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .filters h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-left: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-change {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-change.positive {
+            color: #28a745;
+        }
+
+        .stat-change.negative {
+            color: #dc3545;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(45deg, #f1f3f4, #e8eaed);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .table-header h3 {
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-open { background: #fff3cd; color: #856404; }
+        .status-in_progress { background: #d1ecf1; color: #0c5460; }
+        .status-resolved { background: #d4edda; color: #155724; }
+        .status-closed { background: #f8d7da; color: #721c24; }
+
+        .type-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .type-complaint { background: #f8d7da; color: #721c24; }
+        .type-suggestion { background: #d1ecf1; color: #0c5460; }
+        .type-compliment { background: #d4edda; color: #155724; }
+        .type-inquiry { background: #e2e3e5; color: #383d41; }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .export-buttons {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+            
+            .data-table {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Analytics & Reports</h1>
+        <p>Comprehensive insights into your customer feedback</p>
+    </div>
+
+    <div class="nav-container">
+        <nav class="nav">
+            <a href="/dashboard" class="nav-item">Dashboard</a>
+            <a href="/ticket" class="nav-item">Tickets</a>
+            <a href="/branch" class="nav-item">Branches</a>
+            <a href="/report" class="nav-item active">Reports</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <!-- Filters Section -->
+        <div class="filters">
+            <h3>📊 Report Filters</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="dateRange">Date Range</label>
+                    <select id="dateRange">
+                        <option value="7">Last 7 days</option>
+                        <option value="30" selected>Last 30 days</option>
+                        <option value="90">Last 3 months</option>
+                        <option value="365">Last 12 months</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" style="display: none;">
+                </div>
+                <div class="filter-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" style="display: none;">
+                </div>
+                <div class="filter-group">
+                    <label for="branchFilter">Branch</label>
+                    <select id="branchFilter">
+                        <option value="all">All Branches</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="typeFilter">Type</label>
+                    <select id="typeFilter">
+                        <option value="all">All Types</option>
+                        <option value="complaint">Complaints</option>
+                        <option value="suggestion">Suggestions</option>
+                        <option value="compliment">Compliments</option>
+                        <option value="inquiry">Inquiries</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button class="btn" onclick="applyFilters()">Apply Filters</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading">
+            <p>📊 Loading report data...</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div id="statsGrid" class="stats-grid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTickets">0</div>
+                <div class="stat-label">Total Tickets</div>
+                <div class="stat-change" id="totalTicketsChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgResponseTime">0h</div>
+                <div class="stat-label">Avg Response Time</div>
+                <div class="stat-change" id="responseTimeChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="resolutionRate">0%</div>
+                <div class="stat-label">Resolution Rate</div>
+                <div class="stat-change" id="resolutionRateChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="customerSatisfaction">0%</div>
+                <div class="stat-label">Satisfaction Score</div>
+                <div class="stat-change" id="satisfactionChange"></div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div id="chartsGrid" class="charts-grid" style="display: none;">
+            <div class="chart-card">
+                <h3>📈 Tickets Over Time</h3>
+                <div class="chart-placeholder" id="timelineChart">
+                    Timeline chart will be rendered here
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📊 Tickets by Type</h3>
+                <div class="chart-placeholder" id="typeChart">
+                    Type distribution chart will be rendered here
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>🏢 Tickets by Branch</h3>
+                <div class="chart-placeholder" id="branchChart">
+                    Branch distribution chart will be rendered here
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📋 Status Distribution</h3>
+                <div class="chart-placeholder" id="statusChart">
+                    Status distribution chart will be rendered here
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Tickets Table -->
+        <div id="recentTicketsTable" class="table-card" style="display: none;">
+            <div class="table-header">
+                <h3>🎫 Recent Tickets</h3>
+                <div class="export-buttons">
+                    <button class="btn" onclick="exportData('csv')">Export CSV</button>
+                    <button class="btn btn-secondary" onclick="exportData('pdf')">Export PDF</button>
+                </div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Customer</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Branch</th>
+                        <th>Created</th>
+                        <th>Response Time</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketsTableBody">
+                    <!-- Table data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- No Data State -->
+        <div id="noDataState" class="no-data" style="display: none;">
+            <h3>📊 No Data Available</h3>
+            <p>No tickets found for the selected criteria. Try adjusting your filters.</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentFilters = {
+            dateRange: 30,
+            startDate: null,
+            endDate: null,
+            branch: 'all',
+            type: 'all'
+        };
+        let reportData = null;
+        let branches = [];
+
+        // Authentication check
+        const clientToken = localStorage.getItem('clientToken');
+        if (!clientToken) {
+            window.location.href = '/login';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        async function initializePage() {
+            try {
+                // Verify token and get user info
+                const userResponse = await fetch('/api/auth/client-verify', {
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error('Authentication failed');
+                }
+
+                // Load branches for filter
+                await loadBranches();
+                
+                // Load initial report data
+                await loadReportData();
+                
+                // Setup date range change handler
+                document.getElementById('dateRange').addEventListener('change', handleDateRangeChange);
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                if (error.message === 'Authentication failed') {
+                    localStorage.removeItem('clientToken');
+                    window.location.href = '/login';
+                } else {
+                    showError('Failed to load page data');
+                }
+            }
+        }
+
+        async function loadBranches() {
+            try {
+                const response = await fetch('/api/branches', {
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load branches');
+                }
+
+                const data = await response.json();
+                branches = data.branches || [];
+                
+                // Populate branch filter
+                const branchFilter = document.getElementById('branchFilter');
+                branchFilter.innerHTML = '<option value="all">All Branches</option>';
+                
+                branches.forEach(branch => {
+                    const option = document.createElement('option');
+                    option.value = branch.branch_id;
+                    option.textContent = `${branch.branch_name} ${branch.branch_code ? '(' + branch.branch_code + ')' : ''}`;
+                    branchFilter.appendChild(option);
+                });
+                
+            } catch (error) {
+                console.error('Error loading branches:', error);
+            }
+        }
+
+        async function loadReportData() {
+            try {
+                showLoading(true);
+                
+                // Build query parameters
+                const params = new URLSearchParams();
+                
+                if (currentFilters.dateRange !== 'custom') {
+                    params.append('days', currentFilters.dateRange);
+                } else {
+                    if (currentFilters.startDate) params.append('startDate', currentFilters.startDate);
+                    if (currentFilters.endDate) params.append('endDate', currentFilters.endDate);
+                }
+                
+                if (currentFilters.branch !== 'all') {
+                    params.append('branchId', currentFilters.branch);
+                }
+                
+                if (currentFilters.type !== 'all') {
+                    params.append('type', currentFilters.type);
+                }
+
+                const response = await fetch(`/api/reports/analytics?${params.toString()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load report data');
+                }
+
+                reportData = await response.json();
+                
+                if (reportData.success) {
+                    renderReportData(reportData.data);
+                } else {
+                    throw new Error(reportData.message || 'Failed to load report data');
+                }
+                
+            } catch (error) {
+                console.error('Error loading report data:', error);
+                showError('Failed to load report data: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderReportData(data) {
+            if (!data.tickets || data.tickets.length === 0) {
+                showNoData(true);
+                return;
+            }
+
+            showNoData(false);
+            
+            // Render statistics
+            renderStatistics(data.stats);
+            
+            // Render charts (placeholder for now)
+            renderCharts(data);
+            
+            // Render recent tickets table
+            renderTicketsTable(data.tickets);
+            
+            // Show all sections
+            document.getElementById('statsGrid').style.display = 'grid';
+            document.getElementById('chartsGrid').style.display = 'grid';
+            document.getElementById('recentTicketsTable').style.display = 'block';
+        }
+
+        function renderStatistics(stats) {
+            document.getElementById('totalTickets').textContent = stats.totalTickets || 0;
+            document.getElementById('avgResponseTime').textContent = formatDuration(stats.avgResponseTime || 0);
+            document.getElementById('resolutionRate').textContent = (stats.resolutionRate || 0).toFixed(1) + '%';
+            document.getElementById('customerSatisfaction').textContent = (stats.satisfactionScore || 0).toFixed(1) + '%';
+            
+            // Add change indicators (mock data for now)
+            updateChangeIndicator('totalTicketsChange', stats.totalTicketsChange);
+            updateChangeIndicator('responseTimeChange', stats.responseTimeChange);
+            updateChangeIndicator('resolutionRateChange', stats.resolutionRateChange);
+            updateChangeIndicator('satisfactionChange', stats.satisfactionChange);
+        }
+
+        function updateChangeIndicator(elementId, change) {
+            const element = document.getElementById(elementId);
+            if (change === undefined || change === null) return;
+            
+            const isPositive = change > 0;
+            const sign = isPositive ? '+' : '';
+            element.textContent = `${sign}${change.toFixed(1)}% vs last period`;
+            element.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
+        }
+
+        function renderCharts(data) {
+            // Placeholder implementation - you can integrate with Chart.js or similar
+            document.getElementById('timelineChart').innerHTML = `
+                <p>📈 Timeline Chart</p>
+                <p><strong>${data.stats.totalTickets}</strong> tickets in selected period</p>
+            `;
+            
+            document.getElementById('typeChart').innerHTML = `
+                <p>📊 Type Distribution</p>
+                <p>Complaints: <strong>${data.stats.byType?.complaint || 0}</strong></p>
+                <p>Suggestions: <strong>${data.stats.byType?.suggestion || 0}</strong></p>
+                <p>Compliments: <strong>${data.stats.byType?.compliment || 0}</strong></p>
+                <p>Inquiries: <strong>${data.stats.byType?.inquiry || 0}</strong></p>
+            `;
+            
+            document.getElementById('branchChart').innerHTML = `
+                <p>🏢 Branch Distribution</p>
+                <p>Data across <strong>${Object.keys(data.stats.byBranch || {}).length}</strong> branches</p>
+            `;
+            
+            document.getElementById('statusChart').innerHTML = `
+                <p>📋 Status Distribution</p>
+                <p>Open: <strong>${data.stats.byStatus?.open || 0}</strong></p>
+                <p>In Progress: <strong>${data.stats.byStatus?.in_progress || 0}</strong></p>
+                <p>Resolved: <strong>${data.stats.byStatus?.resolved || 0}</strong></p>
+                <p>Closed: <strong>${data.stats.byStatus?.closed || 0}</strong></p>
+            `;
+        }
+
+        function renderTicketsTable(tickets) {
+            const tbody = document.getElementById('ticketsTableBody');
+            tbody.innerHTML = '';
+            
+            tickets.slice(0, 20).forEach(ticket => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>#${ticket.ticket_id}</td>
+                    <td>${ticket.cust_name}</td>
+                    <td><span class="type-badge type-${ticket.type}">${ticket.type}</span></td>
+                    <td><span class="status-badge status-${ticket.status}">${ticket.status}</span></td>
+                    <td>${ticket.branch_name || 'N/A'}</td>
+                    <td>${formatDate(ticket.submitted_at)}</td>
+                    <td>${calculateResponseTime(ticket)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function handleDateRangeChange() {
+            const dateRange = document.getElementById('dateRange').value;
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            
+            if (dateRange === 'custom') {
+                startDate.style.display = 'block';
+                endDate.style.display = 'block';
+                startDate.required = true;
+                endDate.required = true;
+            } else {
+                startDate.style.display = 'none';
+                endDate.style.display = 'none';
+                startDate.required = false;
+                endDate.required = false;
+            }
+        }
+
+        function applyFilters() {
+            const dateRange = document.getElementById('dateRange').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const branch = document.getElementById('branchFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            
+            // Validate custom date range
+            if (dateRange === 'custom' && (!startDate || !endDate)) {
+                alert('Please select both start and end dates for custom range');
+                return;
+            }
+            
+            if (dateRange === 'custom' && new Date(startDate) > new Date(endDate)) {
+                alert('Start date must be before end date');
+                return;
+            }
+            
+            // Update current filters
+            currentFilters = {
+                dateRange: dateRange === 'custom' ? 'custom' : parseInt(dateRange),
+                startDate: dateRange === 'custom' ? startDate : null,
+                endDate: dateRange === 'custom' ? endDate : null,
+                branch: branch,
+                type: type
+            };
+            
+            // Reload data
+            loadReportData();
+        }
+
+        function resetFilters() {
+            document.getElementById('dateRange').value = '30';
+            document.getElementById('branchFilter').value = 'all';
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('startDate').style.display = 'none';
+            document.getElementById('endDate').style.display = 'none';
+            
+            currentFilters = {
+                dateRange: 30,
+                startDate: null,
+                endDate: null,
+                branch: 'all',
+                type: 'all'
+            };
+            
+            loadReportData();
+        }
+
+        function exportData(format) {
+            if (!reportData || !reportData.data.tickets) {
+                alert('No data to export');
+                return;
+            }
+            
+            if (format === 'csv') {
+                exportCSV();
+            } else if (format === 'pdf') {
+                exportPDF();
+            }
+        }
+
+        function exportCSV() {
+            const tickets = reportData.data.tickets;
+            const headers = ['Ticket ID', 'Customer', 'Type', 'Status', 'Branch', 'Created', 'Title'];
+            const csvContent = [
+                headers.join(','),
+                ...tickets.map(ticket => [
+                    ticket.ticket_id,
+                    `"${ticket.cust_name}"`,
+                    ticket.type,
+                    ticket.status,
+                    `"${ticket.branch_name || 'N/A'}"`,
+                    formatDate(ticket.submitted_at),
+                    `"${ticket.title}"`
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `feedfast-report-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportPDF() {
+            alert('PDF export feature coming soon!');
+        }
+
+        // Utility functions
+        function showLoading(show) {
+            document.getElementById('loadingState').style.display = show ? 'block' : 'none';
+            document.getElementById('statsGrid').style.display = show ? 'none' : 'grid';
+            document.getElementById('chartsGrid').style.display = show ? 'none' : 'grid';
+            document.getElementById('recentTicketsTable').style.display = show ? 'none' : 'block';
+        }
+
+        function showNoData(show) {
+            document.getElementById('noDataState').style.display = show ? 'block' : 'none';
+            document.getElementById('statsGrid').style.display = show ? 'none' : 'grid';
+            document.getElementById('chartsGrid').style.display = show ? 'none' : 'grid';
+            document.getElementById('recentTicketsTable').style.display = show ? 'none' : 'block';
+        }
+
+        function showError(message) {
+            alert('Error: ' + message);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function formatDuration(hours) {
+            if (hours < 1) return Math.round(hours * 60) + 'm';
+            if (hours < 24) return Math.round(hours) + 'h';
+            return Math.round(hours / 24) + 'd';
+        }
+
+        function calculateResponseTime(ticket) {
+            if (!ticket.responded_at) return 'Not responded';
+            const submitted = new Date(ticket.submitted_at);
+            const responded = new Date(ticket.responded_at);
+            const hours = (responded - submitted) / (1000 * 60 * 60);
+            return formatDuration(hours);
+        }
+    </script>
+</body>
+</html>
