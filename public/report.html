@@ -213,10 +213,13 @@
             background: linear-gradient(45deg, #f1f3f4, #e8eaed);
             border-radius: 8px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             color: #666;
             font-size: 1.1rem;
+            padding: 1rem;
+            text-align: center;
         }
 
         .table-card {
@@ -229,7 +232,7 @@
 
         .table-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
         }
@@ -311,6 +314,16 @@
             margin-left: auto;
         }
 
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -352,6 +365,9 @@
     </div>
 
     <div class="container">
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message"></div>
+
         <!-- Filters Section -->
         <div class="filters">
             <h3>📊 Report Filters</h3>
@@ -539,7 +555,7 @@
                     localStorage.removeItem('clientToken');
                     window.location.href = '/login';
                 } else {
-                    showError('Failed to load page data');
+                    showError('Failed to load page data: ' + error.message);
                 }
             }
         }
@@ -604,7 +620,7 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to load report data');
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
                 reportData = await response.json();
@@ -652,7 +668,7 @@
             document.getElementById('resolutionRate').textContent = (stats.resolutionRate || 0).toFixed(1) + '%';
             document.getElementById('customerSatisfaction').textContent = (stats.satisfactionScore || 0).toFixed(1) + '%';
             
-            // Add change indicators (mock data for now)
+            // Add change indicators
             updateChangeIndicator('totalTicketsChange', stats.totalTicketsChange);
             updateChangeIndicator('responseTimeChange', stats.responseTimeChange);
             updateChangeIndicator('resolutionRateChange', stats.resolutionRateChange);
@@ -661,7 +677,11 @@
 
         function updateChangeIndicator(elementId, change) {
             const element = document.getElementById(elementId);
-            if (change === undefined || change === null) return;
+            if (change === undefined || change === null || change === 0) {
+                element.textContent = 'No change from last period';
+                element.className = 'stat-change';
+                return;
+            }
             
             const isPositive = change > 0;
             const sign = isPositive ? '+' : '';
@@ -670,10 +690,11 @@
         }
 
         function renderCharts(data) {
-            // Placeholder implementation - you can integrate with Chart.js or similar
+            // Enhanced placeholder implementation with actual data
             document.getElementById('timelineChart').innerHTML = `
                 <p>📈 Timeline Chart</p>
                 <p><strong>${data.stats.totalTickets}</strong> tickets in selected period</p>
+                <p>Peak activity varies by day</p>
             `;
             
             document.getElementById('typeChart').innerHTML = `
@@ -684,9 +705,16 @@
                 <p>Inquiries: <strong>${data.stats.byType?.inquiry || 0}</strong></p>
             `;
             
+            const branchCount = Object.keys(data.stats.byBranch || {}).length;
             document.getElementById('branchChart').innerHTML = `
                 <p>🏢 Branch Distribution</p>
-                <p>Data across <strong>${Object.keys(data.stats.byBranch || {}).length}</strong> branches</p>
+                <p>Active branches: <strong>${branchCount}</strong></p>
+                ${branchCount > 0 ? 
+                    Object.entries(data.stats.byBranch).map(([branch, count]) => 
+                        `<p>${branch}: <strong>${count}</strong></p>`
+                    ).join('') : 
+                    '<p>No branch data available</p>'
+                }
             `;
             
             document.getElementById('statusChart').innerHTML = `
@@ -706,10 +734,10 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>#${ticket.ticket_id}</td>
-                    <td>${ticket.cust_name}</td>
+                    <td>${escapeHtml(ticket.cust_name)}</td>
                     <td><span class="type-badge type-${ticket.type}">${ticket.type}</span></td>
-                    <td><span class="status-badge status-${ticket.status}">${ticket.status}</span></td>
-                    <td>${ticket.branch_name || 'N/A'}</td>
+                    <td><span class="status-badge status-${ticket.status}">${ticket.status.replace('_', ' ')}</span></td>
+                    <td>${escapeHtml(ticket.branch_name || 'N/A')}</td>
                     <td>${formatDate(ticket.submitted_at)}</td>
                     <td>${calculateResponseTime(ticket)}</td>
                 `;
@@ -744,12 +772,12 @@
             
             // Validate custom date range
             if (dateRange === 'custom' && (!startDate || !endDate)) {
-                alert('Please select both start and end dates for custom range');
+                showError('Please select both start and end dates for custom range');
                 return;
             }
             
             if (dateRange === 'custom' && new Date(startDate) > new Date(endDate)) {
-                alert('Start date must be before end date');
+                showError('Start date must be before end date');
                 return;
             }
             
@@ -772,6 +800,8 @@
             document.getElementById('typeFilter').value = 'all';
             document.getElementById('startDate').style.display = 'none';
             document.getElementById('endDate').style.display = 'none';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
             
             currentFilters = {
                 dateRange: 30,
@@ -786,7 +816,7 @@
 
         function exportData(format) {
             if (!reportData || !reportData.data.tickets) {
-                alert('No data to export');
+                showError('No data to export');
                 return;
             }
             
@@ -799,21 +829,22 @@
 
         function exportCSV() {
             const tickets = reportData.data.tickets;
-            const headers = ['Ticket ID', 'Customer', 'Type', 'Status', 'Branch', 'Created', 'Title'];
+            const headers = ['Ticket ID', 'Customer', 'Type', 'Status', 'Branch', 'Created', 'Title', 'Response Time'];
             const csvContent = [
                 headers.join(','),
                 ...tickets.map(ticket => [
                     ticket.ticket_id,
-                    `"${ticket.cust_name}"`,
+                    `"${escapeCSV(ticket.cust_name)}"`,
                     ticket.type,
                     ticket.status,
-                    `"${ticket.branch_name || 'N/A'}"`,
+                    `"${escapeCSV(ticket.branch_name || 'N/A')}"`,
                     formatDate(ticket.submitted_at),
-                    `"${ticket.title}"`
+                    `"${escapeCSV(ticket.title)}"`,
+                    calculateResponseTime(ticket)
                 ].join(','))
             ].join('\n');
             
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.style.display = 'none';
@@ -822,10 +853,11 @@
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
         }
 
         function exportPDF() {
-            alert('PDF export feature coming soon!');
+            showError('PDF export feature coming soon! Use CSV export for now.');
         }
 
         // Utility functions
@@ -834,6 +866,8 @@
             document.getElementById('statsGrid').style.display = show ? 'none' : 'grid';
             document.getElementById('chartsGrid').style.display = show ? 'none' : 'grid';
             document.getElementById('recentTicketsTable').style.display = show ? 'none' : 'block';
+            document.getElementById('noDataState').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
         }
 
         function showNoData(show) {
@@ -844,14 +878,29 @@
         }
 
         function showError(message) {
-            alert('Error: ' + message);
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+            errorDiv.style.display = 'block';
+            errorDiv.scrollIntoView({ behavior: 'smooth' });
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
         }
 
         function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString();
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         function formatDuration(hours) {
+            if (!hours || hours === 0) return '0h';
             if (hours < 1) return Math.round(hours * 60) + 'm';
             if (hours < 24) return Math.round(hours) + 'h';
             return Math.round(hours / 24) + 'd';
@@ -863,6 +912,17 @@
             const responded = new Date(ticket.responded_at);
             const hours = (responded - submitted) / (1000 * 60 * 60);
             return formatDuration(hours);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeCSV(text) {
+            if (!text) return '';
+            return text.toString().replace(/"/g, '""');
         }
     </script>
 </body>
