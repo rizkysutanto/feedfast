@@ -12,101 +12,209 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8fafc;
             min-height: 100vh;
-            padding: 20px;
         }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
         }
         
-        .header {
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 200px;
+            background-color: #000000;
             color: white;
-            padding: 30px;
-            text-align: center;
-            position: relative;
+            padding: 1.5rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
         }
         
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
+        .sidebar-brand {
+            padding: 0 1.5rem 2rem 1.5rem;
+            border-bottom: 1px solid #333;
+            margin-bottom: 2rem;
         }
         
-        .header p {
-            opacity: 0.8;
-            font-size: 1.1rem;
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #8527F0;
         }
         
-        .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            background: rgba(255,255,255,0.2);
+        .brand-tagline {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            margin-top: 0.25rem;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: #a0aec0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
             color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s;
+            background-color: #1a1a1a;
         }
         
-        .logout-btn:hover {
-            background: rgba(255,255,255,0.3);
+        .nav-link.active {
+            color: white;
+            background-color: #8527F0;
+            border-right: 3px solid #8527F0;
         }
         
+        .nav-icon {
+            margin-right: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        /* Main Content */
         .main-content {
-            padding: 30px;
+            flex: 1;
+            margin-left: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
         
         .user-info {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 4px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #64748b;
+            font-size: 0.875rem;
         }
         
-        .user-info h3 {
-            color: #2d3748;
-            margin-bottom: 10px;
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: #8527F0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
         }
         
-        .user-info p {
-            color: #4a5568;
-            margin-bottom: 5px;
+        .logout-btn {
+            background-color: #8527F0;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
         }
         
+        .logout-btn:hover {
+            background-color: #7c3aed;
+        }
+        
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        /* Welcome Card */
+        .welcome-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .welcome-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-info {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .welcome-info span {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        /* Actions Bar */
         .actions-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 1rem;
         }
         
         .add-branch-btn {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            background-color: #8527F0;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.875rem;
             font-weight: 500;
-            transition: transform 0.2s;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .add-branch-btn:hover {
-            transform: translateY(-2px);
+            background-color: #7c3aed;
+            transform: translateY(-1px);
         }
         
         .search-box {
@@ -116,160 +224,183 @@
         
         .search-box input {
             width: 100%;
-            padding: 12px 40px 12px 16px;
-            border: 2px solid #e2e8f0;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
+            font-size: 0.875rem;
+            transition: border-color 0.2s ease;
         }
         
         .search-box input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #8527F0;
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
         
         .search-icon {
             position: absolute;
-            right: 12px;
+            left: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #a0aec0;
+            color: #9ca3af;
+            font-size: 1rem;
         }
         
+        /* Branches Grid */
         .branches-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
         
         .branch-card {
-            background: white;
-            border: 2px solid #e2e8f0;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 24px;
-            transition: all 0.3s;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
             position: relative;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         }
         
         .branch-card:hover {
-            border-color: #667eea;
+            border-color: #8527F0;
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px 0 rgba(133, 39, 240, 0.15);
         }
         
         .branch-status {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            padding: 4px 12px;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         
         .status-active {
-            background: #c6f6d5;
-            color: #22543d;
+            background-color: #dcfce7;
+            color: #16a34a;
         }
         
         .status-inactive {
-            background: #fed7d7;
-            color: #742a2a;
+            background-color: #fee2e2;
+            color: #dc2626;
         }
         
         .branch-header {
-            margin-bottom: 16px;
+            margin-bottom: 1rem;
+            padding-right: 5rem;
         }
         
         .branch-name {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 4px;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
         }
         
         .branch-code {
-            font-size: 0.9rem;
-            color: #667eea;
+            font-size: 0.875rem;
+            color: #8527F0;
             font-weight: 500;
         }
         
         .branch-info {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
         
         .info-item {
             display: flex;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
         }
         
         .info-label {
             font-weight: 500;
-            color: #4a5568;
+            color: #64748b;
             min-width: 80px;
         }
         
         .info-value {
-            color: #2d3748;
+            color: #1e293b;
+            flex: 1;
         }
         
         .pic-info {
-            background: #f7fafc;
-            padding: 16px;
+            background-color: #f8fafc;
+            padding: 1rem;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
         
         .pic-title {
             font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 10px;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .pic-info div {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+        
+        .pic-info div strong {
+            color: #1e293b;
         }
         
         .branch-actions {
             display: flex;
-            gap: 10px;
+            gap: 0.75rem;
         }
         
         .btn {
-            padding: 8px 16px;
+            padding: 0.5rem 1rem;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             font-weight: 500;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .btn-edit {
-            background: #bee3f8;
-            color: #2c5282;
+            background-color: #dbeafe;
+            color: #1d4ed8;
         }
         
         .btn-edit:hover {
-            background: #90cdf4;
+            background-color: #bfdbfe;
         }
         
         .btn-toggle {
-            background: #fed7d7;
-            color: #742a2a;
+            background-color: #fee2e2;
+            color: #dc2626;
         }
         
         .btn-toggle:hover {
-            background: #feb2b2;
+            background-color: #fecaca;
         }
         
         .btn-toggle.activate {
-            background: #c6f6d5;
-            color: #22543d;
+            background-color: #dcfce7;
+            color: #16a34a;
         }
         
         .btn-toggle.activate:hover {
-            background: #9ae6b4;
+            background-color: #bbf7d0;
         }
         
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -277,7 +408,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
         
@@ -287,7 +418,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 30px;
+            padding: 2rem;
             border-radius: 12px;
             width: 90%;
             max-width: 600px;
@@ -299,13 +430,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
         }
         
         .modal-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: #2d3748;
+            color: #1e293b;
         }
         
         .close-btn {
@@ -313,36 +446,41 @@
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
-            color: #a0aec0;
+            color: #9ca3af;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: color 0.2s ease;
         }
         
         .close-btn:hover {
-            color: #2d3748;
+            color: #1e293b;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
         
         .form-label {
             display: block;
             font-weight: 500;
-            color: #4a5568;
-            margin-bottom: 8px;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
         }
         
         .form-input {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s ease;
         }
         
         .form-input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #8527F0;
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
         
         .form-textarea {
@@ -350,42 +488,62 @@
             min-height: 100px;
         }
         
+        .pic-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .pic-section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
         .form-actions {
             display: flex;
-            gap: 15px;
+            gap: 1rem;
             justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #8527F0;
             color: white;
-            padding: 12px 24px;
-            font-size: 1rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
         }
         
         .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-            padding: 12px 24px;
-            font-size: 1rem;
+            background-color: #f3f4f6;
+            color: #374151;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
+            background-color: #7c3aed;
         }
         
         .btn-secondary:hover {
-            background: #cbd5e0;
+            background-color: #e5e7eb;
         }
         
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border: 2px solid #f3f3f3;
-            border-top: 2px solid #667eea;
+            border-top: 2px solid #8527F0;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
         }
         
         @keyframes spin {
@@ -394,36 +552,67 @@
         }
         
         .alert {
-            padding: 15px;
+            padding: 1rem;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
             font-weight: 500;
+            font-size: 0.875rem;
         }
         
         .alert-success {
-            background: #c6f6d5;
-            color: #22543d;
-            border: 1px solid #9ae6b4;
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
         }
         
         .alert-error {
-            background: #fed7d7;
-            color: #742a2a;
-            border: 1px solid #feb2b2;
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
         
         .no-branches {
             text-align: center;
-            padding: 60px 20px;
-            color: #a0aec0;
+            padding: 4rem 2rem;
+            color: #9ca3af;
+            background-color: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
         }
         
         .no-branches h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #6b7280;
         }
         
+        .loading-placeholder {
+            text-align: center;
+            padding: 2rem;
+            color: #9ca3af;
+            font-style: italic;
+        }
+        
+        /* Mobile Responsive */
         @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+            
             .branches-grid {
                 grid-template-columns: 1fr;
             }
@@ -436,40 +625,106 @@
             .search-box {
                 min-width: auto;
             }
+            
+            .user-info {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .branches-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <button class="logout-btn" onclick="logout()">Logout</button>
-            <h1>🏢 Branch Management</h1>
-            <p>Manage your organization's branches and locations</p>
-        </div>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-name">FeedFast</div>
+                <div class="brand-tagline">Client Dashboard</div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/ticket" class="nav-link">
+                        <span class="nav-icon">🎫</span>
+                        Ticket
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/branch" class="nav-link active">
+                        <span class="nav-icon">🏢</span>
+                        Branch
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/report" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        Reports
+                    </a>
+                </li>
+            </ul>
+        </nav>
         
+        <!-- Main Content -->
         <div class="main-content">
-            <div class="user-info">
-                <h3>👋 Welcome back, <span id="userName">Loading...</span></h3>
-                <p><strong>Client:</strong> <span id="clientName">Loading...</span></p>
-                <p><strong>Role:</strong> <span id="userRole">Loading...</span></p>
-            </div>
-            
-            <div class="actions-bar">
-                <button class="add-branch-btn" onclick="openAddBranchModal()">
-                    ➕ Add New Branch
-                </button>
+            <!-- Header -->
+            <header class="header">
+                <h1 class="header-title">Branch Management</h1>
                 
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search branches..." onkeyup="searchBranches()">
-                    <span class="search-icon">🔍</span>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div>
+                            <div id="userName" style="font-weight: 500; color: #1e293b;">Loading...</div>
+                            <div id="userRole" style="font-size: 0.75rem;">Loading...</div>
+                        </div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
                 </div>
-            </div>
+            </header>
             
-            <div id="alertContainer"></div>
-            
-            <div id="branchesContainer" class="branches-grid">
-                <div class="loading-placeholder">Loading branches...</div>
-            </div>
+            <!-- Content Area -->
+            <main class="content">
+                <!-- Welcome Card -->
+                <div class="welcome-card">
+                    <h2 class="welcome-title">👋 Welcome back, <span id="welcomeName">Loading...</span></h2>
+                    <div class="welcome-info">
+                        <strong>Client:</strong> <span id="clientName">Loading...</span> • 
+                        <strong>Today:</strong> <span id="currentDate">Loading...</span>
+                    </div>
+                </div>
+                
+                <!-- Actions Bar -->
+                <div class="actions-bar">
+                    <button class="add-branch-btn" onclick="openAddBranchModal()">
+                        <span>➕</span>
+                        Add New Branch
+                    </button>
+                    
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search branches..." onkeyup="searchBranches()">
+                    </div>
+                </div>
+                
+                <!-- Alert Container -->
+                <div id="alertContainer"></div>
+                
+                <!-- Branches Grid -->
+                <div id="branchesContainer" class="branches-grid">
+                    <div class="loading-placeholder">Loading branches...</div>
+                </div>
+            </main>
         </div>
     </div>
     
@@ -486,7 +741,7 @@
                 
                 <div class="form-group">
                     <label class="form-label" for="branchName">Branch Name *</label>
-                    <input type="text" id="branchName" class="form-input" required maxlength="255">
+                    <input type="text" id="branchName" class="form-input" required maxlength="255" placeholder="Enter branch name">
                 </div>
                 
                 <div class="form-group">
@@ -501,31 +756,34 @@
                 
                 <div class="form-group">
                     <label class="form-label" for="phone">Phone</label>
-                    <input type="tel" id="phone" class="form-input" maxlength="20">
+                    <input type="tel" id="phone" class="form-input" maxlength="20" placeholder="Branch phone number">
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="email">Email</label>
-                    <input type="email" id="email" class="form-input" maxlength="255">
+                    <input type="email" id="email" class="form-input" maxlength="255" placeholder="Branch email address">
                 </div>
                 
-                <h3 style="margin: 30px 0 20px 0; color: #2d3748; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                    👤 Person In Charge (PIC)
-                </h3>
-                
-                <div class="form-group">
-                    <label class="form-label" for="picName">PIC Name</label>
-                    <input type="text" id="picName" class="form-input" maxlength="255">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="picPhone">PIC Phone</label>
-                    <input type="tel" id="picPhone" class="form-input" maxlength="20">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="picEmail">PIC Email</label>
-                    <input type="email" id="picEmail" class="form-input" maxlength="255">
+                <div class="pic-section">
+                    <h3 class="pic-section-title">
+                        <span>👤</span>
+                        Person In Charge (PIC)
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="picName">PIC Name</label>
+                        <input type="text" id="picName" class="form-input" maxlength="255" placeholder="Person in charge name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="picPhone">PIC Phone</label>
+                        <input type="tel" id="picPhone" class="form-input" maxlength="20" placeholder="PIC phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="picEmail">PIC Email</label>
+                        <input type="email" id="picEmail" class="form-input" maxlength="255" placeholder="PIC email address">
+                    </div>
                 </div>
                 
                 <div class="form-actions">
@@ -580,9 +838,28 @@
         
         // Display user information
         function displayUserInfo() {
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('clientName').textContent = currentUser.clientName;
-            document.getElementById('userRole').textContent = currentUser.role;
+            const userName = currentUser.name;
+            const clientName = currentUser.clientName;
+            const userRole = currentUser.role;
+            
+            // Update header user info
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('userRole').textContent = userRole;
+            document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+            
+            // Update welcome card
+            document.getElementById('welcomeName').textContent = userName;
+            document.getElementById('clientName').textContent = clientName;
+            
+            // Update current date
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
         }
         
         // Load branches from API
@@ -665,202 +942,4 @@
                     ` : ''}
                     
                     <div class="branch-actions">
-                        <button class="btn btn-edit" onclick="editBranch(${branch.branch_id})">
-                            ✏️ Edit
-                        </button>
-                        <button class="btn btn-toggle ${branch.status ? '' : 'activate'}" 
-                                onclick="toggleBranchStatus(${branch.branch_id}, ${branch.status})">
-                            ${branch.status ? '❌ Deactivate' : '✅ Activate'}
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        // Search branches
-        function searchBranches() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = branches.filter(branch => 
-                branch.branch_name.toLowerCase().includes(query) ||
-                (branch.branch_code && branch.branch_code.toLowerCase().includes(query)) ||
-                (branch.address && branch.address.toLowerCase().includes(query)) ||
-                (branch.pic_name && branch.pic_name.toLowerCase().includes(query))
-            );
-            displayBranches(filtered);
-        }
-        
-        // Open add branch modal
-        function openAddBranchModal() {
-            isEditMode = false;
-            document.getElementById('modalTitle').textContent = 'Add New Branch';
-            document.getElementById('submitBtnText').textContent = 'Create Branch';
-            document.getElementById('branchForm').reset();
-            document.getElementById('branchId').value = '';
-            document.getElementById('branchModal').style.display = 'block';
-        }
-        
-        // Edit branch
-        function editBranch(branchId) {
-            const branch = branches.find(b => b.branch_id === branchId);
-            if (!branch) return;
-            
-            isEditMode = true;
-            document.getElementById('modalTitle').textContent = 'Edit Branch';
-            document.getElementById('submitBtnText').textContent = 'Update Branch';
-            
-            // Populate form
-            document.getElementById('branchId').value = branch.branch_id;
-            document.getElementById('branchName').value = branch.branch_name;
-            document.getElementById('branchCode').value = branch.branch_code || '';
-            document.getElementById('address').value = branch.address || '';
-            document.getElementById('phone').value = branch.phone || '';
-            document.getElementById('email').value = branch.email || '';
-            document.getElementById('picName').value = branch.pic_name || '';
-            document.getElementById('picPhone').value = branch.pic_phone || '';
-            document.getElementById('picEmail').value = branch.pic_email || '';
-            
-            document.getElementById('branchModal').style.display = 'block';
-        }
-        
-        // Close modal
-        function closeBranchModal() {
-            document.getElementById('branchModal').style.display = 'none';
-        }
-        
-        // Handle form submission
-        document.getElementById('branchForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtnText');
-            const loading = document.getElementById('submitBtnLoading');
-            
-            submitBtn.style.display = 'none';
-            loading.style.display = 'inline-block';
-            
-            try {
-                const formData = {
-                    branch_name: document.getElementById('branchName').value.trim(),
-                    branch_code: document.getElementById('branchCode').value.trim() || null,
-                    address: document.getElementById('address').value.trim() || null,
-                    phone: document.getElementById('phone').value.trim() || null,
-                    email: document.getElementById('email').value.trim() || null,
-                    pic_name: document.getElementById('picName').value.trim() || null,
-                    pic_phone: document.getElementById('picPhone').value.trim() || null,
-                    pic_email: document.getElementById('picEmail').value.trim() || null
-                };
-                
-                const token = localStorage.getItem('clientToken');
-                const branchId = document.getElementById('branchId').value;
-                
-                const url = isEditMode ? `/api/branches/${branchId}` : '/api/branches';
-                const method = isEditMode ? 'PUT' : 'POST';
-                
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    closeBranchModal();
-                    showAlert(
-                        isEditMode ? 'Branch updated successfully!' : 'Branch created successfully!',
-                        'success'
-                    );
-                    loadBranches();
-                } else {
-                    showAlert('Error: ' + data.message, 'error');
-                }
-                
-            } catch (error) {
-                console.error('Form submission error:', error);
-                showAlert('Network error. Please try again.', 'error');
-            } finally {
-                submitBtn.style.display = 'inline-block';
-                loading.style.display = 'none';
-            }
-        });
-        
-        // Toggle branch status
-        async function toggleBranchStatus(branchId, currentStatus) {
-            if (!confirm(`Are you sure you want to ${currentStatus ? 'deactivate' : 'activate'} this branch?`)) {
-                return;
-            }
-            
-            try {
-                const token = localStorage.getItem('clientToken');
-                const response = await fetch(`/api/branches/${branchId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ status: !currentStatus })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showAlert(
-                        `Branch ${!currentStatus ? 'activated' : 'deactivated'} successfully!`,
-                        'success'
-                    );
-                    loadBranches();
-                } else {
-                    showAlert('Error: ' + data.message, 'error');
-                }
-                
-            } catch (error) {
-                console.error('Status toggle error:', error);
-                showAlert('Network error. Please try again.', 'error');
-            }
-        }
-        
-        // Show alert message
-        function showAlert(message, type) {
-            const container = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            
-            container.innerHTML = '';
-            container.appendChild(alert);
-            
-            setTimeout(() => {
-                alert.remove();
-            }, 5000);
-        }
-        
-        // Escape HTML to prevent XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Logout function
-        function logout() {
-            localStorage.removeItem('clientToken');
-            window.location.href = '/login';
-        }
-        
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('branchModal');
-            if (event.target == modal) {
-                closeBranchModal();
-            }
-        }
-        
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-        });
-    </script>
-</body>
-</html>
+                        <button class="btn btn-edit" onclick="editB
