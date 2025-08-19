@@ -669,7 +669,19 @@
                 <li class="nav-item">
                     <a href="/report" class="nav-link">
                         <span class="nav-icon">📈</span>
-                        Reports
+                        Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/branch" class="nav-link active">
+                        <span class="nav-icon">👥</span>
+                        User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/branch" class="nav-link active">
+                        <span class="nav-icon">⚙️</span>
+                        Settings
                     </a>
                 </li>
             </ul>
@@ -942,4 +954,202 @@
                     ` : ''}
                     
                     <div class="branch-actions">
-                        <button class="btn btn-edit" onclick="editB
+                        <button class="btn btn-edit" onclick="editBranch(${branch.branch_id})">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn btn-toggle ${branch.status ? '' : 'activate'}" 
+                                onclick="toggleBranchStatus(${branch.branch_id}, ${branch.status})">
+                            ${branch.status ? '❌ Deactivate' : '✅ Activate'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Search branches
+        function searchBranches() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = branches.filter(branch => 
+                branch.branch_name.toLowerCase().includes(query) ||
+                (branch.branch_code && branch.branch_code.toLowerCase().includes(query)) ||
+                (branch.address && branch.address.toLowerCase().includes(query)) ||
+                (branch.pic_name && branch.pic_name.toLowerCase().includes(query))
+            );
+            displayBranches(filtered);
+        }
+        
+        // Open add branch modal
+        function openAddBranchModal() {
+            isEditMode = false;
+            document.getElementById('modalTitle').textContent = 'Add New Branch';
+            document.getElementById('submitBtnText').textContent = 'Create Branch';
+            document.getElementById('branchForm').reset();
+            document.getElementById('branchId').value = '';
+            document.getElementById('branchModal').style.display = 'block';
+        }
+        
+        // Edit branch
+        function editBranch(branchId) {
+            const branch = branches.find(b => b.branch_id === branchId);
+            if (!branch) return;
+            
+            isEditMode = true;
+            document.getElementById('modalTitle').textContent = 'Edit Branch';
+            document.getElementById('submitBtnText').textContent = 'Update Branch';
+            
+            // Populate form
+            document.getElementById('branchId').value = branch.branch_id;
+            document.getElementById('branchName').value = branch.branch_name;
+            document.getElementById('branchCode').value = branch.branch_code || '';
+            document.getElementById('address').value = branch.address || '';
+            document.getElementById('phone').value = branch.phone || '';
+            document.getElementById('email').value = branch.email || '';
+            document.getElementById('picName').value = branch.pic_name || '';
+            document.getElementById('picPhone').value = branch.pic_phone || '';
+            document.getElementById('picEmail').value = branch.pic_email || '';
+            
+            document.getElementById('branchModal').style.display = 'block';
+        }
+        
+        // Close modal
+        function closeBranchModal() {
+            document.getElementById('branchModal').style.display = 'none';
+        }
+        
+        // Handle form submission
+        document.getElementById('branchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtnText');
+            const loading = document.getElementById('submitBtnLoading');
+            
+            submitBtn.style.display = 'none';
+            loading.style.display = 'inline-block';
+            
+            try {
+                const formData = {
+                    branch_name: document.getElementById('branchName').value.trim(),
+                    branch_code: document.getElementById('branchCode').value.trim() || null,
+                    address: document.getElementById('address').value.trim() || null,
+                    phone: document.getElementById('phone').value.trim() || null,
+                    email: document.getElementById('email').value.trim() || null,
+                    pic_name: document.getElementById('picName').value.trim() || null,
+                    pic_phone: document.getElementById('picPhone').value.trim() || null,
+                    pic_email: document.getElementById('picEmail').value.trim() || null
+                };
+                
+                const token = localStorage.getItem('clientToken');
+                const branchId = document.getElementById('branchId').value;
+                
+                const url = isEditMode ? `/api/branches/${branchId}` : '/api/branches';
+                const method = isEditMode ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeBranchModal();
+                    showAlert(
+                        isEditMode ? 'Branch updated successfully!' : 'Branch created successfully!',
+                        'success'
+                    );
+                    loadBranches();
+                } else {
+                    showAlert('Error: ' + data.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showAlert('Network error. Please try again.', 'error');
+            } finally {
+                submitBtn.style.display = 'inline-block';
+                loading.style.display = 'none';
+            }
+        });
+        
+        // Toggle branch status
+        async function toggleBranchStatus(branchId, currentStatus) {
+            if (!confirm(`Are you sure you want to ${currentStatus ? 'deactivate' : 'activate'} this branch?`)) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('clientToken');
+                const response = await fetch(`/api/branches/${branchId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: !currentStatus })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(
+                        `Branch ${!currentStatus ? 'activated' : 'deactivated'} successfully!`,
+                        'success'
+                    );
+                    loadBranches();
+                } else {
+                    showAlert('Error: ' + data.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Status toggle error:', error);
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+        
+        // Show alert message
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            container.innerHTML = '';
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('clientToken');
+            window.location.href = '/login';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('branchModal');
+            if (event.target == modal) {
+                closeBranchModal();
+            }
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+</body>
+</html>
