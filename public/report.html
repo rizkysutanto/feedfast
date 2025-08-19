@@ -10,322 +10,514 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8fafc;
+            min-height: 100vh;
         }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
-
-        .nav-container {
-            background: white;
-            border-bottom: 1px solid #dee2e6;
-            padding: 0 2rem;
-        }
-
-        .nav {
+        
+        .app-layout {
             display: flex;
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+            min-height: 100vh;
         }
-
+        
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 200px;
+            background-color: #000000;
+            color: white;
+            padding: 1.5rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-brand {
+            padding: 0 1.5rem 2rem 1.5rem;
+            border-bottom: 1px solid #333;
+            margin-bottom: 2rem;
+        }
+        
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #8527F0;
+        }
+        
+        .brand-tagline {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            margin-top: 0.25rem;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
         .nav-item {
-            padding: 1rem 0;
-            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: #a0aec0;
             text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
             font-weight: 500;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
         }
-
-        .nav-item:hover,
-        .nav-item.active {
-            color: #764ba2;
-            border-bottom-color: #764ba2;
+        
+        .nav-link:hover {
+            color: white;
+            background-color: #1a1a1a;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        
+        .nav-link.active {
+            color: white;
+            background-color: #8527F0;
+            border-right: 3px solid #8527F0;
+        }
+        
+        .nav-icon {
+            margin-right: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: #8527F0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .logout-btn {
+            background-color: #8527F0;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        
+        .logout-btn:hover {
+            background-color: #7c3aed;
+        }
+        
+        /* Content Area */
+        .content {
+            flex: 1;
             padding: 2rem;
+            overflow-y: auto;
         }
-
-        .filters {
-            background: white;
+        
+        /* Welcome Card */
+        .welcome-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         }
-
+        
+        .welcome-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-info {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .welcome-info span {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        /* Filters Section */
+        .filters {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
         .filters h3 {
-            margin-bottom: 1rem;
-            color: #333;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-
+        
         .filter-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             align-items: end;
         }
-
+        
         .filter-group {
             display: flex;
             flex-direction: column;
         }
-
+        
         .filter-group label {
-            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
             font-weight: 500;
-            color: #555;
+            color: #374151;
+            margin-bottom: 0.5rem;
         }
-
+        
         .filter-group select,
         .filter-group input {
             padding: 0.75rem;
-            border: 2px solid #e1e5e9;
+            border: 1px solid #d1d5db;
             border-radius: 6px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
+            font-size: 0.875rem;
+            transition: border-color 0.2s ease;
         }
-
+        
         .filter-group select:focus,
         .filter-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #8527F0;
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
-
+        
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #8527F0;
             color: white;
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 6px;
-            font-size: 1rem;
+            font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-
+        
         .btn:hover {
+            background-color: #7c3aed;
             transform: translateY(-1px);
         }
-
+        
         .btn-secondary {
-            background: #6c757d;
+            background-color: #6b7280;
             margin-left: 0.5rem;
         }
-
+        
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        /* Statistics Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
-
+        
         .stat-card {
-            background: white;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             text-align: center;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
         }
-
+        
         .stat-card:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px 0 rgba(133, 39, 240, 0.15);
         }
-
+        
         .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #8527F0;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             margin-bottom: 0.5rem;
         }
-
-        .stat-label {
-            color: #666;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
+        
         .stat-change {
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
-
+        
         .stat-change.positive {
-            color: #28a745;
+            color: #10b981;
         }
-
+        
         .stat-change.negative {
-            color: #dc3545;
+            color: #ef4444;
         }
-
+        
+        /* Charts Grid */
         .charts-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
-
-        @media (max-width: 768px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
+        
         .chart-card {
-            background: white;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         }
-
+        
         .chart-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
             margin-bottom: 1rem;
-            color: #333;
-            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-
+        
         .chart-placeholder {
             height: 300px;
-            background: linear-gradient(45deg, #f1f3f4, #e8eaed);
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border: 2px dashed #cbd5e1;
             border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #666;
-            font-size: 1.1rem;
+            color: #64748b;
+            font-size: 0.875rem;
             padding: 1rem;
             text-align: center;
         }
-
+        
+        .chart-placeholder p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .chart-placeholder p:first-child {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .chart-placeholder strong {
+            color: #8527F0;
+            font-weight: 600;
+        }
+        
+        /* Table Card */
         .table-card {
-            background: white;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
         }
-
+        
         .table-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
         }
-
+        
         .table-header h3 {
-            color: #333;
-            font-size: 1.2rem;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        .data-table th,
-        .data-table td {
-            text-align: left;
-            padding: 1rem 0.75rem;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .data-table th {
-            background-color: #f8f9fa;
+            font-size: 1.125rem;
             font-weight: 600;
-            color: #495057;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-
-        .data-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
-
-        .status-open { background: #fff3cd; color: #856404; }
-        .status-in_progress { background: #d1ecf1; color: #0c5460; }
-        .status-resolved { background: #d4edda; color: #155724; }
-        .status-closed { background: #f8d7da; color: #721c24; }
-
-        .type-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .type-complaint { background: #f8d7da; color: #721c24; }
-        .type-suggestion { background: #d1ecf1; color: #0c5460; }
-        .type-compliment { background: #d4edda; color: #155724; }
-        .type-inquiry { background: #e2e3e5; color: #383d41; }
-
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 3rem;
-            color: #666;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
+        
         .export-buttons {
             display: flex;
             gap: 0.5rem;
-            margin-left: auto;
         }
-
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+        }
+        
+        .data-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        /* Status and Type Badges */
+        .status-badge,
+        .type-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-open { background-color: #fef3c7; color: #92400e; }
+        .status-in_progress { background-color: #dbeafe; color: #1e40af; }
+        .status-resolved { background-color: #dcfce7; color: #166534; }
+        .status-closed { background-color: #fee2e2; color: #991b1b; }
+        
+        .type-complaint { background-color: #fee2e2; color: #991b1b; }
+        .type-suggestion { background-color: #dbeafe; color: #1e40af; }
+        .type-compliment { background-color: #dcfce7; color: #166534; }
+        .type-inquiry { background-color: #e5e7eb; color: #374151; }
+        
+        /* Loading and No Data States */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+            background-color: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-style: italic;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .no-data h3 {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Error Message */
         .error-message {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
             padding: 1rem;
             border-radius: 8px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
             display: none;
         }
-
+        
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .container {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .content {
                 padding: 1rem;
             }
             
@@ -333,179 +525,263 @@
                 grid-template-columns: 1fr;
             }
             
-            .nav {
-                flex-direction: column;
-                gap: 0;
+            .charts-grid {
+                grid-template-columns: 1fr;
             }
             
             .export-buttons {
-                margin-left: 0;
                 margin-top: 1rem;
+                justify-content: flex-start;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
             }
             
             .data-table {
-                font-size: 0.9rem;
+                font-size: 0.8rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 0.5rem;
+            }
+            
+            .user-info {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .charts-grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Analytics & Reports</h1>
-        <p>Comprehensive insights into your customer feedback</p>
-    </div>
-
-    <div class="nav-container">
-        <nav class="nav">
-            <a href="/dashboard" class="nav-item">Dashboard</a>
-            <a href="/ticket" class="nav-item">Tickets</a>
-            <a href="/branch" class="nav-item">Branches</a>
-            <a href="/report" class="nav-item active">Reports</a>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-name">FeedFast</div>
+                <div class="brand-tagline">Client Dashboard</div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/ticket" class="nav-link">
+                        <span class="nav-icon">🎫</span>
+                        Ticket
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/branch" class="nav-link">
+                        <span class="nav-icon">🏢</span>
+                        Branch
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/report" class="nav-link active">
+                        <span class="nav-icon">📈</span>
+                        Report
+                    </a>
+                <li class="nav-item">
+                    <a href="/user-management" class="nav-link">
+                        <span class="nav-icon">👥</span>
+                        User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/setting" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Settings
+                    </a>
+                </li>
+                </li>
+            </ul>
         </nav>
-    </div>
-
-    <div class="container">
-        <!-- Error Message -->
-        <div id="errorMessage" class="error-message"></div>
-
-        <!-- Filters Section -->
-        <div class="filters">
-            <h3>📊 Report Filters</h3>
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label for="dateRange">Date Range</label>
-                    <select id="dateRange">
-                        <option value="7">Last 7 days</option>
-                        <option value="30" selected>Last 30 days</option>
-                        <option value="90">Last 3 months</option>
-                        <option value="365">Last 12 months</option>
-                        <option value="custom">Custom Range</option>
-                    </select>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h1 class="header-title">Analytics & Reports</h1>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div>
+                            <div id="userName" style="font-weight: 500; color: #1e293b;">Loading...</div>
+                            <div id="userRole" style="font-size: 0.75rem;">Loading...</div>
+                        </div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
                 </div>
-                <div class="filter-group">
-                    <label for="startDate">Start Date</label>
-                    <input type="date" id="startDate" style="display: none;">
+            </header>
+            
+            <!-- Content Area -->
+            <main class="content">
+                <!-- Welcome Card -->
+                <div class="welcome-card">
+                    <h2 class="welcome-title">📈 Analytics & Reports</h2>
+                    <div class="welcome-info">
+                        Comprehensive insights into your customer feedback • 
+                        <strong>Today:</strong> <span id="currentDate">Loading...</span>
+                    </div>
                 </div>
-                <div class="filter-group">
-                    <label for="endDate">End Date</label>
-                    <input type="date" id="endDate" style="display: none;">
+                
+                <!-- Error Message -->
+                <div id="errorMessage" class="error-message"></div>
+                
+                <!-- Filters Section -->
+                <div class="filters">
+                    <h3>🔧 Report Filters</h3>
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="dateRange">Date Range</label>
+                            <select id="dateRange">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 3 months</option>
+                                <option value="365">Last 12 months</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" style="display: none;">
+                        </div>
+                        <div class="filter-group">
+                            <label for="endDate">End Date</label>
+                            <input type="date" id="endDate" style="display: none;">
+                        </div>
+                        <div class="filter-group">
+                            <label for="branchFilter">Branch</label>
+                            <select id="branchFilter">
+                                <option value="all">All Branches</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="typeFilter">Type</label>
+                            <select id="typeFilter">
+                                <option value="all">All Types</option>
+                                <option value="complaint">Complaints</option>
+                                <option value="suggestion">Suggestions</option>
+                                <option value="compliment">Compliments</option>
+                                <option value="inquiry">Inquiries</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <button class="btn" onclick="applyFilters()">Apply Filters</button>
+                            <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="filter-group">
-                    <label for="branchFilter">Branch</label>
-                    <select id="branchFilter">
-                        <option value="all">All Branches</option>
-                    </select>
+                
+                <!-- Loading State -->
+                <div id="loadingState" class="loading">
+                    <p>📊 Loading report data...</p>
                 </div>
-                <div class="filter-group">
-                    <label for="typeFilter">Type</label>
-                    <select id="typeFilter">
-                        <option value="all">All Types</option>
-                        <option value="complaint">Complaints</option>
-                        <option value="suggestion">Suggestions</option>
-                        <option value="compliment">Compliments</option>
-                        <option value="inquiry">Inquiries</option>
-                    </select>
+                
+                <!-- Statistics Cards -->
+                <div id="statsGrid" class="stats-grid" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalTickets">0</div>
+                        <div class="stat-label">Total Tickets</div>
+                        <div class="stat-change" id="totalTicketsChange"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="avgResponseTime">0h</div>
+                        <div class="stat-label">Avg Response Time</div>
+                        <div class="stat-change" id="responseTimeChange"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="resolutionRate">0%</div>
+                        <div class="stat-label">Resolution Rate</div>
+                        <div class="stat-change" id="resolutionRateChange"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="customerSatisfaction">0%</div>
+                        <div class="stat-label">Satisfaction Score</div>
+                        <div class="stat-change" id="satisfactionChange"></div>
+                    </div>
                 </div>
-                <div class="filter-group">
-                    <button class="btn" onclick="applyFilters()">Apply Filters</button>
-                    <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                
+                <!-- Charts -->
+                <div id="chartsGrid" class="charts-grid" style="display: none;">
+                    <div class="chart-card">
+                        <h3>📈 Tickets Over Time</h3>
+                        <div class="chart-placeholder" id="timelineChart">
+                            Timeline chart will be rendered here
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>📊 Tickets by Type</h3>
+                        <div class="chart-placeholder" id="typeChart">
+                            Type distribution chart will be rendered here
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>🏢 Tickets by Branch</h3>
+                        <div class="chart-placeholder" id="branchChart">
+                            Branch distribution chart will be rendered here
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>📋 Status Distribution</h3>
+                        <div class="chart-placeholder" id="statusChart">
+                            Status distribution chart will be rendered here
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loadingState" class="loading">
-            <p>📊 Loading report data...</p>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div id="statsGrid" class="stats-grid" style="display: none;">
-            <div class="stat-card">
-                <div class="stat-number" id="totalTickets">0</div>
-                <div class="stat-label">Total Tickets</div>
-                <div class="stat-change" id="totalTicketsChange"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="avgResponseTime">0h</div>
-                <div class="stat-label">Avg Response Time</div>
-                <div class="stat-change" id="responseTimeChange"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="resolutionRate">0%</div>
-                <div class="stat-label">Resolution Rate</div>
-                <div class="stat-change" id="resolutionRateChange"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="customerSatisfaction">0%</div>
-                <div class="stat-label">Satisfaction Score</div>
-                <div class="stat-change" id="satisfactionChange"></div>
-            </div>
-        </div>
-
-        <!-- Charts -->
-        <div id="chartsGrid" class="charts-grid" style="display: none;">
-            <div class="chart-card">
-                <h3>📈 Tickets Over Time</h3>
-                <div class="chart-placeholder" id="timelineChart">
-                    Timeline chart will be rendered here
+                
+                <!-- Recent Tickets Table -->
+                <div id="recentTicketsTable" class="table-card" style="display: none;">
+                    <div class="table-header">
+                        <h3>🎫 Recent Tickets</h3>
+                        <div class="export-buttons">
+                            <button class="btn" onclick="exportData('csv')">Export CSV</button>
+                            <button class="btn btn-secondary" onclick="exportData('pdf')">Export PDF</button>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Customer</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Branch</th>
+                                <th>Created</th>
+                                <th>Response Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketsTableBody">
+                            <!-- Table data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-            <div class="chart-card">
-                <h3>📊 Tickets by Type</h3>
-                <div class="chart-placeholder" id="typeChart">
-                    Type distribution chart will be rendered here
+                
+                <!-- No Data State -->
+                <div id="noDataState" class="no-data" style="display: none;">
+                    <h3>📊 No Data Available</h3>
+                    <p>No tickets found for the selected criteria. Try adjusting your filters.</p>
                 </div>
-            </div>
-            <div class="chart-card">
-                <h3>🏢 Tickets by Branch</h3>
-                <div class="chart-placeholder" id="branchChart">
-                    Branch distribution chart will be rendered here
-                </div>
-            </div>
-            <div class="chart-card">
-                <h3>📋 Status Distribution</h3>
-                <div class="chart-placeholder" id="statusChart">
-                    Status distribution chart will be rendered here
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Tickets Table -->
-        <div id="recentTicketsTable" class="table-card" style="display: none;">
-            <div class="table-header">
-                <h3>🎫 Recent Tickets</h3>
-                <div class="export-buttons">
-                    <button class="btn" onclick="exportData('csv')">Export CSV</button>
-                    <button class="btn btn-secondary" onclick="exportData('pdf')">Export PDF</button>
-                </div>
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Ticket ID</th>
-                        <th>Customer</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Branch</th>
-                        <th>Created</th>
-                        <th>Response Time</th>
-                    </tr>
-                </thead>
-                <tbody id="ticketsTableBody">
-                    <!-- Table data will be populated by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- No Data State -->
-        <div id="noDataState" class="no-data" style="display: none;">
-            <h3>📊 No Data Available</h3>
-            <p>No tickets found for the selected criteria. Try adjusting your filters.</p>
+            </main>
         </div>
     </div>
 
     <script>
         // Global variables
+        let currentUser = null;
         let currentFilters = {
             dateRange: 30,
             startDate: null,
@@ -539,6 +815,12 @@
                 if (!userResponse.ok) {
                     throw new Error('Authentication failed');
                 }
+                
+                const userData = await userResponse.json();
+                if (userData.success) {
+                    currentUser = userData.user;
+                    displayUserInfo();
+                }
 
                 // Load branches for filter
                 await loadBranches();
@@ -558,6 +840,29 @@
                     showError('Failed to load page data: ' + error.message);
                 }
             }
+        }
+        
+        // Display user information
+        function displayUserInfo() {
+            if (!currentUser) return;
+            
+            const userName = currentUser.name;
+            const userRole = currentUser.role;
+            
+            // Update header user info
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('userRole').textContent = userRole;
+            document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+            
+            // Update current date
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
         }
 
         async function loadBranches() {
@@ -631,299 +936,4 @@
                     throw new Error(reportData.message || 'Failed to load report data');
                 }
                 
-            } catch (error) {
-                console.error('Error loading report data:', error);
-                showError('Failed to load report data: ' + error.message);
-            } finally {
-                showLoading(false);
             }
-        }
-
-        function renderReportData(data) {
-            if (!data.tickets || data.tickets.length === 0) {
-                showNoData(true);
-                return;
-            }
-
-            showNoData(false);
-            
-            // Render statistics
-            renderStatistics(data.stats);
-            
-            // Render charts (placeholder for now)
-            renderCharts(data);
-            
-            // Render recent tickets table
-            renderTicketsTable(data.tickets);
-            
-            // Show all sections
-            document.getElementById('statsGrid').style.display = 'grid';
-            document.getElementById('chartsGrid').style.display = 'grid';
-            document.getElementById('recentTicketsTable').style.display = 'block';
-        }
-
-        function renderStatistics(stats) {
-            document.getElementById('totalTickets').textContent = stats.totalTickets || 0;
-            document.getElementById('avgResponseTime').textContent = formatDuration(stats.avgResponseTime || 0);
-            document.getElementById('resolutionRate').textContent = (stats.resolutionRate || 0).toFixed(1) + '%';
-            document.getElementById('customerSatisfaction').textContent = (stats.satisfactionScore || 0).toFixed(1) + '%';
-            
-            // Add change indicators
-            updateChangeIndicator('totalTicketsChange', stats.totalTicketsChange);
-            updateChangeIndicator('responseTimeChange', stats.responseTimeChange);
-            updateChangeIndicator('resolutionRateChange', stats.resolutionRateChange);
-            updateChangeIndicator('satisfactionChange', stats.satisfactionChange);
-        }
-
-        function updateChangeIndicator(elementId, change) {
-            const element = document.getElementById(elementId);
-            if (change === undefined || change === null || change === 0) {
-                element.textContent = 'No change from last period';
-                element.className = 'stat-change';
-                return;
-            }
-            
-            const isPositive = change > 0;
-            const sign = isPositive ? '+' : '';
-            element.textContent = `${sign}${change.toFixed(1)}% vs last period`;
-            element.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
-        }
-
-        function renderCharts(data) {
-            // Enhanced placeholder implementation with actual data
-            document.getElementById('timelineChart').innerHTML = `
-                <p>📈 Timeline Chart</p>
-                <p><strong>${data.stats.totalTickets}</strong> tickets in selected period</p>
-                <p>Peak activity varies by day</p>
-            `;
-            
-            document.getElementById('typeChart').innerHTML = `
-                <p>📊 Type Distribution</p>
-                <p>Complaints: <strong>${data.stats.byType?.complaint || 0}</strong></p>
-                <p>Suggestions: <strong>${data.stats.byType?.suggestion || 0}</strong></p>
-                <p>Compliments: <strong>${data.stats.byType?.compliment || 0}</strong></p>
-                <p>Inquiries: <strong>${data.stats.byType?.inquiry || 0}</strong></p>
-            `;
-            
-            const branchCount = Object.keys(data.stats.byBranch || {}).length;
-            document.getElementById('branchChart').innerHTML = `
-                <p>🏢 Branch Distribution</p>
-                <p>Active branches: <strong>${branchCount}</strong></p>
-                ${branchCount > 0 ? 
-                    Object.entries(data.stats.byBranch).map(([branch, count]) => 
-                        `<p>${branch}: <strong>${count}</strong></p>`
-                    ).join('') : 
-                    '<p>No branch data available</p>'
-                }
-            `;
-            
-            document.getElementById('statusChart').innerHTML = `
-                <p>📋 Status Distribution</p>
-                <p>Open: <strong>${data.stats.byStatus?.open || 0}</strong></p>
-                <p>In Progress: <strong>${data.stats.byStatus?.in_progress || 0}</strong></p>
-                <p>Resolved: <strong>${data.stats.byStatus?.resolved || 0}</strong></p>
-                <p>Closed: <strong>${data.stats.byStatus?.closed || 0}</strong></p>
-            `;
-        }
-
-        function renderTicketsTable(tickets) {
-            const tbody = document.getElementById('ticketsTableBody');
-            tbody.innerHTML = '';
-            
-            tickets.slice(0, 20).forEach(ticket => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>#${ticket.ticket_id}</td>
-                    <td>${escapeHtml(ticket.cust_name)}</td>
-                    <td><span class="type-badge type-${ticket.type}">${ticket.type}</span></td>
-                    <td><span class="status-badge status-${ticket.status}">${ticket.status.replace('_', ' ')}</span></td>
-                    <td>${escapeHtml(ticket.branch_name || 'N/A')}</td>
-                    <td>${formatDate(ticket.submitted_at)}</td>
-                    <td>${calculateResponseTime(ticket)}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function handleDateRangeChange() {
-            const dateRange = document.getElementById('dateRange').value;
-            const startDate = document.getElementById('startDate');
-            const endDate = document.getElementById('endDate');
-            
-            if (dateRange === 'custom') {
-                startDate.style.display = 'block';
-                endDate.style.display = 'block';
-                startDate.required = true;
-                endDate.required = true;
-            } else {
-                startDate.style.display = 'none';
-                endDate.style.display = 'none';
-                startDate.required = false;
-                endDate.required = false;
-            }
-        }
-
-        function applyFilters() {
-            const dateRange = document.getElementById('dateRange').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const branch = document.getElementById('branchFilter').value;
-            const type = document.getElementById('typeFilter').value;
-            
-            // Validate custom date range
-            if (dateRange === 'custom' && (!startDate || !endDate)) {
-                showError('Please select both start and end dates for custom range');
-                return;
-            }
-            
-            if (dateRange === 'custom' && new Date(startDate) > new Date(endDate)) {
-                showError('Start date must be before end date');
-                return;
-            }
-            
-            // Update current filters
-            currentFilters = {
-                dateRange: dateRange === 'custom' ? 'custom' : parseInt(dateRange),
-                startDate: dateRange === 'custom' ? startDate : null,
-                endDate: dateRange === 'custom' ? endDate : null,
-                branch: branch,
-                type: type
-            };
-            
-            // Reload data
-            loadReportData();
-        }
-
-        function resetFilters() {
-            document.getElementById('dateRange').value = '30';
-            document.getElementById('branchFilter').value = 'all';
-            document.getElementById('typeFilter').value = 'all';
-            document.getElementById('startDate').style.display = 'none';
-            document.getElementById('endDate').style.display = 'none';
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            
-            currentFilters = {
-                dateRange: 30,
-                startDate: null,
-                endDate: null,
-                branch: 'all',
-                type: 'all'
-            };
-            
-            loadReportData();
-        }
-
-        function exportData(format) {
-            if (!reportData || !reportData.data.tickets) {
-                showError('No data to export');
-                return;
-            }
-            
-            if (format === 'csv') {
-                exportCSV();
-            } else if (format === 'pdf') {
-                exportPDF();
-            }
-        }
-
-        function exportCSV() {
-            const tickets = reportData.data.tickets;
-            const headers = ['Ticket ID', 'Customer', 'Type', 'Status', 'Branch', 'Created', 'Title', 'Response Time'];
-            const csvContent = [
-                headers.join(','),
-                ...tickets.map(ticket => [
-                    ticket.ticket_id,
-                    `"${escapeCSV(ticket.cust_name)}"`,
-                    ticket.type,
-                    ticket.status,
-                    `"${escapeCSV(ticket.branch_name || 'N/A')}"`,
-                    formatDate(ticket.submitted_at),
-                    `"${escapeCSV(ticket.title)}"`,
-                    calculateResponseTime(ticket)
-                ].join(','))
-            ].join('\n');
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `feedfast-report-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        }
-
-        function exportPDF() {
-            showError('PDF export feature coming soon! Use CSV export for now.');
-        }
-
-        // Utility functions
-        function showLoading(show) {
-            document.getElementById('loadingState').style.display = show ? 'block' : 'none';
-            document.getElementById('statsGrid').style.display = show ? 'none' : 'grid';
-            document.getElementById('chartsGrid').style.display = show ? 'none' : 'grid';
-            document.getElementById('recentTicketsTable').style.display = show ? 'none' : 'block';
-            document.getElementById('noDataState').style.display = 'none';
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-
-        function showNoData(show) {
-            document.getElementById('noDataState').style.display = show ? 'block' : 'none';
-            document.getElementById('statsGrid').style.display = show ? 'none' : 'grid';
-            document.getElementById('chartsGrid').style.display = show ? 'none' : 'grid';
-            document.getElementById('recentTicketsTable').style.display = show ? 'none' : 'block';
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
-            errorDiv.style.display = 'block';
-            errorDiv.scrollIntoView({ behavior: 'smooth' });
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
-        }
-
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        function formatDuration(hours) {
-            if (!hours || hours === 0) return '0h';
-            if (hours < 1) return Math.round(hours * 60) + 'm';
-            if (hours < 24) return Math.round(hours) + 'h';
-            return Math.round(hours / 24) + 'd';
-        }
-
-        function calculateResponseTime(ticket) {
-            if (!ticket.responded_at) return 'Not responded';
-            const submitted = new Date(ticket.submitted_at);
-            const responded = new Date(ticket.responded_at);
-            const hours = (responded - submitted) / (1000 * 60 * 60);
-            return formatDuration(hours);
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function escapeCSV(text) {
-            if (!text) return '';
-            return text.toString().replace(/"/g, '""');
-        }
-    </script>
-</body>
-</html>
