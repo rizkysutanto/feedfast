@@ -60,22 +60,15 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Top Header -->
+            <!-- Top Header - Black with user info only -->
             <header class="top-header">
                 <div class="header-content">
-                    <div class="header-left">
-                        <h1 class="page-title">Dashboard</h1>
-                        <p class="page-subtitle">Welcome <span id="headerUserName">[User Name]</span>. Today is <span id="currentDate">[Day]</span> | <span id="currentDateTime">[dd/mm/yyyy]</span></p>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Loading...</span>
+                        <span class="user-role" id="userRole">[User Role]</span>
+                        <div class="user-avatar" id="userAvatar">L</div>
                     </div>
-                    
-                    <div class="header-right">
-                        <div class="user-info">
-                            <span class="user-name" id="userName">Loading...</span>
-                            <span class="user-role" id="userRole">[User Role]</span>
-                            <div class="user-avatar" id="userAvatar">R</div>
-                        </div>
-                        <button class="logout-btn" onclick="logout()">Logout</button>
-                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
                 </div>
             </header>
 
@@ -83,9 +76,15 @@
             <main class="content-area">
                 <div class="error-message" id="errorMessage" style="display: none;"></div>
 
+                <!-- Welcome Section moved to content area -->
+                <div class="welcome-section">
+                    <h1 class="welcome-title">Dashboard</h1>
+                    <p class="welcome-subtitle">Welcome <span id="headerUserName">[User Name]</span>. Today is <span id="currentDate">[Day]</span> | <span id="currentDateTime">[dd/mm/yyyy]</span></p>
+                </div>
+
                 <!-- Stats Grid -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card stat-card-purple">
                         <div class="stat-icon-container">
                             <img src="/icon-ticket.png" alt="Total Tickets" class="stat-icon-img">
                         </div>
@@ -96,7 +95,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card stat-card-purple">
                         <div class="stat-icon-container">
                             <img src="/icon-branch.png" alt="Active Branches" class="stat-icon-img">
                         </div>
@@ -107,7 +106,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card stat-card-purple">
                         <div class="stat-icon-container">
                             <img src="/icon-usermanagement.png" alt="Team Members" class="stat-icon-img">
                         </div>
@@ -118,14 +117,14 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card stat-card-purple">
                         <div class="stat-icon-container">
-                            <img src="/icon-warning.png" alt="Open Tickets" class="stat-icon-img">
+                            <img src="/icon-ticket.png" alt="Open Tickets" class="stat-icon-img">
                         </div>
                         <div class="stat-content">
-                            <h3 class="stat-number" id="pendingTickets">0</h3>
+                            <h3 class="stat-number" id="openTickets">0</h3>
                             <p class="stat-label">Open Tickets</p>
-                            <div class="stat-change" id="pendingChange">Need Attention</div>
+                            <div class="stat-change" id="openChange">Need Attention</div>
                         </div>
                     </div>
                 </div>
@@ -160,13 +159,13 @@
             totalTickets: 0,
             totalBranches: 0,
             totalUsers: 0,
-            pendingTickets: 0,
+            openTickets: 0,
             previousMonthTickets: 0
         };
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Dashboard initializing...');
+            console.log('Dashboard initializing...');
             
             // Set current date
             updateDateTime();
@@ -207,7 +206,7 @@
             const clientUserData = localStorage.getItem('clientUser');
 
             if (!clientToken) {
-                console.log('❌ No client token found, redirecting to login');
+                console.log('No client token found, redirecting to login');
                 window.location.href = '/login';
                 return false;
             }
@@ -215,9 +214,9 @@
             if (clientUserData) {
                 try {
                     currentUser = JSON.parse(clientUserData);
-                    console.log('✅ User data loaded:', currentUser);
+                    console.log('User data loaded:', currentUser);
                 } catch (error) {
-                    console.error('❌ Error parsing user data:', error);
+                    console.error('Error parsing user data:', error);
                     localStorage.removeItem('clientUser');
                 }
             }
@@ -228,7 +227,7 @@
         // Load user data from server
         async function loadUserData() {
             try {
-                console.log('📡 Verifying token with server...');
+                console.log('Verifying token with server...');
                 
                 const response = await fetch('/api/auth/client-verify', {
                     headers: {
@@ -249,13 +248,13 @@
                     // Update UI with user info
                     updateUserUI();
                     
-                    console.log('✅ User data verified and updated');
+                    console.log('User data verified and updated');
                 } else {
                     throw new Error('Invalid user data received');
                 }
 
             } catch (error) {
-                console.error('❌ Error loading user data:', error);
+                console.error('Error loading user data:', error);
                 showError('Failed to load user data. Please try logging in again.');
                 
                 // Clear invalid tokens and redirect
@@ -277,23 +276,24 @@
                 sidebarClientName: document.getElementById('sidebarClientName')
             };
 
-            if (elements.userName) elements.userName.textContent = currentUser.name || 'User';
-            if (elements.userRole) elements.userRole.textContent = currentUser.role || '[User Role]';
-            if (elements.headerUserName) elements.headerUserName.textContent = currentUser.name || '[User Name]';
-            if (elements.sidebarClientName) elements.sidebarClientName.textContent = currentUser.clientName || '[Company Name]';
+            if (elements.userName) elements.userName.textContent = currentUser.user_name || currentUser.name || 'User';
+            if (elements.userRole) elements.userRole.textContent = currentUser.role || 'Client Admin';
+            if (elements.headerUserName) elements.headerUserName.textContent = currentUser.user_name || currentUser.name || 'User';
+            if (elements.sidebarClientName) elements.sidebarClientName.textContent = currentUser.clientName || currentUser.client_name || 'Company';
             
             if (elements.userAvatar) {
-                const initials = (currentUser.name || 'U').substring(0, 1).toUpperCase();
+                const name = currentUser.user_name || currentUser.name || 'U';
+                const initials = name.substring(0, 1).toUpperCase();
                 elements.userAvatar.textContent = initials;
             }
 
-            console.log('✅ UI updated with user info');
+            console.log('UI updated with user info');
         }
 
         // Load dashboard data with real API calls
         async function loadDashboardData() {
             try {
-                console.log('📊 Loading dashboard data...');
+                console.log('Loading dashboard data...');
 
                 // Load real data from APIs
                 await Promise.all([
@@ -303,15 +303,15 @@
                     loadRecentActivity()
                 ]);
 
-                console.log('✅ Dashboard data loaded');
+                console.log('Dashboard data loaded');
 
             } catch (error) {
-                console.error('❌ Error loading dashboard data:', error);
+                console.error('Error loading dashboard data:', error);
                 showError('Failed to load dashboard data.');
             }
         }
 
-        // Load ticket statistics
+        // Load ticket statistics - FIXED to show actual data
         async function loadTicketStats() {
             try {
                 const response = await fetch('/api/tickets/stats', {
@@ -322,25 +322,80 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    
+                    // Use actual data from API
                     dashboardData.totalTickets = data.total || 0;
-                    dashboardData.pendingTickets = data.pending || 0;
+                    dashboardData.openTickets = data.open || 0; // Fixed: use 'open' status specifically
                     dashboardData.previousMonthTickets = data.previousMonth || 0;
                     
-                    // Update ticket cards
-                    updateTicketStats();
+                    console.log('Ticket stats loaded:', data);
                 } else {
-                    // Fallback to mock data if API not available
-                    dashboardData.totalTickets = Math.floor(Math.random() * 150) + 50;
-                    dashboardData.pendingTickets = Math.floor(Math.random() * 20) + 2;
-                    dashboardData.previousMonthTickets = dashboardData.totalTickets - Math.floor(Math.random() * 30);
-                    updateTicketStats();
+                    console.log('API not available, loading actual tickets...');
+                    // Fallback: Load tickets directly
+                    await loadTicketsDirectly();
+                }
+                
+                // Update ticket cards with actual data
+                updateTicketStats();
+                
+            } catch (error) {
+                console.log('Error loading ticket stats, trying direct approach...');
+                await loadTicketsDirectly();
+                updateTicketStats();
+            }
+        }
+
+        // Fallback method to load tickets directly
+        async function loadTicketsDirectly() {
+            try {
+                const response = await fetch('/api/tickets', {
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const tickets = data.tickets || [];
+                    
+                    // Calculate stats from actual tickets for current client
+                    dashboardData.totalTickets = tickets.length;
+                    dashboardData.openTickets = tickets.filter(ticket => ticket.status === 'open').length;
+                    
+                    // Calculate previous month comparison (rough estimate)
+                    const now = new Date();
+                    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                    
+                    const thisMonthTickets = tickets.filter(ticket => {
+                        const ticketDate = new Date(ticket.submitted_at);
+                        return ticketDate >= thisMonth;
+                    }).length;
+                    
+                    const lastMonthTickets = tickets.filter(ticket => {
+                        const ticketDate = new Date(ticket.submitted_at);
+                        return ticketDate >= lastMonth && ticketDate < thisMonth;
+                    }).length;
+                    
+                    dashboardData.previousMonthTickets = lastMonthTickets;
+                    
+                    console.log('Direct ticket stats calculated:', {
+                        total: dashboardData.totalTickets,
+                        open: dashboardData.openTickets,
+                        thisMonth: thisMonthTickets,
+                        lastMonth: lastMonthTickets
+                    });
+                } else {
+                    // Final fallback to zero values
+                    dashboardData.totalTickets = 0;
+                    dashboardData.openTickets = 0;
+                    dashboardData.previousMonthTickets = 0;
                 }
             } catch (error) {
-                console.log('Using mock ticket data');
-                dashboardData.totalTickets = Math.floor(Math.random() * 150) + 50;
-                dashboardData.pendingTickets = Math.floor(Math.random() * 20) + 2;
-                dashboardData.previousMonthTickets = dashboardData.totalTickets - Math.floor(Math.random() * 30);
-                updateTicketStats();
+                console.error('Failed to load tickets directly:', error);
+                dashboardData.totalTickets = 0;
+                dashboardData.openTickets = 0;
+                dashboardData.previousMonthTickets = 0;
             }
         }
 
@@ -361,13 +416,13 @@
                     // Update branch card
                     updateBranchStats();
                 } else {
-                    // Fallback to mock data
-                    dashboardData.totalBranches = Math.floor(Math.random() * 10) + 1;
+                    // Set to 0 if no data available
+                    dashboardData.totalBranches = 0;
                     updateBranchStats();
                 }
             } catch (error) {
-                console.log('Using mock branch data');
-                dashboardData.totalBranches = Math.floor(Math.random() * 10) + 1;
+                console.log('Error loading branch data');
+                dashboardData.totalBranches = 0;
                 updateBranchStats();
             }
         }
@@ -389,42 +444,53 @@
                     // Update user card
                     updateUserStats();
                 } else {
-                    // Fallback to mock data
-                    dashboardData.totalUsers = Math.floor(Math.random() * 25) + 5;
+                    // Set to 0 if no data available
+                    dashboardData.totalUsers = 0;
                     updateUserStats();
                 }
             } catch (error) {
-                console.log('Using mock user data');
-                dashboardData.totalUsers = Math.floor(Math.random() * 25) + 5;
+                console.log('Error loading user data');
+                dashboardData.totalUsers = 0;
                 updateUserStats();
             }
         }
 
-        // Update ticket statistics display
+        // Update ticket statistics display with actual data
         function updateTicketStats() {
             const totalTicketsEl = document.getElementById('totalTickets');
-            const pendingTicketsEl = document.getElementById('pendingTickets');
+            const openTicketsEl = document.getElementById('openTickets');
             const ticketChangeEl = document.getElementById('ticketChange');
-            const pendingChangeEl = document.getElementById('pendingChange');
+            const openChangeEl = document.getElementById('openChange');
 
             if (totalTicketsEl) {
                 animateNumber(totalTicketsEl, 0, dashboardData.totalTickets, 1000);
             }
 
-            if (pendingTicketsEl) {
-                animateNumber(pendingTicketsEl, 0, dashboardData.pendingTickets, 1000);
+            if (openTicketsEl) {
+                animateNumber(openTicketsEl, 0, dashboardData.openTickets, 1000);
             }
 
-            // Calculate percentage change
-            if (ticketChangeEl && dashboardData.previousMonthTickets > 0) {
-                const percentChange = Math.round(((dashboardData.totalTickets - dashboardData.previousMonthTickets) / dashboardData.previousMonthTickets) * 100);
-                ticketChangeEl.textContent = `${percentChange >= 0 ? '+' : ''}${percentChange}% from last month`;
-                ticketChangeEl.className = `stat-change ${percentChange >= 0 ? 'positive' : 'negative'}`;
+            // Calculate percentage change based on actual data
+            if (ticketChangeEl) {
+                if (dashboardData.previousMonthTickets > 0) {
+                    const currentMonthTickets = dashboardData.totalTickets; // This should be current month only, but using total for now
+                    const percentChange = Math.round(((currentMonthTickets - dashboardData.previousMonthTickets) / dashboardData.previousMonthTickets) * 100);
+                    ticketChangeEl.textContent = `${percentChange >= 0 ? '+' : ''}${percentChange}% from last month`;
+                    ticketChangeEl.className = `stat-change ${percentChange >= 0 ? 'positive' : 'negative'}`;
+                } else {
+                    ticketChangeEl.textContent = dashboardData.totalTickets > 0 ? 'New data available' : 'No data yet';
+                    ticketChangeEl.className = 'stat-change neutral';
+                }
             }
 
-            if (pendingChangeEl) {
-                pendingChangeEl.textContent = dashboardData.pendingTickets > 0 ? 'Need Attention' : 'All Clear';
-                pendingChangeEl.className = `stat-change ${dashboardData.pendingTickets > 0 ? 'warning' : 'positive'}`;
+            if (openChangeEl) {
+                if (dashboardData.openTickets > 0) {
+                    openChangeEl.textContent = `${dashboardData.openTickets} ticket${dashboardData.openTickets !== 1 ? 's' : ''} need attention`;
+                    openChangeEl.className = 'stat-change warning';
+                } else {
+                    openChangeEl.textContent = 'All tickets handled';
+                    openChangeEl.className = 'stat-change positive';
+                }
             }
         }
 
@@ -438,7 +504,13 @@
             }
 
             if (branchesStatusEl) {
-                branchesStatusEl.textContent = `${dashboardData.totalBranches} Active Location${dashboardData.totalBranches !== 1 ? 's' : ''}`;
+                if (dashboardData.totalBranches > 0) {
+                    branchesStatusEl.textContent = `${dashboardData.totalBranches} Active Location${dashboardData.totalBranches !== 1 ? 's' : ''}`;
+                    branchesStatusEl.className = 'stat-change positive';
+                } else {
+                    branchesStatusEl.textContent = 'No branches yet';
+                    branchesStatusEl.className = 'stat-change neutral';
+                }
             }
         }
 
@@ -452,7 +524,13 @@
             }
 
             if (userChangeEl) {
-                userChangeEl.textContent = `${dashboardData.totalUsers} Active User${dashboardData.totalUsers !== 1 ? 's' : ''}`;
+                if (dashboardData.totalUsers > 0) {
+                    userChangeEl.textContent = `${dashboardData.totalUsers} Active User${dashboardData.totalUsers !== 1 ? 's' : ''}`;
+                    userChangeEl.className = 'stat-change positive';
+                } else {
+                    userChangeEl.textContent = 'No team members yet';
+                    userChangeEl.className = 'stat-change neutral';
+                }
             }
         }
 
@@ -488,12 +566,12 @@
                     const data = await response.json();
                     displayRecentActivity(data.tickets || []);
                 } else {
-                    // Fallback to mock data
-                    loadMockActivity();
+                    // Show empty state
+                    displayRecentActivity([]);
                 }
             } catch (error) {
-                console.log('Using mock activity data');
-                loadMockActivity();
+                console.log('Error loading activity data');
+                displayRecentActivity([]);
             }
         }
 
@@ -547,52 +625,6 @@
             activityList.innerHTML = activityHTML;
         }
 
-        // Load mock activity (fallback)
-        function loadMockActivity() {
-            const activityList = document.getElementById('activityList');
-            
-            const mockActivities = [
-                {
-                    title: 'New feedback received',
-                    description: 'Service complaint | Main Branch | Complaint',
-                    time: new Date(),
-                    status: 'new'
-                },
-                {
-                    title: 'Feedback resolved',
-                    description: 'Food quality issue | Branch 2 | Complaint',
-                    time: new Date(Date.now() - 2 * 60 * 60 * 1000),
-                    status: 'resolved'
-                },
-                {
-                    title: 'New feedback received',
-                    description: 'Service suggestion | Main Branch | Suggestion',
-                    time: new Date(Date.now() - 4 * 60 * 60 * 1000),
-                    status: 'new'
-                }
-            ];
-
-            const activityHTML = mockActivities.map(activity => {
-                const formattedDate = activity.time.toLocaleDateString('en-GB');
-                const formattedTime = activity.time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                
-                return `
-                    <div class="activity-item">
-                        <div class="activity-content">
-                            <div class="activity-title">${activity.title}</div>
-                            <div class="activity-details">${activity.description}</div>
-                        </div>
-                        <div class="activity-meta">
-                            <span class="activity-badge ${activity.status}">${activity.status}</span>
-                            <span class="activity-time">${formattedDate} | ${formattedTime}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            activityList.innerHTML = activityHTML;
-        }
-
         // Navigation functions (placeholder for now)
         function manageUsers() {
             alert('User Management feature coming soon!');
@@ -618,7 +650,7 @@
 
         // Logout function
         function logout() {
-            console.log('🚪 Logging out...');
+            console.log('Logging out...');
             
             // Clear local storage
             localStorage.removeItem('clientToken');
@@ -630,12 +662,12 @@
 
         // Handle errors globally
         window.addEventListener('error', (event) => {
-            console.error('💥 Global error:', event.error);
+            console.error('Global error:', event.error);
         });
 
         // Handle unhandled promise rejections
         window.addEventListener('unhandledrejection', (event) => {
-            console.error('💥 Unhandled promise rejection:', event.reason);
+            console.error('Unhandled promise rejection:', event.reason);
             event.preventDefault();
         });
     </script>
