@@ -94,7 +94,7 @@
             background-color: #7c3aed;
         }
 
-        .search-icon {
+        .search- {
             width: 16px;
             height: 16px;
             filter: brightness(0) invert(1);
@@ -185,7 +185,7 @@
             background-color: var(--bg-light);
         }
 
-        .contact-icon {
+        .contact- {
             width: 14px;
             height: 14px;
             opacity: 0.6;
@@ -270,7 +270,7 @@
             color: #6b7280;
         }
 
-        .attachment-icon {
+        .attachment- {
             width: 20px;
             height: 20px;
             opacity: 0.7;
@@ -278,7 +278,7 @@
             transition: var(--transition);
         }
 
-        .attachment-icon:hover {
+        .attachment-:hover {
             opacity: 1;
         }
 
@@ -315,7 +315,7 @@
             gap: 1rem;
         }
 
-        .empty-icon {
+        .empty- {
             width: 48px;
             height: 48px;
             opacity: 0.3;
@@ -602,7 +602,7 @@
             <div class="sidebar-nav">
                 <div class="nav-item">
                     <a href="/dashboard" class="nav-link">
-                        <img src="/icon-dashboard.png" alt="" class="nav-icon">
+                        <img src="/-dashboard.png" alt="" class="nav-icon">
                         Dashboard
                     </a>
                 </div>
@@ -677,7 +677,7 @@
 
                     <div class="stat-card stat-card-purple">
                         <div class="stat-icon-container">
-                            <img src="/icon-report.png" alt="Complaints" class="stat-icon-img">
+                            <img src="/icon-warning.png" alt="Complaints" class="stat-icon-img">
                         </div>
                         <div class="stat-content">
                             <h3 class="stat-number" id="complaints">342</h3>
@@ -687,7 +687,7 @@
 
                     <div class="stat-card stat-card-purple">
                         <div class="stat-icon-container">
-                            <img src="/icon-settings.png" alt="Suggestions" class="stat-icon-img">
+                            <img src="/icon-suggestions.png" alt="Suggestions" class="stat-icon-img">
                         </div>
                         <div class="stat-content">
                             <h3 class="stat-number" id="suggestions">156</h3>
@@ -697,7 +697,7 @@
 
                     <div class="stat-card stat-card-purple">
                         <div class="stat-icon-container">
-                            <img src="/icon-usermanagement.png" alt="Complements" class="stat-icon-img">
+                            <img src="/icon-complements.png" alt="Complements" class="stat-icon-img">
                         </div>
                         <div class="stat-content">
                             <h3 class="stat-number" id="complements">750</h3>
@@ -742,7 +742,7 @@
                         <div class="search-group">
                             <input type="text" class="search-input" id="searchInput" placeholder="Search tickets...">
                             <button class="search-btn">
-                                <img src="/icon-dashboard.png" alt="Search" class="search-icon">
+                                <img src="/icon-search.png" alt="Search" class="search-icon">
                             </button>
                         </div>
                     </div>
@@ -1044,7 +1044,7 @@
                                 <div class="customer-name">${ticket.cust_name}</div>
                                 <div class="customer-contacts">
                                     ${ticket.cust_email ? `<a href="mailto:${ticket.cust_email}" class="contact-link"><img src="/icon-email.png" alt="Email" class="contact-icon"></a>` : ''}
-                                    ${ticket.cust_phone ? `<a href="https://wa.me/${ticket.cust_phone.replace(/[^\d]/g, '')}" target="_blank" class="contact-link"><img src="/icon-phone.png" alt="Phone" class="contact-icon"></a>` : ''}
+                                    ${ticket.cust_phone ? `<a href="https://wa.me/${ticket.cust_phone.replace(/[^\d]/g, '')}" target="_blank" class="contact-link"><img src="/icon-whatsapp.png" alt="Phone" class="contact-icon"></a>` : ''}
                                 </div>
                             </div>
                         </td>
@@ -1062,7 +1062,7 @@
                             </div>
                         </td>
                         <td>
-                            ${ticket.attachment ? `<img src="/icon-report.png" alt="Attachment" class="attachment-icon" onclick="window.open('${ticket.attachment}', '_blank')">` : '-'}
+                            ${ticket.attachment ? `<img src="/icon-attachment.png" alt="Attachment" class="attachment-icon" onclick="window.open('${ticket.attachment}', '_blank')">` : '-'}
                         </td>
                         <td>
                             <div class="pic-cell">
