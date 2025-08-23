@@ -4,935 +4,891 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket Management - FeedFast</title>
+    <link rel="stylesheet" href="/css/client-dashboard.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #8527F0;
-            --primary-dark: #7c3aed;
-            --primary-light: #a855f7;
-            --secondary: #64748b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #000000;
-            --light: #f8fafc;
-            --border: #e2e8f0;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --bg-card: #ffffff;
-            --sidebar-bg: var(--dark);
-            --sidebar-active: var(--primary);
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: var(--light);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 200px;
-            background: var(--sidebar-bg);
-            min-height: 100vh;
-            padding: 1.5rem 0;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 100;
-        }
-
-        .sidebar-header {
-            padding: 0 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .logo::before {
-            content: '';
-            width: 12px;
-            height: 12px;
-            background: white;
-            border-radius: 2px;
-        }
-
-        .brand-name {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: white;
-            letter-spacing: -0.025em;
-        }
-
-        .company-name {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 0.25rem;
-        }
-
-        /* Navigation */
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-        }
-
-        .nav-item {
-            margin-bottom: 0.25rem;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #ccc;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border-right: 3px solid transparent;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .nav-link.active {
-            background: var(--sidebar-active);
-            color: white;
-            border-right-color: var(--primary-light);
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 200px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Top Header */
-        .top-header {
-            background: white;
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow);
-        }
-
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .header-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        .user-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-info {
-            text-align: right;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.875rem;
-        }
-
-        .user-role {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .logout-btn {
-            padding: 0.5rem 1rem;
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-left: 1rem;
-        }
-
-        .logout-btn:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-
-        /* Page Content */
-        .page-content {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: all 0.2s ease;
-            border: 1px solid var(--border);
-        }
-
-        .stat-card:hover {
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-2px);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .stat-icon.open {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-        }
-
-        .stat-icon.progress {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .stat-icon.resolved {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .stat-icon.closed {
-            background: linear-gradient(135deg, #64748b, #475569);
-            color: white;
-        }
-
-        .stat-content h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1;
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-content p {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
+        /* =========================================
+           Ticket Management Specific Styles
+           ========================================= */
 
         /* Filters Section */
-        .filters-section {
-            background: var(--bg-card);
-            border-radius: 12px;
+        .ticket-filters {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
             padding: 1.5rem;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
             margin-bottom: 2rem;
         }
 
-        .filters-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
+        .filter-row {
+            display: flex;
+            align-items: center;
             gap: 1rem;
+            flex-wrap: wrap;
         }
 
-        .filter-input, .filter-select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+            flex-wrap: wrap;
         }
 
-        .filter-input:focus, .filter-select:focus {
+        .filter-label {
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background-color: var(--bg-card);
+            min-width: 120px;
+            transition: var(--transition);
+        }
+
+        .filter-select:focus {
             outline: none;
-            border-color: var(--primary);
+            border-color: var(--primary-purple);
             box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
 
-        .reset-btn {
-            width: 100%;
-            padding: 0.75rem;
-            background: #f1f5f9;
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .search-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .reset-btn:hover {
-            background: #e2e8f0;
+        .search-input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
             color: var(--text-primary);
+            background-color: var(--bg-card);
+            min-width: 200px;
+            transition: var(--transition);
         }
 
-        /* Tickets Section */
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
+        }
+
+        .search-btn {
+            padding: 0.5rem;
+            background-color: var(--primary-purple);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-btn:hover {
+            background-color: #7c3aed;
+        }
+
+        .search-icon {
+            width: 16px;
+            height: 16px;
+            filter: brightness(0) invert(1);
+        }
+
+        /* Tickets Table Section */
         .tickets-section {
-            background: var(--bg-card);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
         }
 
-        .tickets-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: between;
-            align-items: center;
+        .tickets-table-container {
+            overflow-x: auto;
         }
 
-        .section-title {
-            font-size: 1.25rem;
+        .tickets-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+        }
+
+        .tickets-table th {
+            background-color: var(--bg-light);
+            color: var(--text-secondary);
             font-weight: 600;
-            color: var(--text-primary);
+            text-align: left;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .tickets-count {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
+        .tickets-table td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
         }
 
-        .tickets-content {
-            padding: 1.5rem;
+        .ticket-row:hover {
+            background-color: var(--bg-light);
         }
 
-        /* Ticket Card */
-        .ticket-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border-left: 4px solid transparent;
-        }
-
-        .ticket-card:hover {
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-1px);
-            border-color: var(--primary);
-        }
-
-        .ticket-card:last-child {
-            margin-bottom: 0;
-        }
-
-        .ticket-header {
+        /* Table Cell Styles */
+        .ticket-id-cell {
             display: flex;
-            justify-content: between;
-            align-items: start;
-            margin-bottom: 1rem;
-        }
-
-        .ticket-info {
-            flex: 1;
-        }
-
-        .ticket-title-row {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .ticket-icon {
-            font-size: 1.5rem;
-        }
-
-        .ticket-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .ticket-id {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .ticket-description {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-            line-height: 1.4;
-        }
-
-        .ticket-meta {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .ticket-meta span {
-            display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 0.25rem;
         }
 
-        .ticket-badges {
+        .ticket-id {
+            font-weight: 600;
+            color: var(--primary-purple);
+            font-size: var(--font-size-xs);
+        }
+
+        .ticket-number {
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+        }
+
+        .customer-cell {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
 
-        /* Status Badges */
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
+        .customer-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .customer-contacts {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .contact-link {
+            display: inline-flex;
+            padding: 0.25rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .contact-link:hover {
+            background-color: var(--bg-light);
+        }
+
+        .contact-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.6;
+        }
+
+        .branch-cell {
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+
+        .description-cell {
+            color: var(--text-secondary);
+            line-height: 1.4;
+            max-width: 200px;
+        }
+
+        .pic-cell {
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+
+        /* Badge Styles */
+        .type-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--border-radius-full);
+            font-size: var(--font-size-xs);
             font-weight: 500;
             text-transform: capitalize;
             text-align: center;
             min-width: 80px;
+            display: inline-block;
         }
 
-        .status-badge.open {
-            background: #fef3c7;
-            color: #92400e;
+        .type-complaint {
+            background-color: #fee2e2;
+            color: #dc2626;
         }
 
-        .status-badge.in_progress {
-            background: #dbeafe;
-            color: #1e40af;
+        .type-suggestion {
+            background-color: #fef3c7;
+            color: #d97706;
         }
 
-        .status-badge.resolved {
-            background: #dcfce7;
+        .type-compliment {
+            background-color: #dcfce7;
             color: #16a34a;
         }
 
-        .status-badge.closed {
-            background: #f3f4f6;
-            color: #374151;
+        .type-inquiry {
+            background-color: #dbeafe;
+            color: #2563eb;
         }
 
-        .type-badge {
-            background: #f1f5f9;
-            color: var(--text-secondary);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius-full);
+            font-size: var(--font-size-xs);
             font-weight: 500;
+            text-transform: capitalize;
+            text-align: center;
+            min-width: 80px;
+            display: inline-block;
+        }
+
+        .status-open {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-in_progress {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        .status-resolved {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-closed {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .attachment-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .attachment-icon:hover {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background-color: var(--primary-purple);
+            color: var(--text-white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            background-color: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        /* Loading and Empty States */
+        .loading-row td,
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-container,
+        .empty-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+            opacity: 0.3;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-light);
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination-btn:hover {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+
+        .pagination-btn.active {
+            background-color: var(--primary-purple);
+            color: var(--text-white);
+            border-color: var(--primary-purple);
         }
 
         /* Modal Styles */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
+            background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
-            display: flex;
             align-items: center;
             justify-content: center;
             padding: 1rem;
         }
 
-        .modal-overlay.hidden {
-            display: none;
-        }
-
         .modal-content {
-            background: white;
-            border-radius: 12px;
-            max-width: 4xl;
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            max-width: 800px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
         .modal-header {
             padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
-            justify-content: between;
-            align-items: start;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .modal-title {
-            font-size: 1.5rem;
+            font-size: var(--font-size-lg);
             font-weight: 600;
             color: var(--text-primary);
-        }
-
-        .modal-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
+            margin: 0;
         }
 
         .modal-close {
             background: none;
             border: none;
+            font-size: 1.5rem;
             color: var(--text-secondary);
-            font-size: 1.25rem;
             cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 4px;
-            transition: all 0.2s ease;
+            padding: 0.25rem;
+            transition: var(--transition);
         }
 
         .modal-close:hover {
             color: var(--text-primary);
-            background: #f1f5f9;
         }
 
         .modal-body {
             padding: 1.5rem;
         }
 
-        /* Loading and Empty States */
-        .loading-state {
-            text-align: center;
-            padding: 3rem;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 2rem;
-            height: 2rem;
-            border: 3px solid var(--border);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-        }
-
-        .empty-icon {
-            background: #f1f5f9;
-            border-radius: 50%;
-            width: 4rem;
-            height: 4rem;
+        /* Ticket Details in Modal */
+        .ticket-details {
             display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .detail-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .detail-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .detail-section h3 {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row label {
+            font-weight: 500;
             color: var(--text-secondary);
+            font-size: var(--font-size-sm);
         }
 
-        /* Responsive Design */
+        .detail-row span {
+            color: var(--text-primary);
+            font-size: var(--font-size-sm);
+        }
+
+        .ticket-description {
+            background-color: var(--bg-light);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .attachment-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            color: var(--primary-purple);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .attachment-link:hover {
+            background-color: var(--primary-purple);
+            color: var(--text-white);
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .status-select {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background-color: var(--bg-card);
+            min-width: 150px;
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
+        }
+
+        /* Responsive Design for Ticket Management */
+        @media (max-width: 1024px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-input {
+                min-width: auto;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
+            .tickets-table-container {
+                font-size: var(--font-size-xs);
             }
 
-            .sidebar.open {
-                transform: translateX(0);
+            .tickets-table th,
+            .tickets-table td {
+                padding: 0.5rem 0.25rem;
             }
 
-            .main-content {
-                margin-left: 0;
+            .customer-cell,
+            .ticket-id-cell {
+                min-width: 120px;
             }
 
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
+            .description-cell {
+                max-width: 150px;
             }
 
-            .filters-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .top-header {
-                padding: 1rem;
-            }
-
-            .page-content {
-                padding: 1rem;
-            }
-
-            .user-info {
-                display: none;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .ticket-header {
+            .pagination {
                 flex-direction: column;
                 gap: 1rem;
+                text-align: center;
             }
 
-            .ticket-badges {
-                flex-direction: row;
+            .modal-content {
+                margin: 0.5rem;
+                max-height: 95vh;
             }
-        }
 
-        /* Animations */
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
+            .modal-header,
+            .modal-body {
+                padding: 1rem;
             }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow-lg);
-            z-index: 1100;
-            font-weight: 500;
-            animation: fadeInUp 0.3s ease-out;
-        }
-
-        .notification.success {
-            background: var(--success);
-            color: white;
-        }
-
-        .notification.error {
-            background: var(--danger);
-            color: white;
-        }
-
-        .notification.info {
-            background: var(--primary);
-            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-section">
-                <div class="logo"></div>
-                <div>
-                    <div class="brand-name">FeedFast</div>
-                    <div class="company-name" id="sidebarClientName">[Company Name]</div>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/logo-feedfast.webp" alt="FeedFast">
+                <div class="logo-text">
+                    <span class="brand-name">FeedFast</span>
+                    <span class="company-name" id="sidebarClientName">[Company Name]</span>
                 </div>
-            </div>
-        </div>
-        
-        <nav>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="/dashboard" class="nav-link">
-                        <span class="nav-icon">📊</span>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/ticket" class="nav-link active">
-                        <span class="nav-icon">🎫</span>
-                        Ticket
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/branch" class="nav-link">
-                        <span class="nav-icon">🏢</span>
-                        Branch
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/report" class="nav-link">
-                        <span class="nav-icon">📈</span>
-                        Report
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="manageUsers()">
-                        <span class="nav-icon">👥</span>
-                        User Management
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="settings()">
-                        <span class="nav-icon">⚙️</span>
-                        Settings
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Header -->
-        <header class="top-header">
-            <div class="header-info">
-                <h1 class="header-title">Ticket Management</h1>
-                <p class="header-subtitle">Manage customer feedback and support tickets</p>
             </div>
             
-            <div class="user-section">
-                <div class="user-info">
-                    <div class="user-name" id="userName">Loading...</div>
-                    <div class="user-role" id="userRole">[User Role]</div>
+            <div class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <img src="/icon-dashboard.png" alt="" class="nav-icon">
+                        Dashboard
+                    </a>
                 </div>
-                <div class="user-avatar" id="userAvatar">R</div>
-                <button class="logout-btn" onclick="logout()">Logout ↗</button>
+                <div class="nav-item">
+                    <a href="/ticket" class="nav-link active">
+                        <img src="/icon-ticket.png" alt="" class="nav-icon">
+                        Ticket
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="/branch" class="nav-link">
+                        <img src="/icon-branch.png" alt="" class="nav-icon">
+                        Branch
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="/report" class="nav-link">
+                        <img src="/icon-report.png" alt="" class="nav-icon">
+                        Report
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="manageUsers()">
+                        <img src="/icon-usermanagement.png" alt="" class="nav-icon">
+                        User Management
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="settings()">
+                        <img src="/icon-settings.png" alt="" class="nav-icon">
+                        Settings
+                    </a>
+                </div>
             </div>
-        </header>
+        </nav>
 
-        <!-- Page Content -->
-        <main class="page-content">
-            <!-- Stats Grid -->
-            <div class="stats-grid fade-in">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon open">⚠️</div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-content">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Loading...</span>
+                        <span class="user-role" id="userRole">[User Role]</span>
+                        <div class="user-avatar" id="userAvatar">L</div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+                <!-- Page Title -->
+                <div class="welcome-section">
+                    <h1 class="welcome-title">Ticket</h1>
+                    <p class="welcome-subtitle">Manage Your Complaints, Suggestions, & Complements</p>
+                </div>
+
+                <!-- Stats Grid - Updated to match design -->
+                <div class="stats-grid">
+                    <div class="stat-card stat-card-purple">
+                        <div class="stat-icon-container">
+                            <img src="/icon-ticket.png" alt="Total Tickets" class="stat-icon-img">
+                        </div>
                         <div class="stat-content">
-                            <h3 id="stat-open">0</h3>
-                            <p>Open</p>
+                            <h3 class="stat-number" id="totalTickets">1,248</h3>
+                            <p class="stat-label">Total Tickets</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card stat-card-purple">
+                        <div class="stat-icon-container">
+                            <img src="/icon-report.png" alt="Complaints" class="stat-icon-img">
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="complaints">342</h3>
+                            <p class="stat-label">Complaints</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card stat-card-purple">
+                        <div class="stat-icon-container">
+                            <img src="/icon-settings.png" alt="Suggestions" class="stat-icon-img">
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="suggestions">156</h3>
+                            <p class="stat-label">Suggestions</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card stat-card-purple">
+                        <div class="stat-icon-container">
+                            <img src="/icon-usermanagement.png" alt="Complements" class="stat-icon-img">
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="complements">750</h3>
+                            <p class="stat-label">Complements</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon progress">⏳</div>
-                        <div class="stat-content">
-                            <h3 id="stat-in-progress">0</h3>
-                            <p>In Progress</p>
+                <!-- Filters Section -->
+                <div class="ticket-filters">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label class="filter-label">Filters:</label>
+                            <select class="filter-select" id="dateRangeFilter">
+                                <option value="">Date Range</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="quarter">This Quarter</option>
+                            </select>
+                            <select class="filter-select" id="typeFilter">
+                                <option value="">Type</option>
+                                <option value="complaint">Complaint</option>
+                                <option value="suggestion">Suggestion</option>
+                                <option value="compliment">Compliment</option>
+                                <option value="inquiry">Inquiry</option>
+                            </select>
+                            <select class="filter-select" id="branchFilter">
+                                <option value="">Branch</option>
+                            </select>
+                            <select class="filter-select" id="statusFilter">
+                                <option value="">Status</option>
+                                <option value="open">Open</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                            <select class="filter-select" id="picFilter">
+                                <option value="">PIC</option>
+                            </select>
+                        </div>
+                        <div class="search-group">
+                            <input type="text" class="search-input" id="searchInput" placeholder="Search tickets...">
+                            <button class="search-btn">
+                                <img src="/icon-dashboard.png" alt="Search" class="search-icon">
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon resolved">✅</div>
-                        <div class="stat-content">
-                            <h3 id="stat-resolved">0</h3>
-                            <p>Resolved</p>
+                <!-- Tickets Table -->
+                <div class="tickets-section">
+                    <div class="tickets-table-container">
+                        <table class="tickets-table">
+                            <thead>
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>Customer</th>
+                                    <th>Branch</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Attachment</th>
+                                    <th>PIC</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketsTableBody">
+                                <!-- Loading state -->
+                                <tr class="loading-row">
+                                    <td colspan="9">
+                                        <div class="loading-container">
+                                            <div class="spinner"></div>
+                                            <span>Loading tickets...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <div class="pagination-info">
+                            <span id="paginationInfo">Showing 1 to 5 of 1248 results</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn" id="prevBtn" onclick="previousPage()">&lt;</button>
+                            <button class="pagination-btn active" id="page1" onclick="goToPage(1)">1</button>
+                            <button class="pagination-btn" id="page2" onclick="goToPage(2)">2</button>
+                            <button class="pagination-btn" id="page3" onclick="goToPage(3)">3</button>
+                            <button class="pagination-btn" id="nextBtn" onclick="nextPage()">&gt;</button>
                         </div>
                     </div>
                 </div>
-
-
-            <!-- Filters Section -->
-            <div class="filters-section fade-in">
-                <div class="filters-grid">
-                    <input type="text" id="search-input" placeholder="Search tickets..." class="filter-input">
-                    <select id="status-filter" class="filter-select">
-                        <option value="">All Status</option>
-                        <option value="open">Open</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
-                    </select>
-                    <select id="type-filter" class="filter-select">
-                        <option value="">All Types</option>
-                        <option value="complaint">Complaint</option>
-                        <option value="suggestion">Suggestion</option>
-                        <option value="compliment">Compliment</option>
-                        <option value="inquiry">Inquiry</option>
-                    </select>
-                    <select id="branch-filter" class="filter-select">
-                        <option value="">All Branches</option>
-                    </select>
-                    <button onclick="resetFilters()" class="reset-btn">
-                        🔄 Reset
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tickets Section -->
-            <div class="tickets-section fade-in">
-                <div class="tickets-header">
-                    <h2 class="section-title">All Tickets</h2>
-                    <div class="tickets-count" id="tickets-count">0 tickets</div>
-                </div>
-                
-                <div class="tickets-content">
-                    <!-- Loading State -->
-                    <div id="loading-state" class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading tickets...</p>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div id="empty-state" class="empty-state hidden">
-                        <div class="empty-icon">🎫</div>
-                        <h3 style="margin-bottom: 0.5rem; font-weight: 600;">No tickets found</h3>
-                        <p>No tickets match your current filters.</p>
-                    </div>
-
-                    <!-- Tickets List -->
-                    <div id="tickets-container" class="hidden"></div>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <!-- Ticket Detail Modal -->
-    <div id="ticket-modal" class="modal-overlay hidden">
+    <div id="ticketModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <div>
-                    <h2 class="modal-title" id="modal-title">Ticket Details</h2>
-                    <p class="modal-subtitle" id="modal-ticket-id">Loading...</p>
-                </div>
-                <button class="modal-close" onclick="closeTicketModal()">✕</button>
+                <h2 class="modal-title">Ticket Details</h2>
+                <button class="modal-close" onclick="closeTicketModal()">×</button>
             </div>
-            <div class="modal-body" id="modal-content">
-                <!-- Content will be loaded dynamically -->
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content will be loaded here -->
             </div>
         </div>
     </div>
 
     <script>
         // Global variables
+        let currentUser = null;
+        let clientToken = null;
         let allTickets = [];
         let allBranches = [];
-        let currentUser = null;
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let filteredTickets = [];
 
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-        });
-
-        // Check authentication
-        async function checkAuth() {
-            const token = localStorage.getItem('clientToken');
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Ticket Management initializing...');
             
-            if (!token) {
-                window.location.href = '/login';
+            // Check authentication
+            if (!checkAuth()) {
                 return;
             }
 
+            // Load user data and tickets
+            await loadUserData();
+            await loadBranches();
+            await loadTickets();
+        });
+
+        // Check authentication
+        function checkAuth() {
+            clientToken = localStorage.getItem('clientToken');
+            const clientUserData = localStorage.getItem('clientUser');
+
+            if (!clientToken) {
+                console.log('No client token found, redirecting to login');
+                window.location.href = '/login';
+                return false;
+            }
+
+            if (clientUserData) {
+                try {
+                    currentUser = JSON.parse(clientUserData);
+                    console.log('User data loaded:', currentUser);
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                    localStorage.removeItem('clientUser');
+                }
+            }
+
+            return true;
+        }
+
+        // Load user data from server
+        async function loadUserData() {
             try {
                 const response = await fetch('/api/auth/client-verify', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
                 if (!response.ok) {
-                    throw new Error('Authentication failed');
+                    throw new Error('Token verification failed');
                 }
 
                 const data = await response.json();
-                currentUser = data.user;
                 
-                // Update UI with user info
-                updateUserUI();
-                
-                // Load data
-                await loadBranches();
-                await loadTickets();
-                
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem('clientUser', JSON.stringify(data.user));
+                    updateUserUI();
+                    console.log('User data verified and updated');
+                } else {
+                    throw new Error('Invalid user data received');
+                }
+
             } catch (error) {
-                console.error('Auth check failed:', error);
-                localStorage.removeItem('clientToken');
-                window.location.href = '/login';
+                console.error('Error loading user data:', error);
+                showError('Failed to load user data. Please try logging in again.');
+                setTimeout(() => {
+                    logout();
+                }, 2000);
             }
         }
 
@@ -947,45 +903,41 @@
                 sidebarClientName: document.getElementById('sidebarClientName')
             };
 
-            if (elements.userName) elements.userName.textContent = currentUser.name || 'User';
-            if (elements.userRole) elements.userRole.textContent = currentUser.role || '[User Role]';
-            if (elements.sidebarClientName) elements.sidebarClientName.textContent = currentUser.clientName || '[Company Name]';
+            if (elements.userName) elements.userName.textContent = currentUser.user_name || currentUser.name || 'User';
+            if (elements.userRole) elements.userRole.textContent = currentUser.role || 'Client Admin';
+            if (elements.sidebarClientName) elements.sidebarClientName.textContent = currentUser.clientName || currentUser.client_name || 'Company';
             
             if (elements.userAvatar) {
-                const initials = (currentUser.name || 'U').substring(0, 1).toUpperCase();
+                const name = currentUser.user_name || currentUser.name || 'U';
+                const initials = name.substring(0, 1).toUpperCase();
                 elements.userAvatar.textContent = initials;
             }
         }
 
         // Load branches for filter dropdown
         async function loadBranches() {
-            const token = localStorage.getItem('clientToken');
-            
             try {
                 const response = await fetch('/api/branches', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to load branches');
+                if (response.ok) {
+                    const data = await response.json();
+                    allBranches = data.branches || [];
+                    
+                    // Populate branch filter
+                    const branchFilter = document.getElementById('branchFilter');
+                    branchFilter.innerHTML = '<option value="">Branch</option>';
+                    
+                    allBranches.forEach(branch => {
+                        const option = document.createElement('option');
+                        option.value = branch.branch_id;
+                        option.textContent = branch.branch_name;
+                        branchFilter.appendChild(option);
+                    });
                 }
-
-                const data = await response.json();
-                allBranches = data.branches;
-                
-                // Populate branch filter
-                const branchFilter = document.getElementById('branch-filter');
-                branchFilter.innerHTML = '<option value="">All Branches</option>';
-                
-                allBranches.forEach(branch => {
-                    const option = document.createElement('option');
-                    option.value = branch.branch_id;
-                    option.textContent = branch.branch_name;
-                    branchFilter.appendChild(option);
-                });
-                
             } catch (error) {
                 console.error('Failed to load branches:', error);
             }
@@ -993,51 +945,44 @@
 
         // Load tickets
         async function loadTickets() {
-            const token = localStorage.getItem('clientToken');
-            
             try {
                 const response = await fetch('/api/tickets', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
-                if (!response.ok) {
+                if (response.ok) {
+                    const data = await response.json();
+                    allTickets = data.tickets || [];
+                    filteredTickets = [...allTickets];
+                    
+                    updateStats();
+                    displayTickets();
+                } else {
                     throw new Error('Failed to load tickets');
                 }
-
-                const data = await response.json();
-                allTickets = data.tickets || [];
-                
-                updateStats();
-                displayTickets(allTickets);
                 
             } catch (error) {
                 console.error('Failed to load tickets:', error);
-                showEmptyState();
-            } finally {
-                document.getElementById('loading-state').classList.add('hidden');
+                showError('Failed to load tickets. Please try again.');
             }
         }
 
         // Update statistics
         function updateStats() {
             const stats = {
-                open: 0,
-                in_progress: 0,
-                resolved: 0,
+                total: allTickets.length,
+                complaints: allTickets.filter(t => t.type === 'complaint').length,
+                suggestions: allTickets.filter(t => t.type === 'suggestion').length,
+                compliments: allTickets.filter(t => t.type === 'compliment').length
             };
 
-            allTickets.forEach(ticket => {
-                if (stats.hasOwnProperty(ticket.status)) {
-                    stats[ticket.status]++;
-                }
-            });
-
-            // Animate number counting
-            animateNumber(document.getElementById('stat-open'), 0, stats.open, 1000);
-            animateNumber(document.getElementById('stat-in-progress'), 0, stats.in_progress, 1000);
-            animateNumber(document.getElementById('stat-resolved'), 0, stats.resolved, 1000);
+            // Animate numbers
+            animateNumber(document.getElementById('totalTickets'), 0, stats.total, 1000);
+            animateNumber(document.getElementById('complaints'), 0, stats.complaints, 1200);
+            animateNumber(document.getElementById('suggestions'), 0, stats.suggestions, 1400);
+            animateNumber(document.getElementById('complements'), 0, stats.compliments, 1600);
         }
 
         // Animate number counting
@@ -1061,84 +1006,136 @@
             requestAnimationFrame(update);
         }
 
-        // Display tickets
-        function displayTickets(tickets) {
-            const container = document.getElementById('tickets-container');
-            const emptyState = document.getElementById('empty-state');
-            const countElement = document.getElementById('tickets-count');
-            
-            if (tickets.length === 0) {
-                showEmptyState();
+        // Display tickets in table
+        function displayTickets() {
+            const tbody = document.getElementById('ticketsTableBody');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageTickets = filteredTickets.slice(startIndex, endIndex);
+
+            if (pageTickets.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            <div class="empty-container">
+                                <img src="/icon-ticket.png" alt="No tickets" class="empty-icon">
+                                <span>No tickets found</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
                 return;
             }
 
-            emptyState.classList.add('hidden');
-            container.classList.remove('hidden');
-            countElement.textContent = `${tickets.length} ticket${tickets.length !== 1 ? 's' : ''}`;
-
-            container.innerHTML = tickets.map(ticket => {
-                const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown Branch';
-                const typeIcon = getTypeIcon(ticket.type);
-                const submittedDate = new Date(ticket.submitted_at).toLocaleDateString();
+            tbody.innerHTML = pageTickets.map(ticket => {
+                const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown';
+                const submittedDate = new Date(ticket.submitted_at).toLocaleDateString('en-GB');
                 
                 return `
-                    <div class="ticket-card" onclick="openTicketModal(${ticket.ticket_id})">
-                        <div class="ticket-header">
-                            <div class="ticket-info">
-                                <div class="ticket-title-row">
-                                    <span class="ticket-icon">${typeIcon}</span>
-                                    <div>
-                                        <div class="ticket-title">${ticket.title}</div>
-                                        <div class="ticket-id">Ticket #${ticket.ticket_id}</div>
-                                    </div>
-                                </div>
-                                <p class="ticket-description">${ticket.description.substring(0, 150)}${ticket.description.length > 150 ? '...' : ''}</p>
-                                <div class="ticket-meta">
-                                    <span>👤 ${ticket.cust_name}</span>
-                                    <span>🏢 ${branchName}</span>
-                                    <span>📅 ${submittedDate}</span>
+                    <tr class="ticket-row">
+                        <td>
+                            <div class="ticket-id-cell">
+                                <span class="ticket-id">#TK010</span>
+                                <span class="ticket-number">${ticket.ticket_id.toString().padStart(6, '0')}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="customer-cell">
+                                <div class="customer-name">${ticket.cust_name}</div>
+                                <div class="customer-contacts">
+                                    ${ticket.cust_email ? `<a href="mailto:${ticket.cust_email}" class="contact-link"><img src="/icon-email.png" alt="Email" class="contact-icon"></a>` : ''}
+                                    ${ticket.cust_phone ? `<a href="https://wa.me/${ticket.cust_phone.replace(/[^\d]/g, '')}" target="_blank" class="contact-link"><img src="/icon-phone.png" alt="Phone" class="contact-icon"></a>` : ''}
                                 </div>
                             </div>
-                            <div class="ticket-badges">
-                                <span class="status-badge ${ticket.status}">
-                                    ${ticket.status.replace('_', ' ')}
-                                </span>
-                                <span class="type-badge">
-                                    ${ticket.type}
-                                </span>
+                        </td>
+                        <td>
+                            <div class="branch-cell">
+                                ${branchName}
                             </div>
-                        </div>
-                    </div>
+                        </td>
+                        <td>
+                            <span class="type-badge type-${ticket.type}">${ticket.type}</span>
+                        </td>
+                        <td>
+                            <div class="description-cell">
+                                ${ticket.description.length > 50 ? ticket.description.substring(0, 50) + '...' : ticket.description}
+                            </div>
+                        </td>
+                        <td>
+                            ${ticket.attachment ? `<img src="/icon-report.png" alt="Attachment" class="attachment-icon" onclick="window.open('${ticket.attachment}', '_blank')">` : '-'}
+                        </td>
+                        <td>
+                            <div class="pic-cell">
+                                ${ticket.pic_name || 'Sandra Mayers'}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-${ticket.status}">${ticket.status.replace('_', ' ')}</span>
+                        </td>
+                        <td>
+                            <button class="action-btn" onclick="openTicketModal(${ticket.ticket_id})">Action</button>
+                        </td>
+                    </tr>
                 `;
             }).join('');
+
+            updatePagination();
         }
 
-        // Show empty state
-        function showEmptyState() {
-            document.getElementById('tickets-container').classList.add('hidden');
-            document.getElementById('empty-state').classList.remove('hidden');
-            document.getElementById('tickets-count').textContent = '0 tickets';
+        // Update pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, filteredTickets.length);
+
+            document.getElementById('paginationInfo').textContent = 
+                `Showing ${startItem} to ${endItem} of ${filteredTickets.length} results`;
+
+            // Update page buttons
+            const page1 = document.getElementById('page1');
+            const page2 = document.getElementById('page2');
+            const page3 = document.getElementById('page3');
+
+            [page1, page2, page3].forEach(btn => btn?.classList.remove('active'));
+            
+            if (currentPage <= 3) {
+                page1 && (page1.textContent = '1', page1.onclick = () => goToPage(1));
+                page2 && (page2.textContent = '2', page2.onclick = () => goToPage(2));
+                page3 && (page3.textContent = '3', page3.onclick = () => goToPage(3));
+                document.getElementById(`page${currentPage}`)?.classList.add('active');
+            }
         }
 
-        // Get type icon
-        function getTypeIcon(type) {
-            const icons = {
-                'complaint': '😞',
-                'suggestion': '💡',
-                'compliment': '😊',
-                'inquiry': '❓'
-            };
-            return icons[type] || '📝';
+        // Pagination functions
+        function goToPage(page) {
+            currentPage = page;
+            displayTickets();
         }
 
-        // Filter tickets
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTickets();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayTickets();
+            }
+        }
+
+        // Apply filters
         function applyFilters() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const statusFilter = document.getElementById('status-filter').value;
-            const typeFilter = document.getElementById('type-filter').value;
-            const branchFilter = document.getElementById('branch-filter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const branchFilter = document.getElementById('branchFilter').value;
+            const dateRangeFilter = document.getElementById('dateRangeFilter').value;
 
-            let filtered = allTickets.filter(ticket => {
+            filteredTickets = allTickets.filter(ticket => {
                 const matchesSearch = !searchTerm || 
                     ticket.title.toLowerCase().includes(searchTerm) ||
                     ticket.description.toLowerCase().includes(searchTerm) ||
@@ -1151,149 +1148,109 @@
                 return matchesSearch && matchesStatus && matchesType && matchesBranch;
             });
 
-            displayTickets(filtered);
+            currentPage = 1;
+            displayTickets();
         }
 
-        // Reset filters
-        function resetFilters() {
-            document.getElementById('search-input').value = '';
-            document.getElementById('status-filter').value = '';
-            document.getElementById('type-filter').value = '';
-            document.getElementById('branch-filter').value = '';
-            displayTickets(allTickets);
-        }
-
-        // Add event listeners for filters
-        document.getElementById('search-input').addEventListener('input', applyFilters);
-        document.getElementById('status-filter').addEventListener('change', applyFilters);
-        document.getElementById('type-filter').addEventListener('change', applyFilters);
-        document.getElementById('branch-filter').addEventListener('change', applyFilters);
+        // Add filter event listeners
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('typeFilter').addEventListener('change', applyFilters);
+        document.getElementById('branchFilter').addEventListener('change', applyFilters);
+        document.getElementById('dateRangeFilter').addEventListener('change', applyFilters);
 
         // Open ticket modal
-        async function openTicketModal(ticketId) {
-            const modal = document.getElementById('ticket-modal');
+        function openTicketModal(ticketId) {
             const ticket = allTickets.find(t => t.ticket_id === ticketId);
-            
             if (!ticket) return;
 
-            // Update modal title
-            document.getElementById('modal-title').textContent = ticket.title;
-            document.getElementById('modal-ticket-id').textContent = `Ticket #${ticket.ticket_id}`;
-
-            // Load full ticket details
-            await loadTicketDetails(ticketId);
-
-            // Show modal
-            modal.classList.remove('hidden');
-        }
-
-        // Load ticket details
-        async function loadTicketDetails(ticketId) {
-            const token = localStorage.getItem('clientToken');
+            const modal = document.getElementById('ticketModal');
+            const modalBody = document.getElementById('modalBody');
             
-            try {
-                const response = await fetch(`/api/tickets/${ticketId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to load ticket details');
-                }
-
-                const data = await response.json();
-                const ticket = data.ticket;
-                const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown Branch';
-                const typeIcon = getTypeIcon(ticket.type);
-                
-                const content = `
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                        <div>
-                            <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Ticket Information</h3>
-                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="font-size: 1.25rem;">${typeIcon}</span>
-                                    <span style="font-weight: 500; text-transform: uppercase;">${ticket.type}</span>
-                                </div>
-                                <div><strong>Branch:</strong> ${branchName}</div>
-                                <div><strong>Status:</strong> 
-                                    <span class="status-badge ${ticket.status}">
-                                        ${ticket.status.replace('_', ' ')}
-                                    </span>
-                                </div>
-                                <div><strong>Submitted:</strong> ${new Date(ticket.submitted_at).toLocaleString()}</div>
-                                ${ticket.responded_at ? `<div><strong>Responded:</strong> ${new Date(ticket.responded_at).toLocaleString()}</div>` : ''}
-                                ${ticket.resolved_at ? `<div><strong>Resolved:</strong> ${new Date(ticket.resolved_at).toLocaleString()}</div>` : ''}
+            const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown';
+            
+            modalBody.innerHTML = `
+                <div class="ticket-details">
+                    <div class="detail-grid">
+                        <div class="detail-section">
+                            <h3>Ticket Information</h3>
+                            <div class="detail-row">
+                                <label>Ticket ID:</label>
+                                <span>#TK010${ticket.ticket_id.toString().padStart(6, '0')}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Type:</label>
+                                <span class="type-badge type-${ticket.type}">${ticket.type}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Status:</label>
+                                <span class="status-badge status-${ticket.status}">${ticket.status.replace('_', ' ')}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Branch:</label>
+                                <span>${branchName}</span>
                             </div>
                         </div>
                         
-                        <div>
-                            <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Customer Information</h3>
-                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <div><strong>Name:</strong> ${ticket.cust_name}</div>
-                                <div><strong>Email:</strong> ${ticket.cust_email || 'Not provided'}</div>
-                                <div><strong>Phone:</strong> ${ticket.cust_phone || 'Not provided'}</div>
+                        <div class="detail-section">
+                            <h3>Customer Information</h3>
+                            <div class="detail-row">
+                                <label>Name:</label>
+                                <span>${ticket.cust_name}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Email:</label>
+                                <span>${ticket.cust_email || 'Not provided'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Phone:</label>
+                                <span>${ticket.cust_phone || 'Not provided'}</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Description</h3>
-                        <div style="background: var(--light); border-radius: 8px; padding: 1rem; border: 1px solid var(--border);">
-                            <p style="color: var(--text-primary); white-space: pre-wrap; line-height: 1.5;">${ticket.description}</p>
-                        </div>
+                    <div class="detail-section full-width">
+                        <h3>Description</h3>
+                        <p class="ticket-description">${ticket.description}</p>
                     </div>
                     
                     ${ticket.attachment ? `
-                        <div style="margin-bottom: 2rem;">
-                            <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Attachment</h3>
-                            <a href="${ticket.attachment}" target="_blank" 
-                               style="display: inline-flex; align-items: center; padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; color: var(--primary); text-decoration: none; font-weight: 500; transition: all 0.2s ease;">
-                                📎 View Attachment
-                            </a>
+                        <div class="detail-section full-width">
+                            <h3>Attachment</h3>
+                            <a href="${ticket.attachment}" target="_blank" class="attachment-link">View Attachment</a>
                         </div>
                     ` : ''}
                     
-                    <div style="border-top: 1px solid var(--border); padding-top: 2rem;">
-                        <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Actions</h3>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <select id="status-update" style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem;">
-                                <option value="open" ${ticket.status === 'open' ? 'selected' : ''}>Open</option>
-                                <option value="in_progress" ${ticket.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
-                                <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Resolved</option>
-                            </select>
-                            <button onclick="updateTicketStatus(${ticket.ticket_id})" 
-                                    style="background: var(--primary); color: white; padding: 0.75rem 1rem; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
-                                💾 Update Status
-                            </button>
-                        </div>
+                    <div class="detail-actions">
+                        <select class="status-select" id="modalStatusSelect">
+                            <option value="open" ${ticket.status === 'open' ? 'selected' : ''}>Open</option>
+                            <option value="in_progress" ${ticket.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                            <option value="closed" ${ticket.status === 'closed' ? 'selected' : ''}>Closed</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="updateTicketStatus(${ticket.ticket_id})">Update Status</button>
                     </div>
-                `;
-                
-                document.getElementById('modal-content').innerHTML = content;
-                
-            } catch (error) {
-                console.error('Failed to load ticket details:', error);
-                document.getElementById('modal-content').innerHTML = `
-                    <div style="text-align: center; padding: 2rem;">
-                        <div style="color: var(--danger); margin-bottom: 1rem; font-size: 2rem;">⚠️</div>
-                        <p style="color: var(--text-secondary);">Failed to load ticket details</p>
-                    </div>
-                `;
-            }
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        // Close ticket modal
+        function closeTicketModal() {
+            const modal = document.getElementById('ticketModal');
+            modal.style.display = 'none';
         }
 
         // Update ticket status
         async function updateTicketStatus(ticketId) {
-            const token = localStorage.getItem('clientToken');
-            const newStatus = document.getElementById('status-update').value;
+            const newStatus = document.getElementById('modalStatusSelect').value;
             
             try {
                 const response = await fetch(`/api/tickets/${ticketId}/status`, {
                     method: 'PATCH',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${clientToken}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ status: newStatus })
@@ -1306,36 +1263,34 @@
                 // Reload tickets and close modal
                 await loadTickets();
                 closeTicketModal();
-                
-                // Show success message
-                showNotification('Ticket status updated successfully', 'success');
+                showSuccess('Ticket status updated successfully');
                 
             } catch (error) {
                 console.error('Failed to update ticket status:', error);
-                showNotification('Failed to update ticket status', 'error');
+                showError('Failed to update ticket status');
             }
         }
 
-        // Close ticket modal
-        function closeTicketModal() {
-            const modal = document.getElementById('ticket-modal');
-            modal.classList.add('hidden');
+        // Show success message
+        function showSuccess(message) {
+            // Implementation for success notification
+            console.log('Success:', message);
         }
 
-        // Show notification
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 5000);
+            }
         }
 
-        // Navigation functions (placeholder for now)
+        // Navigation functions
         function manageUsers() {
             alert('User Management feature coming soon!');
         }
@@ -1352,21 +1307,10 @@
         }
 
         // Close modal when clicking outside
-        document.getElementById('ticket-modal').addEventListener('click', function(e) {
+        document.getElementById('ticketModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeTicketModal();
             }
-        });
-
-        // Handle errors globally
-        window.addEventListener('error', (event) => {
-            console.error('💥 Global error:', event.error);
-        });
-
-        // Handle unhandled promise rejections
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('💥 Unhandled promise rejection:', event.reason);
-            event.preventDefault();
         });
     </script>
 </body>
