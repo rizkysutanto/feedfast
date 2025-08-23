@@ -4,639 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FeedFast - Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #8527F0;
-            --primary-dark: #7c3aed;
-            --primary-light: #a855f7;
-            --secondary: #64748b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #000000;
-            --light: #f8fafc;
-            --border: #e2e8f0;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --bg-card: #ffffff;
-            --sidebar-bg: var(--dark);
-            --sidebar-active: var(--primary);
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: var(--light);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 200px;
-            background: var(--sidebar-bg);
-            min-height: 100vh;
-            padding: 1.5rem 0;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 100;
-        }
-
-        .sidebar-header {
-            padding: 0 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .logo::before {
-            content: '';
-            width: 12px;
-            height: 12px;
-            background: white;
-            border-radius: 2px;
-        }
-
-        .brand-name {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: white;
-            letter-spacing: -0.025em;
-        }
-
-        .company-name {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 0.25rem;
-        }
-
-        /* Navigation */
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-        }
-
-        .nav-item {
-            margin-bottom: 0.25rem;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #ccc;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border-right: 3px solid transparent;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .nav-link.active {
-            background: var(--sidebar-active);
-            color: white;
-            border-right-color: var(--primary-light);
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 200px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Top Header */
-        .top-header {
-            background: white;
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow);
-        }
-
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .header-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        .user-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-info {
-            text-align: right;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.875rem;
-        }
-
-        .user-role {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .logout-btn {
-            padding: 0.5rem 1rem;
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-left: 1rem;
-        }
-
-        .logout-btn:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-
-        /* Dashboard Content */
-        .dashboard-content {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: all 0.2s ease;
-            border: 1px solid var(--border);
-        }
-
-        .stat-card:hover {
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-2px);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .stat-icon.tickets {
-            background: linear-gradient(135deg, #ff9500, #ff6b00);
-            color: white;
-        }
-
-        .stat-icon.branches {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .stat-icon.users {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .stat-icon.pending {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-
-        .stat-content h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1;
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-content p {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .stat-change {
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-top: 0.5rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-        }
-
-        .stat-change.positive {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .stat-change.negative {
-            background: #fef2f2;
-            color: #dc2626;
-        }
-
-        .stat-change.neutral {
-            background: #f1f5f9;
-            color: var(--text-secondary);
-        }
-
-        /* Recent Activities */
-        .activity-section {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 1.5rem;
-        }
-
-        .activity-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .activity-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            transition: all 0.2s ease;
-        }
-
-        .activity-item:hover {
-            background: #f8fafc;
-            border-color: var(--primary);
-        }
-
-        .activity-info {
-            flex: 1;
-        }
-
-        .activity-title {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .activity-description {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .activity-meta {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: capitalize;
-        }
-
-        .status-badge.new {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .status-badge.resolved {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .activity-time {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            white-space: nowrap;
-        }
-
-        /* Loading States */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid var(--border);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Error States */
-        .error-message {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-
-            .top-header {
-                padding: 1rem;
-            }
-
-            .dashboard-content {
-                padding: 1rem;
-            }
-
-            .user-info {
-                display: none;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeInUp 0.5s ease-out;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/client-dashboard.css">
 </head>
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-section">
-                <div class="logo"></div>
-                <div>
-                    <div class="brand-name">FeedFast</div>
-                    <div class="company-name" id="sidebarClientName">[Company Name]</div>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/logo-feedfast.webp" alt="FeedFast">
+                <div class="logo-text">
+                    <span class="brand-name">FeedFast</span>
+                    <span class="company-name" id="sidebarClientName">[Company Name]</span>
                 </div>
-            </div>
-        </div>
-        
-        <nav>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="/dashboard" class="nav-link active">
-                        <span class="nav-icon">📊</span>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/ticket" class="nav-link">
-                        <span class="nav-icon">🎫</span>
-                        Ticket
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/branch" class="nav-link">
-                        <span class="nav-icon">🏢</span>
-                        Branch
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/report" class="nav-link">
-                        <span class="nav-icon">📈</span>
-                        Report
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="manageUsers()">
-                        <span class="nav-icon">👥</span>
-                        User Management
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="settings()">
-                        <span class="nav-icon">⚙️</span>
-                        Settings
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Header -->
-        <header class="top-header">
-            <div class="header-info">
-                <h1 class="header-title">Dashboard</h1>
-                <p class="header-subtitle">Welcome <span id="headerUserName">[User Name]</span>. Today is <span id="currentDate">[Day]</span> | <span id="currentDateTime">[dd/mm/yyyy]</span></p>
             </div>
             
-            <div class="user-section">
-                <div class="user-info">
-                    <div class="user-name" id="userName">Loading...</div>
-                    <div class="user-role" id="userRole">[User Role]</div>
+            <div class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="/dashboard" class="nav-link active">
+                        <img src="/icon-dashboard.png" alt="" class="nav-icon">
+                        Dashboard
+                    </a>
                 </div>
-                <div class="user-avatar" id="userAvatar">R</div>
-                <button class="logout-btn" onclick="logout()">Logout ↗</button>
-            </div>
-        </header>
-
-        <!-- Dashboard Content -->
-        <main class="dashboard-content">
-            <div class="error-message" id="errorMessage"></div>
-
-            <!-- Stats Grid -->
-            <div class="stats-grid fade-in">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon tickets">📋</div>
-                        <div class="stat-content">
-                            <h3 id="totalTickets">0</h3>
-                            <p>Total Tickets</p>
-                        </div>
-                    </div>
-                    <div class="stat-change positive">+12% from last month</div>
+                <div class="nav-item">
+                    <a href="/ticket" class="nav-link">
+                        <img src="/icon-ticket.png" alt="" class="nav-icon">
+                        Ticket
+                    </a>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon branches">🏢</div>
-                        <div class="stat-content">
-                            <h3 id="totalBranches">0</h3>
-                            <p>Active Branches</p>
-                        </div>
-                    </div>
-                    <div class="stat-change neutral" id="branchesStatus">All locations</div>
+                <div class="nav-item">
+                    <a href="/branch" class="nav-link">
+                        <img src="/icon-branch.png" alt="" class="nav-icon">
+                        Branch
+                    </a>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon users">👥</div>
-                        <div class="stat-content">
-                            <h3 id="totalUsers">0</h3>
-                            <p>Team Members</p>
-                        </div>
-                    </div>
-                    <div class="stat-change positive">Active Users</div>
+                <div class="nav-item">
+                    <a href="/report" class="nav-link">
+                        <img src="/icon-report.png" alt="" class="nav-icon">
+                        Report
+                    </a>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon pending">⚠️</div>
-                        <div class="stat-content">
-                            <h3 id="pendingTickets">0</h3>
-                            <p>Open Tickets</p>
-                        </div>
-                    </div>
-                    <div class="stat-change negative">Need Attention</div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="manageUsers()">
+                        <img src="/icon-usermanagement.png" alt="" class="nav-icon">
+                        User Management
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="settings()">
+                        <img src="/icon-settings.png" alt="" class="nav-icon">
+                        Settings
+                    </a>
                 </div>
             </div>
+        </nav>
 
-            <!-- Recent Activities -->
-            <div class="activity-section fade-in">
-                <h2 class="section-title">Recent Activities</h2>
-                <div class="activity-list" id="activityList">
-                    <!-- Activity items will be populated by JavaScript -->
-                    <div class="activity-item">
-                        <div class="activity-info">
-                            <div class="activity-title">Loading recent activity...</div>
-                            <div class="activity-description">Please wait while we fetch the latest updates</div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Welcome <span id="headerUserName">[User Name]</span>. Today is <span id="currentDate">[Day]</span> | <span id="currentDateTime">[dd/mm/yyyy]</span></p>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">R</div>
+                        <div class="user-details">
+                            <span class="user-name" id="userName">Loading...</span>
+                            <span class="user-role" id="userRole">[User Role]</span>
                         </div>
-                        <div class="activity-meta">
-                            <span class="spinner"></span>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <main class="content-area">
+                <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon orange">📋</div>
+                        </div>
+                        <h3 class="stat-number" id="totalTickets">0</h3>
+                        <p class="stat-label">Total Tickets</p>
+                        <div class="stat-change">+12% from last month</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon purple">🏢</div>
+                        </div>
+                        <h3 class="stat-number" id="totalBranches">0</h3>
+                        <p class="stat-label">Active Branches</p>
+                        <div class="stat-change" id="branchesStatus">All locations</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon green">👥</div>
+                        </div>
+                        <h3 class="stat-number" id="totalUsers">0</h3>
+                        <p class="stat-label">Team Members</p>
+                        <div class="stat-change">Active Users</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon red">⚠️</div>
+                        </div>
+                        <h3 class="stat-number" id="pendingTickets">0</h3>
+                        <p class="stat-label">Open Tickets</p>
+                        <div class="stat-change">Need Attention</div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="activities-section">
+                    <div class="activities-header">
+                        <h2 class="activities-title">Recent Activities</h2>
+                    </div>
+                    <div class="activities-list" id="activityList">
+                        <!-- Activity items will be populated by JavaScript -->
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <div class="activity-title">Loading recent activity...</div>
+                                <div class="activity-details">Please wait while we fetch the latest updates</div>
+                            </div>
+                            <div class="activity-meta">
+                                <span class="spinner"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <script>
@@ -861,7 +366,7 @@
                 {
                     title: 'New feedback received',
                     description: '[Feedback Title] | [Branch] | [Feedback Type]',
-                    time: '[dd/mmm/yy] | [hh:mm]',
+                    time: '[dd/mmv/yy] | [hh:mm]',
                     status: 'new'
                 },
                 {
@@ -874,12 +379,12 @@
 
             const activityHTML = mockActivities.map(activity => `
                 <div class="activity-item">
-                    <div class="activity-info">
+                    <div class="activity-content">
                         <div class="activity-title">${activity.title}</div>
-                        <div class="activity-description">${activity.description}</div>
+                        <div class="activity-details">${activity.description}</div>
                     </div>
                     <div class="activity-meta">
-                        <span class="status-badge ${activity.status}">${activity.status}</span>
+                        <span class="activity-badge ${activity.status}">${activity.status}</span>
                         <span class="activity-time">${activity.time}</span>
                     </div>
                 </div>
