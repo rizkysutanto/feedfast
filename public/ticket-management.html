@@ -82,43 +82,48 @@
         }
 
         .search-btn {
-            padding: 0.5rem;
+            padding: 0.5rem 0.75rem;
             background-color: var(--primary-purple);
             border: none;
             border-radius: var(--border-radius);
             cursor: pointer;
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .search-btn:hover {
             background-color: #7c3aed;
+            transform: translateY(-1px);
         }
 
-        .search- {
+        .search-icon {
             width: 16px;
             height: 16px;
             filter: brightness(0) invert(1);
         }
 
-        /* s Table Section */
-        .s-section {
+        /* Tickets Table Section */
+        .tickets-section {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius-lg);
             overflow: hidden;
         }
 
-        .s-table-container {
+        .tickets-table-container {
             overflow-x: auto;
         }
 
-        .s-table {
+        .tickets-table {
             width: 100%;
             border-collapse: collapse;
             font-size: var(--font-size-sm);
+            min-width: 1200px;
         }
 
-        .s-table th {
+        .tickets-table th {
             background-color: var(--bg-light);
             color: var(--text-secondary);
             font-weight: 600;
@@ -128,26 +133,28 @@
             font-size: var(--font-size-xs);
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            white-space: nowrap;
         }
 
-        .s-table td {
+        .tickets-table td {
             padding: 1rem 0.75rem;
             border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
         }
 
-        .-row:hover {
+        .ticket-row:hover {
             background-color: var(--bg-light);
         }
 
         /* Table Cell Styles */
-        .-id-cell {
+        .ticket-id-cell {
             display: flex;
             flex-direction: column;
             gap: 0.25rem;
+            min-width: 100px;
         }
 
-        .-id {
+        .ticket-id {
             font-weight: 600;
             color: var(--primary-purple);
             font-size: var(--font-size-xs);
@@ -162,6 +169,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            min-width: 150px;
         }
 
         .customer-name {
@@ -185,15 +193,16 @@
             background-color: var(--bg-light);
         }
 
-        .contact- {
-            width: 14px;
-            height: 14px;
+        .contact-icon {
+            width: 16px;
+            height: 16px;
             opacity: 0.6;
         }
 
         .branch-cell {
             color: var(--text-primary);
             font-weight: 400;
+            min-width: 120px;
         }
 
         .description-cell {
@@ -205,11 +214,12 @@
         .pic-cell {
             color: var(--text-primary);
             font-weight: 400;
+            min-width: 120px;
         }
 
         /* Badge Styles */
         .type-badge {
-            padding: 0.25rem 0.5rem;
+            padding: 0.25rem 0.75rem;
             border-radius: var(--border-radius-full);
             font-size: var(--font-size-xs);
             font-weight: 500;
@@ -246,18 +256,18 @@
             font-weight: 500;
             text-transform: capitalize;
             text-align: center;
-            min-width: 80px;
+            min-width: 90px;
             display: inline-block;
         }
 
         .status-open {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        .status-in_progress {
             background-color: #dbeafe;
             color: #2563eb;
+        }
+
+        .status-in-progress {
+            background-color: #fef3c7;
+            color: #d97706;
         }
 
         .status-resolved {
@@ -265,12 +275,7 @@
             color: #16a34a;
         }
 
-        .status-closed {
-            background-color: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .attachment- {
+        .attachment-icon {
             width: 20px;
             height: 20px;
             opacity: 0.7;
@@ -278,7 +283,7 @@
             transition: var(--transition);
         }
 
-        .attachment-:hover {
+        .attachment-icon:hover {
             opacity: 1;
         }
 
@@ -315,7 +320,7 @@
             gap: 1rem;
         }
 
-        .empty- {
+        .empty-icon {
             width: 48px;
             height: 48px;
             opacity: 0.3;
@@ -369,6 +374,7 @@
             inset: 0;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
+            display: flex;
             align-items: center;
             justify-content: center;
             padding: 1rem;
@@ -501,8 +507,8 @@
 
         .detail-actions {
             display: flex;
+            flex-direction: column;
             gap: 1rem;
-            align-items: center;
             padding-top: 1rem;
             border-top: 1px solid var(--border-color);
         }
@@ -537,11 +543,12 @@
             }
 
             .search-group {
-                flex-direction: column;
-                align-items: stretch;
+                flex-direction: row;
+                align-items: center;
             }
 
             .search-input {
+                flex: 1;
                 min-width: auto;
             }
 
@@ -557,7 +564,7 @@
 
             .tickets-table th,
             .tickets-table td {
-                padding: 0.5rem 0.25rem;
+                padding: 0.5rem 0.5rem;
             }
 
             .customer-cell,
@@ -584,6 +591,33 @@
             .modal-body {
                 padding: 1rem;
             }
+
+            .detail-actions {
+                gap: 1rem;
+            }
+
+            .detail-actions > div {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .status-select {
+                min-width: auto;
+            }
+        }
+
+        /* Success message styles */
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #dcfce7;
+            color: #16a34a;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #bbf7d0;
+            z-index: 10000;
+            box-shadow: var(--shadow-card);
         }
     </style>
 </head>
@@ -602,7 +636,7 @@
             <div class="sidebar-nav">
                 <div class="nav-item">
                     <a href="/dashboard" class="nav-link">
-                        <img src="/-dashboard.png" alt="" class="nav-icon">
+                        <img src="/icon-dashboard.png" alt="" class="nav-icon">
                         Dashboard
                     </a>
                 </div>
@@ -663,9 +697,9 @@
                     <p class="welcome-subtitle">Manage Your Complaints, Suggestions, & Complements</p>
                 </div>
 
-                <!-- Stats Grid - Updated to match design -->
+                <!-- Stats Grid -->
                 <div class="stats-grid">
-                    <div class="stat-card stat-card-purple">
+                    <div class="stat-card">
                         <div class="stat-icon-container">
                             <img src="/icon-ticket.png" alt="Total Tickets" class="stat-icon-img">
                         </div>
@@ -675,7 +709,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card stat-card-purple">
+                    <div class="stat-card">
                         <div class="stat-icon-container">
                             <img src="/icon-warning.png" alt="Complaints" class="stat-icon-img">
                         </div>
@@ -685,7 +719,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card stat-card-purple">
+                    <div class="stat-card">
                         <div class="stat-icon-container">
                             <img src="/icon-suggestions.png" alt="Suggestions" class="stat-icon-img">
                         </div>
@@ -695,7 +729,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card stat-card-purple">
+                    <div class="stat-card">
                         <div class="stat-icon-container">
                             <img src="/icon-complements.png" alt="Complements" class="stat-icon-img">
                         </div>
@@ -733,7 +767,6 @@
                                 <option value="open">Open</option>
                                 <option value="in_progress">In Progress</option>
                                 <option value="resolved">Resolved</option>
-                                <option value="closed">Closed</option>
                             </select>
                             <select class="filter-select" id="picFilter">
                                 <option value="">PIC</option>
@@ -741,7 +774,7 @@
                         </div>
                         <div class="search-group">
                             <input type="text" class="search-input" id="searchInput" placeholder="Search tickets...">
-                            <button class="search-btn">
+                            <button class="search-btn" onclick="applyFilters()">
                                 <img src="/icon-search.png" alt="Search" class="search-icon">
                             </button>
                         </div>
@@ -816,6 +849,7 @@
         let clientToken = null;
         let allTickets = [];
         let allBranches = [];
+        let allUsers = [];
         let currentPage = 1;
         let itemsPerPage = 10;
         let filteredTickets = [];
@@ -832,6 +866,7 @@
             // Load user data and tickets
             await loadUserData();
             await loadBranches();
+            await loadUsers();
             await loadTickets();
         });
 
@@ -943,6 +978,35 @@
             }
         }
 
+        // Load users for PIC assignment
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users', {
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    allUsers = data.users || [];
+                    
+                    // Populate PIC filter
+                    const picFilter = document.getElementById('picFilter');
+                    picFilter.innerHTML = '<option value="">PIC</option>';
+                    
+                    allUsers.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.user_id;
+                        option.textContent = user.user_name || user.name;
+                        picFilter.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+
         // Load tickets
         async function loadTickets() {
             try {
@@ -1006,6 +1070,23 @@
             requestAnimationFrame(update);
         }
 
+        // Get status display text and color
+        function getStatusInfo(status) {
+            const statusMap = {
+                'open': { text: 'Open', class: 'status-open' },
+                'in_progress': { text: 'In Progress', class: 'status-in-progress' },
+                'resolved': { text: 'Resolved', class: 'status-resolved' }
+            };
+            return statusMap[status] || { text: status, class: 'status-open' };
+        }
+
+        // Get PIC name from user ID
+        function getPICName(picId) {
+            if (!picId) return 'Unassigned';
+            const user = allUsers.find(u => u.user_id == picId);
+            return user ? (user.user_name || user.name) : 'Unknown';
+        }
+
         // Display tickets in table
         function displayTickets() {
             const tbody = document.getElementById('ticketsTableBody');
@@ -1029,13 +1110,14 @@
 
             tbody.innerHTML = pageTickets.map(ticket => {
                 const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown';
-                const submittedDate = new Date(ticket.submitted_at).toLocaleDateString('en-GB');
+                const statusInfo = getStatusInfo(ticket.status);
+                const picName = getPICName(ticket.pic_ticket);
                 
                 return `
                     <tr class="ticket-row">
                         <td>
                             <div class="ticket-id-cell">
-                                <span class="ticket-id">#TK010</span>
+                                <span class="ticket-id">#TK${ticket.ticket_id.toString().padStart(3, '0')}</span>
                                 <span class="ticket-number">${ticket.ticket_id.toString().padStart(6, '0')}</span>
                             </div>
                         </td>
@@ -1043,8 +1125,8 @@
                             <div class="customer-cell">
                                 <div class="customer-name">${ticket.cust_name}</div>
                                 <div class="customer-contacts">
-                                    ${ticket.cust_email ? `<a href="mailto:${ticket.cust_email}" class="contact-link"><img src="/icon-email.png" alt="Email" class="contact-icon"></a>` : ''}
-                                    ${ticket.cust_phone ? `<a href="https://wa.me/${ticket.cust_phone.replace(/[^\d]/g, '')}" target="_blank" class="contact-link"><img src="/icon-whatsapp.png" alt="Phone" class="contact-icon"></a>` : ''}
+                                    ${ticket.cust_email ? `<a href="mailto:${ticket.cust_email}" class="contact-link" title="Email"><img src="/icon-email.png" alt="Email" class="contact-icon"></a>` : ''}
+                                    ${ticket.cust_phone ? `<a href="https://wa.me/${ticket.cust_phone.replace(/[^\d]/g, '')}" target="_blank" class="contact-link" title="WhatsApp"><img src="/icon-whatsapp.png" alt="WhatsApp" class="contact-icon"></a>` : ''}
                                 </div>
                             </div>
                         </td>
@@ -1062,15 +1144,15 @@
                             </div>
                         </td>
                         <td>
-                            ${ticket.attachment ? `<img src="/icon-attachment.png" alt="Attachment" class="attachment-icon" onclick="window.open('${ticket.attachment}', '_blank')">` : '-'}
+                            ${ticket.attachment ? `<img src="/icon-attachment.png" alt="Attachment" class="attachment-icon" onclick="window.open('${ticket.attachment}', '_blank')" title="View Attachment">` : '-'}
                         </td>
                         <td>
                             <div class="pic-cell">
-                                ${ticket.pic_name || 'Sandra Mayers'}
+                                ${picName}
                             </div>
                         </td>
                         <td>
-                            <span class="status-badge status-${ticket.status}">${ticket.status.replace('_', ' ')}</span>
+                            <span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>
                         </td>
                         <td>
                             <button class="action-btn" onclick="openTicketModal(${ticket.ticket_id})">Action</button>
@@ -1134,18 +1216,20 @@
             const typeFilter = document.getElementById('typeFilter').value;
             const branchFilter = document.getElementById('branchFilter').value;
             const dateRangeFilter = document.getElementById('dateRangeFilter').value;
+            const picFilter = document.getElementById('picFilter').value;
 
             filteredTickets = allTickets.filter(ticket => {
                 const matchesSearch = !searchTerm || 
-                    ticket.title.toLowerCase().includes(searchTerm) ||
+                    ticket.title?.toLowerCase().includes(searchTerm) ||
                     ticket.description.toLowerCase().includes(searchTerm) ||
                     ticket.cust_name.toLowerCase().includes(searchTerm);
                 
                 const matchesStatus = !statusFilter || ticket.status === statusFilter;
                 const matchesType = !typeFilter || ticket.type === typeFilter;
                 const matchesBranch = !branchFilter || ticket.branch_id == branchFilter;
+                const matchesPIC = !picFilter || ticket.pic_ticket == picFilter;
 
-                return matchesSearch && matchesStatus && matchesType && matchesBranch;
+                return matchesSearch && matchesStatus && matchesType && matchesBranch && matchesPIC;
             });
 
             currentPage = 1;
@@ -1158,6 +1242,17 @@
         document.getElementById('typeFilter').addEventListener('change', applyFilters);
         document.getElementById('branchFilter').addEventListener('change', applyFilters);
         document.getElementById('dateRangeFilter').addEventListener('change', applyFilters);
+        document.getElementById('picFilter').addEventListener('change', applyFilters);
+
+        // Get available status options based on current status (irreversible logic)
+        function getAvailableStatuses(currentStatus) {
+            const statusFlow = {
+                'open': ['open', 'in_progress'],
+                'in_progress': ['in_progress', 'resolved'],
+                'resolved': ['resolved']
+            };
+            return statusFlow[currentStatus] || ['open'];
+        }
 
         // Open ticket modal
         function openTicketModal(ticketId) {
@@ -1168,6 +1263,9 @@
             const modalBody = document.getElementById('modalBody');
             
             const branchName = allBranches.find(b => b.branch_id == ticket.branch_id)?.branch_name || 'Unknown';
+            const statusInfo = getStatusInfo(ticket.status);
+            const picName = getPICName(ticket.pic_ticket);
+            const availableStatuses = getAvailableStatuses(ticket.status);
             
             modalBody.innerHTML = `
                 <div class="ticket-details">
@@ -1176,7 +1274,7 @@
                             <h3>Ticket Information</h3>
                             <div class="detail-row">
                                 <label>Ticket ID:</label>
-                                <span>#TK010${ticket.ticket_id.toString().padStart(6, '0')}</span>
+                                <span>#TK${ticket.ticket_id.toString().padStart(3, '0')}</span>
                             </div>
                             <div class="detail-row">
                                 <label>Type:</label>
@@ -1184,11 +1282,15 @@
                             </div>
                             <div class="detail-row">
                                 <label>Status:</label>
-                                <span class="status-badge status-${ticket.status}">${ticket.status.replace('_', ' ')}</span>
+                                <span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>
                             </div>
                             <div class="detail-row">
                                 <label>Branch:</label>
                                 <span>${branchName}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>PIC:</label>
+                                <span>${picName}</span>
                             </div>
                         </div>
                         
@@ -1206,6 +1308,10 @@
                                 <label>Phone:</label>
                                 <span>${ticket.cust_phone || 'Not provided'}</span>
                             </div>
+                            <div class="detail-row">
+                                <label>Submitted:</label>
+                                <span>${new Date(ticket.submitted_at).toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -1217,18 +1323,35 @@
                     ${ticket.attachment ? `
                         <div class="detail-section full-width">
                             <h3>Attachment</h3>
-                            <a href="${ticket.attachment}" target="_blank" class="attachment-link">View Attachment</a>
+                            <a href="${ticket.attachment}" target="_blank" class="attachment-link">
+                                <img src="/icon-attachment.png" alt="Attachment">
+                                View Attachment
+                            </a>
                         </div>
                     ` : ''}
                     
                     <div class="detail-actions">
-                        <select class="status-select" id="modalStatusSelect">
-                            <option value="open" ${ticket.status === 'open' ? 'selected' : ''}>Open</option>
-                            <option value="in_progress" ${ticket.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
-                            <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Resolved</option>
-                            <option value="closed" ${ticket.status === 'closed' ? 'selected' : ''}>Closed</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="updateTicketStatus(${ticket.ticket_id})">Update Status</button>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <label style="font-weight: 500; color: var(--text-secondary);">Update Status:</label>
+                            <select class="status-select" id="modalStatusSelect">
+                                ${availableStatuses.map(status => {
+                                    const info = getStatusInfo(status);
+                                    return `<option value="${status}" ${ticket.status === status ? 'selected' : ''}>${info.text}</option>`;
+                                }).join('')}
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <label style="font-weight: 500; color: var(--text-secondary);">Assign PIC:</label>
+                            <select class="status-select" id="modalPICSelect" style="min-width: 200px;">
+                                <option value="">Unassigned</option>
+                                ${allUsers.map(user => `
+                                    <option value="${user.user_id}" ${ticket.pic_ticket == user.user_id ? 'selected' : ''}>
+                                        ${user.user_name || user.name}
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="updateTicket(${ticket.ticket_id})">Update Ticket</button>
                     </div>
                 </div>
             `;
@@ -1242,12 +1365,14 @@
             modal.style.display = 'none';
         }
 
-        // Update ticket status
-        async function updateTicketStatus(ticketId) {
+        // Update ticket (status and PIC)
+        async function updateTicket(ticketId) {
             const newStatus = document.getElementById('modalStatusSelect').value;
+            const newPIC = document.getElementById('modalPICSelect').value;
             
             try {
-                const response = await fetch(`/api/tickets/${ticketId}/status`, {
+                // Update status
+                const statusResponse = await fetch(`/api/tickets/${ticketId}/status`, {
                     method: 'PATCH',
                     headers: {
                         'Authorization': `Bearer ${clientToken}`,
@@ -1256,25 +1381,61 @@
                     body: JSON.stringify({ status: newStatus })
                 });
 
-                if (!response.ok) {
+                if (!statusResponse.ok) {
                     throw new Error('Failed to update ticket status');
+                }
+
+                // Update PIC assignment
+                if (newPIC) {
+                    const picResponse = await fetch(`/api/tickets/${ticketId}/assign`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${clientToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ pic_ticket: newPIC })
+                    });
+
+                    if (!picResponse.ok) {
+                        throw new Error('Failed to assign PIC');
+                    }
                 }
 
                 // Reload tickets and close modal
                 await loadTickets();
                 closeTicketModal();
-                showSuccess('Ticket status updated successfully');
+                showSuccess('Ticket updated successfully');
                 
             } catch (error) {
-                console.error('Failed to update ticket status:', error);
-                showError('Failed to update ticket status');
+                console.error('Failed to update ticket:', error);
+                showError('Failed to update ticket');
             }
         }
 
         // Show success message
         function showSuccess(message) {
-            // Implementation for success notification
-            console.log('Success:', message);
+            // Create a temporary success notification
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: #dcfce7;
+                color: #16a34a;
+                padding: 1rem 1.5rem;
+                border-radius: var(--border-radius);
+                border: 1px solid #bbf7d0;
+                z-index: 10000;
+                box-shadow: var(--shadow-card);
+            `;
+            successDiv.textContent = message;
+            
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(successDiv);
+            }, 3000);
         }
 
         // Show error message
