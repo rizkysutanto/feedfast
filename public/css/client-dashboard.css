@@ -1,6 +1,6 @@
 /* =========================================
    FeedFast Client Dashboard CSS
-   Flat Design Approach
+   Flat Design Approach - UPDATED
    ========================================= */
 
 /* CSS Variables - Design System */
@@ -201,27 +201,37 @@ body {
 }
 
 /* =========================================
-   Top Header/Navbar
+   Top Header/Navbar - UPDATED TO MATCH FIGMA
    ========================================= */
 
 .top-header {
   background-color: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
-  padding: 0 2rem;
-  height: var(--header-height);
+  padding: 1.5rem 2rem;
+  height: auto;
+  min-height: 80px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   position: sticky;
   top: 0;
   z-index: 100;
   box-shadow: var(--shadow-subtle);
 }
 
-.header-left {
+.header-content {
+  width: 100%;
+  max-width: 1400px;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
 }
 
 .page-title {
@@ -229,27 +239,40 @@ body {
   font-weight: 700;
   color: var(--primary-purple);
   margin: 0;
+  line-height: 1.2;
 }
 
 .page-subtitle {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   margin: 0;
-  margin-top: 0.25rem;
+  line-height: 1.4;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.user-role {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-top: 0.125rem;
 }
 
 .user-avatar {
@@ -263,24 +286,7 @@ body {
   color: var(--text-white);
   font-weight: 600;
   font-size: var(--font-size-sm);
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.user-name {
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.user-role {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  line-height: 1.2;
+  margin-left: 0.5rem;
 }
 
 .logout-btn {
@@ -304,13 +310,21 @@ body {
 }
 
 /* =========================================
-   Dashboard Content Components
+   Dashboard Content Components - UPDATED
    ========================================= */
 
-/* Statistics Cards */
+/* Content Area with Proper Spacing */
+.content-area {
+  padding: 2rem;
+  flex: 1;
+  overflow-x: hidden;
+  background-color: var(--bg-light);
+}
+
+/* Statistics Cards - NEW STRUCTURE WITH PNG ICONS */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -322,13 +336,87 @@ body {
   padding: 1.5rem;
   position: relative;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .stat-card:hover {
   border-color: var(--primary-purple);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
 }
 
+.stat-icon-container {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-light);
+}
+
+.stat-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  opacity: 0.8;
+}
+
+.stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.stat-change {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  width: fit-content;
+  margin-top: 0.25rem;
+}
+
+.stat-change.positive {
+  background-color: #dcfce7;
+  color: var(--success-green);
+}
+
+.stat-change.negative {
+  background-color: #fee2e2;
+  color: var(--danger-red);
+}
+
+.stat-change.warning {
+  background-color: #fef3c7;
+  color: var(--warning-orange);
+}
+
+.stat-change.neutral {
+  background-color: var(--bg-light);
+  color: var(--text-secondary);
+}
+
+/* Legacy stat-card-header and stat-icon styles for backward compatibility */
 .stat-card-header {
   display: flex;
   align-items: center;
@@ -351,30 +439,6 @@ body {
 .stat-icon.purple { background-color: var(--primary-purple); }
 .stat-icon.green { background-color: var(--success-green); }
 .stat-icon.red { background-color: var(--danger-red); }
-
-.stat-number {
-  font-size: var(--font-size-3xl);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin: 0;
-  margin-top: 0.5rem;
-}
-
-.stat-change {
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--border-radius);
-  background-color: #f0f9ff;
-  color: var(--success-green);
-}
 
 /* Activities Section */
 .activities-section {
@@ -465,6 +529,11 @@ body {
   color: var(--warning-orange);
 }
 
+.activity-badge.neutral {
+  background-color: var(--bg-light);
+  color: var(--text-secondary);
+}
+
 .activity-time {
   font-size: var(--font-size-xs);
   color: var(--text-light);
@@ -518,6 +587,31 @@ body {
 .btn-danger:hover {
   background-color: #dc2626;
   transform: translateY(-1px);
+}
+
+/* Error Message Styling */
+.error-message {
+  background-color: #fee2e2;
+  color: var(--danger-red);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #fecaca;
+  margin-bottom: 1rem;
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-top: 2px solid var(--primary-purple);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Text Utilities */
@@ -586,19 +680,50 @@ body {
   }
   
   .top-header {
-    padding: 0 1rem;
+    padding: 1rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
   }
   
   .header-right {
+    align-self: flex-end;
     gap: 0.5rem;
   }
   
-  .user-details {
-    display: none;
+  .user-info {
+    flex-direction: row-reverse;
+    gap: 0.75rem;
   }
   
   .content-area {
     padding: 1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-icon-container {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .stat-icon-img {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
   }
   
   .page-title {
