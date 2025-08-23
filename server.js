@@ -1455,6 +1455,29 @@ app.get('/api/branches', authenticateClientToken, async (req, res) => {
     }
 });
 
+// PATCH /api/tickets/:id/assign
+app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { pic_ticket } = req.body;
+        const clientId = req.user.client_id;
+        
+        const result = await adminDb.query(
+            'UPDATE tickets SET pic_ticket = $1 WHERE ticket_id = $2 AND client_id = $3 RETURNING *',
+            [pic_ticket, id, clientId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Ticket not found' });
+        }
+        
+        res.json({ success: true, ticket: result.rows[0] });
+    } catch (error) {
+        console.error('Error assigning ticket:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 // Create new branch
 app.post('/api/branches', authenticateClientToken, async (req, res) => {
     const client = await adminPool.connect();
