@@ -817,16 +817,6 @@
                     </div>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon closed">📁</div>
-                        <div class="stat-content">
-                            <h3 id="stat-closed">0</h3>
-                            <p>Closed</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Filters Section -->
             <div class="filters-section fade-in">
@@ -837,7 +827,6 @@
                         <option value="open">Open</option>
                         <option value="in_progress">In Progress</option>
                         <option value="resolved">Resolved</option>
-                        <option value="closed">Closed</option>
                     </select>
                     <select id="type-filter" class="filter-select">
                         <option value="">All Types</option>
@@ -1037,7 +1026,6 @@
                 open: 0,
                 in_progress: 0,
                 resolved: 0,
-                closed: 0
             };
 
             allTickets.forEach(ticket => {
@@ -1050,7 +1038,6 @@
             animateNumber(document.getElementById('stat-open'), 0, stats.open, 1000);
             animateNumber(document.getElementById('stat-in-progress'), 0, stats.in_progress, 1000);
             animateNumber(document.getElementById('stat-resolved'), 0, stats.resolved, 1000);
-            animateNumber(document.getElementById('stat-closed'), 0, stats.closed, 1000);
         }
 
         // Animate number counting
@@ -1275,7 +1262,6 @@
                                 <option value="open" ${ticket.status === 'open' ? 'selected' : ''}>Open</option>
                                 <option value="in_progress" ${ticket.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
                                 <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Resolved</option>
-                                <option value="closed" ${ticket.status === 'closed' ? 'selected' : ''}>Closed</option>
                             </select>
                             <button onclick="updateTicketStatus(${ticket.ticket_id})" 
                                     style="background: var(--primary); color: white; padding: 0.75rem 1rem; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
