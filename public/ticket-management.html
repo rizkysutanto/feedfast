@@ -100,25 +100,25 @@
             filter: brightness(0) invert(1);
         }
 
-        /* Tickets Table Section */
-        .tickets-section {
+        /* s Table Section */
+        .s-section {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius-lg);
             overflow: hidden;
         }
 
-        .tickets-table-container {
+        .s-table-container {
             overflow-x: auto;
         }
 
-        .tickets-table {
+        .s-table {
             width: 100%;
             border-collapse: collapse;
             font-size: var(--font-size-sm);
         }
 
-        .tickets-table th {
+        .s-table th {
             background-color: var(--bg-light);
             color: var(--text-secondary);
             font-weight: 600;
@@ -130,24 +130,24 @@
             letter-spacing: 0.05em;
         }
 
-        .tickets-table td {
+        .s-table td {
             padding: 1rem 0.75rem;
             border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
         }
 
-        .ticket-row:hover {
+        .-row:hover {
             background-color: var(--bg-light);
         }
 
         /* Table Cell Styles */
-        .ticket-id-cell {
+        .-id-cell {
             display: flex;
             flex-direction: column;
             gap: 0.25rem;
         }
 
-        .ticket-id {
+        .-id {
             font-weight: 600;
             color: var(--primary-purple);
             font-size: var(--font-size-xs);
@@ -1035,8 +1035,7 @@
                     <tr class="ticket-row">
                         <td>
                             <div class="ticket-id-cell">
-                                <span class="ticket-id">#TK010</span>
-                                <span class="ticket-number">${ticket.ticket_id.toString().padStart(6, '0')}</span>
+                                <span class="ticket-id">${ticket.ticket_id.toString().padStart(6, '0')}</span>
                             </div>
                         </td>
                         <td>
