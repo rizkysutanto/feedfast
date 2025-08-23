@@ -1,6 +1,6 @@
 /* =========================================
    FeedFast Client Dashboard CSS
-   Flat Design Approach - UPDATED FOR BLACK HEADER
+   Flat Design Approach - FIXED VERSION
    ========================================= */
 
 /* CSS Variables - Design System */
@@ -28,7 +28,7 @@
   --bg-sidebar: #000000;
   --bg-sidebar-hover: #1f1f1f;
   --bg-sidebar-active: var(--primary-purple);
-  --bg-header: #000000; /* Black header */
+  --bg-header: #000000;
   
   /* Borders */
   --border-color: #e2e8f0;
@@ -36,9 +36,132 @@
   --border-radius-lg: 12px;
   --border-radius-full: 50px;
   
-  /* Shadows - Flat Design */
-  --shadow-none: none;
-  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.nav-link:hover {
+  /* Shadows */
+  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  
+  /* Spacing */
+  --sidebar-width: 280px;
+  --header-height: 70px;
+  
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  
+  /* Transitions */
+  --transition: all 0.2s ease;
+}
+
+/* =========================================
+   Global Styles
+   ========================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* =========================================
+   Layout Container
+   ========================================= */
+
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* =========================================
+   Sidebar Styles
+   ========================================= */
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--bg-sidebar);
+  color: var(--text-white);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+}
+
+.sidebar-logo {
+  padding: 1.5rem;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sidebar-logo img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logo-text .brand-name {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.logo-text .company-name {
+  font-size: var(--font-size-xs);
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.nav-item {
+  margin-bottom: 0.25rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1.5rem;
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: var(--transition);
+  position: relative;
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.nav-link:hover {
   background-color: var(--bg-sidebar-hover);
   color: var(--text-white);
 }
@@ -75,10 +198,11 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: calc(100% - var(--sidebar-width));
 }
 
 /* =========================================
-   Top Header - BLACK HEADER WITH USER INFO ONLY
+   Top Header - Black Header
    ========================================= */
 
 .top-header {
@@ -91,6 +215,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
 }
 
 .header-content {
@@ -98,19 +223,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-/* Remove header-left since we moved welcome to content */
-.header-left {
-  display: none;
-}
-
-.page-title {
-  display: none;
-}
-
-.page-subtitle {
-  display: none;
 }
 
 .user-info {
@@ -157,9 +269,6 @@
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .logout-btn:hover {
@@ -168,9 +277,18 @@
 }
 
 /* =========================================
-   Welcome Section - MOVED TO CONTENT AREA
+   Content Area
    ========================================= */
 
+.content-area {
+  padding: 2rem;
+  flex: 1;
+  overflow-x: hidden;
+  background-color: var(--bg-light);
+  width: 100%;
+}
+
+/* Welcome Section */
 .welcome-section {
   margin-bottom: 2rem;
   padding: 0;
@@ -192,18 +310,9 @@
 }
 
 /* =========================================
-   Dashboard Content Components - UPDATED WITH PURPLE CARDS
+   Statistics Cards - Purple Design
    ========================================= */
 
-/* Content Area with Proper Spacing */
-.content-area {
-  padding: 2rem;
-  flex: 1;
-  overflow-x: hidden;
-  background-color: var(--bg-light);
-}
-
-/* Statistics Cards - UPDATED WITH PURPLE BACKGROUND */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -212,8 +321,6 @@
 }
 
 .stat-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
   padding: 1.5rem;
   position: relative;
@@ -221,30 +328,14 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-}
-
-/* PURPLE CARDS WITH WHITE ICONS */
-.stat-card-purple {
   background: linear-gradient(135deg, var(--primary-purple) 0%, #9333ea 100%);
   border: none;
   color: var(--text-white);
 }
 
-.stat-card-purple:hover {
+.stat-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(133, 39, 240, 0.3);
-}
-
-.stat-card-purple .stat-content {
-  color: var(--text-white);
-}
-
-.stat-card-purple .stat-number {
-  color: var(--text-white);
-}
-
-.stat-card-purple .stat-label {
-  color: rgba(255, 255, 255, 0.9);
 }
 
 .stat-icon-container {
@@ -258,16 +349,12 @@
   background-color: rgba(255, 255, 255, 0.15);
 }
 
-.stat-card-purple .stat-icon-container {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
 .stat-icon-img {
   width: 32px;
   height: 32px;
   object-fit: contain;
   opacity: 1;
-  filter: brightness(0) invert(1); /* Makes icons white */
+  filter: brightness(0) invert(1);
 }
 
 .stat-content {
@@ -275,19 +362,20 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  color: var(--text-white);
 }
 
 .stat-number {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-white);
   margin: 0;
   line-height: 1;
 }
 
 .stat-label {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
   font-weight: 500;
 }
@@ -303,51 +391,30 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-.stat-card-purple .stat-change.positive {
+.stat-change.positive {
   background-color: rgba(16, 185, 129, 0.2);
   color: #a7f3d0;
 }
 
-.stat-card-purple .stat-change.negative {
+.stat-change.negative {
   background-color: rgba(239, 68, 68, 0.2);
   color: #fecaca;
 }
 
-.stat-card-purple .stat-change.warning {
+.stat-change.warning {
   background-color: rgba(245, 158, 11, 0.2);
   color: #fde68a;
 }
 
-.stat-card-purple .stat-change.neutral {
+.stat-change.neutral {
   background-color: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Legacy stat-card-header and stat-icon styles for backward compatibility */
-.stat-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
+/* =========================================
+   Activities Section
+   ========================================= */
 
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--border-radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--text-white);
-}
-
-.stat-icon.orange { background-color: var(--warning-orange); }
-.stat-icon.purple { background-color: var(--primary-purple); }
-.stat-icon.green { background-color: var(--success-green); }
-.stat-icon.red { background-color: var(--danger-red); }
-
-/* Activities Section */
 .activities-section {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -475,28 +542,6 @@
   transform: translateY(-1px);
 }
 
-.btn-secondary {
-  background-color: var(--bg-light);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-  background-color: var(--border-color);
-  border-color: var(--text-secondary);
-}
-
-.btn-danger {
-  background-color: var(--danger-red);
-  color: var(--text-white);
-}
-
-.btn-danger:hover {
-  background-color: #dc2626;
-  transform: translateY(-1px);
-}
-
-/* Error Message Styling */
 .error-message {
   background-color: #fee2e2;
   color: var(--danger-red);
@@ -506,7 +551,6 @@
   margin-bottom: 1rem;
 }
 
-/* Loading Spinner */
 .spinner {
   width: 20px;
   height: 20px;
@@ -521,47 +565,10 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Text Utilities */
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-light { color: var(--text-light); }
-.text-white { color: var(--text-white); }
-
-/* Background Utilities */
-.bg-card { background-color: var(--bg-card); }
-.bg-light { background-color: var(--bg-light); }
-
-/* Border Utilities */
-.border { border: 1px solid var(--border-color); }
-.border-radius { border-radius: var(--border-radius); }
-.border-radius-lg { border-radius: var(--border-radius-lg); }
-
-/* Spacing Utilities */
-.p-0 { padding: 0; }
-.p-1 { padding: 0.25rem; }
-.p-2 { padding: 0.5rem; }
-.p-3 { padding: 0.75rem; }
-.p-4 { padding: 1rem; }
-.p-6 { padding: 1.5rem; }
-.p-8 { padding: 2rem; }
-
-.m-0 { margin: 0; }
-.m-1 { margin: 0.25rem; }
-.m-2 { margin: 0.5rem; }
-.m-3 { margin: 0.75rem; }
-.m-4 { margin: 1rem; }
-.m-6 { margin: 1.5rem; }
-.m-8 { margin: 2rem; }
-
-.mb-4 { margin-bottom: 1rem; }
-.mb-6 { margin-bottom: 1.5rem; }
-.mb-8 { margin-bottom: 2rem; }
-
 /* =========================================
    Responsive Design
    ========================================= */
 
-/* Tablet */
 @media (max-width: 1024px) {
   :root {
     --sidebar-width: 250px;
@@ -572,7 +579,6 @@
   }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
@@ -584,20 +590,11 @@
   
   .main-content {
     margin-left: 0;
+    width: 100%;
   }
   
   .top-header {
     padding: 1rem;
-  }
-  
-  .header-content {
-    flex-direction: row;
-    gap: 1rem;
-    align-items: center;
-  }
-  
-  .user-info {
-    gap: 0.5rem;
   }
   
   .content-area {
@@ -632,7 +629,6 @@
   }
 }
 
-/* Mobile Menu Toggle */
 .mobile-menu-toggle {
   display: none;
   background: none;
@@ -649,7 +645,6 @@
   }
 }
 
-/* Sidebar Overlay for Mobile */
 .sidebar-overlay {
   display: none;
   position: fixed;
@@ -665,128 +660,4 @@
   .sidebar-overlay.active {
     display: block;
   }
-}1);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  
-  /* Spacing */
-  --sidebar-width: 280px;
-  --header-height: 70px;
-  
-  /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.875rem;
-  
-  /* Transitions */
-  --transition: all 0.2s ease;
 }
-
-/* =========================================
-   Global Styles
-   ========================================= */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: var(--font-family);
-  background-color: var(--bg-light);
-  color: var(--text-primary);
-  line-height: 1.6;
-}
-
-/* =========================================
-   Layout Container
-   ========================================= */
-
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
-  position: relative;
-}
-
-/* =========================================
-   Sidebar Styles
-   ========================================= */
-
-.sidebar {
-  width: var(--sidebar-width);
-  background-color: var(--bg-sidebar);
-  color: var(--text-white);
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  transition: var(--transition);
-}
-
-/* Logo Section */
-.sidebar-logo {
-  padding: 1.5rem;
-  border-bottom: 1px solid #333;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.sidebar-logo img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.logo-text .brand-name {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--text-white);
-}
-
-.logo-text .company-name {
-  font-size: var(--font-size-xs);
-  color: var(--text-light);
-  font-weight: 400;
-}
-
-/* Navigation */
-.sidebar-nav {
-  flex: 1;
-  padding: 1rem 0;
-  overflow-y: auto;
-}
-
-.nav-item {
-  margin-bottom: 0.25rem;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  padding: 0.875rem 1.5rem;
-  color: var(--text-light);
-  text-decoration: none;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  transition: var(--transition);
-  position: relative;
-  border: none;
-  background: none;
-}
-
-.
