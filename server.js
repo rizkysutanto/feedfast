@@ -1496,7 +1496,7 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
     }
 });
 
-// Create new user (User Management)
+// Replace the existing POST /api/users/management route with this updated version:
 app.post('/api/users/management', authenticateClientToken, async (req, res) => {
     const client = await adminPool.connect();
     
@@ -1512,7 +1512,8 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
             password,
             role,
             status,
-            branch_id
+            branch_id, // This can now be an array or null (for all branches)
+            only_assigned_tickets
         } = req.body;
         
         // Validation
@@ -1572,7 +1573,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
             });
         }
 
-        // Validate branch IDs if provided
+        // Validate branch IDs if provided (only validate if not null/empty)
         if (branch_id && Array.isArray(branch_id) && branch_id.length > 0) {
             const branchCheck = await client.query(
                 'SELECT COUNT(*) as count FROM branches WHERE branch_id = ANY($1) AND client_id = $2 AND status = true',
@@ -1591,7 +1592,9 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
         // Hash password
         const hashedPassword = await hashPassword(password);
         
-        // Create user record
+        // Create user record - store branch_id as array or null
+        const branchIdValue = (branch_id && Array.isArray(branch_id) && branch_id.length > 0) ? branch_id : null;
+        
         const result = await client.query(`
             INSERT INTO users (
                 client_id,
@@ -1601,9 +1604,10 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
                 password,
                 status,
                 role,
-                created_by
+                created_by,
+                only_assigned_tickets
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING 
                 user_id,
                 client_id,
@@ -1614,16 +1618,18 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
                 role,
                 created_at,
                 updated_at,
-                created_by
+                created_by,
+                only_assigned_tickets
         `, [
             clientId,
-            branch_id && branch_id.length > 0 ? branch_id : null,
+            branchIdValue,
             user_name.trim(),
             email.trim().toLowerCase(),
             hashedPassword,
             status !== undefined ? status : true, // Default to active
             role,
-            createdBy
+            createdBy,
+            only_assigned_tickets || false
         ]);
         
         const newUser = result.rows[0];
@@ -1682,7 +1688,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
     }
 });
 
-// Update user (User Management)
+// Replace the existing PUT /api/users/management/:userId route with this updated version:
 app.put('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
     const client = await adminPool.connect();
     
@@ -1697,7 +1703,8 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
             email,
             role,
             status,
-            branch_id
+            branch_id, // This can now be an array or null (for all branches)
+            only_assigned_tickets
         } = req.body;
         
         // Validation
@@ -1763,7 +1770,7 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
             });
         }
 
-        // Validate branch IDs if provided
+        // Validate branch IDs if provided (only validate if not null/empty)
         if (branch_id && Array.isArray(branch_id) && branch_id.length > 0) {
             const branchCheck = await client.query(
                 'SELECT COUNT(*) as count FROM branches WHERE branch_id = ANY($1) AND client_id = $2 AND status = true',
@@ -1779,7 +1786,9 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
             }
         }
         
-        // Update user record
+        // Update user record - store branch_id as array or null
+        const branchIdValue = (branch_id && Array.isArray(branch_id) && branch_id.length > 0) ? branch_id : null;
+        
         const result = await client.query(`
             UPDATE users SET
                 user_name = $1,
@@ -1787,8 +1796,9 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
                 role = $3,
                 status = $4,
                 branch_id = $5,
+                only_assigned_tickets = $6,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE user_id = $6 AND client_id = $7
+            WHERE user_id = $7 AND client_id = $8
             RETURNING 
                 user_id,
                 client_id,
@@ -1800,13 +1810,15 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
                 created_at,
                 updated_at,
                 last_login,
-                created_by
+                created_by,
+                only_assigned_tickets
         `, [
             user_name.trim(),
             email.trim().toLowerCase(),
             role,
             status !== undefined ? status : true,
-            branch_id && branch_id.length > 0 ? branch_id : null,
+            branchIdValue,
+            only_assigned_tickets || false,
             userId,
             clientId
         ]);
@@ -1815,7 +1827,7 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
         
         const updatedUser = result.rows[0];
         
-        console.log(`🔄 User updated: ${updatedUser.user_name} (ID: ${userId}) for client ${clientId}`);
+        console.log(`📝 User updated: ${updatedUser.user_name} (ID: ${userId}) for client ${clientId}`);
         
         res.json({
             success: true,
@@ -4137,20 +4149,67 @@ app.get('/api/debug/token', (req, res) => {
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'client-login.html'));
 });
+async function updateUserTableSchema() {
+    try {
+        // Check if only_assigned_tickets column exists
+        const columnCheck = await adminPool.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'only_assigned_tickets'
+        `);
+        
+        if (columnCheck.rows.length === 0) {
+            // Add the column
+            await adminPool.query(`
+                ALTER TABLE users 
+                ADD COLUMN only_assigned_tickets BOOLEAN DEFAULT false
+            `);
+            console.log('✅ Added only_assigned_tickets column to users table');
+        }
+        
+        // Also check if branch_id column can store arrays (should be integer array or null)
+        const branchColumnCheck = await adminPool.query(`
+            SELECT data_type, udt_name
+            FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'branch_id'
+        `);
+        
+        if (branchColumnCheck.rows.length > 0) {
+            const dataType = branchColumnCheck.rows[0].data_type;
+            // If it's not already an array type, alter it
+            if (dataType !== 'ARRAY') {
+                await adminPool.query(`
+                    ALTER TABLE users 
+                    ALTER COLUMN branch_id TYPE integer[] USING 
+                    CASE 
+                        WHEN branch_id IS NULL THEN NULL 
+                        ELSE ARRAY[branch_id]
+                    END
+                `);
+                console.log('✅ Updated branch_id column to support arrays in users table');
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Error updating user table schema:', error);
+    }
+}
 
 // Initialize databases and start server
 async function startServer() {
     await testConnections();
     await initDatabase();
+    await updateUserTableSchema(); // Add this line
     
     app.listen(PORT, () => {
-            console.log(`🚀 FeedFast server running on port ${PORT}`);
-            console.log(`📱 Local: http://localhost:${PORT}`);
-            console.log(`🌍 Network: http://0.0.0.0:${PORT}`);
-            console.log(`🏠 Landing Page: http://localhost:${PORT}`);
-            console.log(`🔒 Back Office: http://localhost:${PORT}/backoffice`);
-            console.log(`📝 File Upload: ${cloudinary ? 'Enabled' : 'Disabled (install cloudinary/multer)'}`);
-        });
+        console.log(`🚀 FeedFast server running on port ${PORT}`);
+        console.log(`📱 Local: http://localhost:${PORT}`);
+        console.log(`🌐 Network: http://0.0.0.0:${PORT}`);
+        console.log(`🏠 Landing Page: http://localhost:${PORT}`);
+        console.log(`🔒 Back Office: http://localhost:${PORT}/backoffice`);
+        console.log(`👤 User Management: http://localhost:${PORT}/usermanagement`);
+        console.log(`📄 File Upload: ${cloudinary ? 'Enabled' : 'Disabled (install cloudinary/multer)'}`);
+    });
 }
 
 startServer().catch(console.error);
