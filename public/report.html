@@ -3,868 +3,624 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports - FeedFast</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #f8fafc;
-            min-height: 100vh;
-        }
-        
-        .app-layout {
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        /* Sidebar Navigation */
-        .sidebar {
-            width: 200px;
-            background-color: #000000;
-            color: white;
-            padding: 1.5rem 0;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
-        
-        .sidebar-brand {
-            padding: 0 1.5rem 2rem 1.5rem;
-            border-bottom: 1px solid #333;
-            margin-bottom: 2rem;
-        }
-        
-        .brand-name {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #8527F0;
-        }
-        
-        .brand-tagline {
-            font-size: 0.75rem;
-            color: #a0aec0;
-            margin-top: 0.25rem;
-        }
-        
-        .nav-menu {
-            list-style: none;
-        }
-        
-        .nav-item {
-            margin-bottom: 0.25rem;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #a0aec0;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        .nav-link:hover {
-            color: white;
-            background-color: #1a1a1a;
-        }
-        
-        .nav-link.active {
-            color: white;
-            background-color: #8527F0;
-            border-right: 3px solid #8527F0;
-        }
-        
-        .nav-icon {
-            margin-right: 0.75rem;
-            font-size: 1rem;
-        }
-        
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 200px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* Header */
-        .header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-        
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-        
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background-color: #8527F0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-        
-        .logout-btn {
-            background-color: #8527F0;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-        }
-        
-        .logout-btn:hover {
-            background-color: #7c3aed;
-        }
-        
-        /* Content Area */
-        .content {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-        
-        /* Welcome Card */
-        .welcome-card {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-        
-        .welcome-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-        }
-        
-        .welcome-info {
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-        
-        .welcome-info span {
-            font-weight: 500;
-            color: #1e293b;
-        }
-        
-        /* Filters Section */
-        .filters {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-        
-        .filters h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .filter-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            align-items: end;
-        }
-        
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .filter-group label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-        
-        .filter-group select,
-        .filter-group input {
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            transition: border-color 0.2s ease;
-        }
-        
-        .filter-group select:focus,
-        .filter-group input:focus {
-            outline: none;
-            border-color: #8527F0;
-            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
-        }
-        
-        .btn {
-            background-color: #8527F0;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .btn:hover {
-            background-color: #7c3aed;
-            transform: translateY(-1px);
-        }
-        
-        .btn-secondary {
-            background-color: #6b7280;
-            margin-left: 0.5rem;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #4b5563;
-        }
-        
-        /* Statistics Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px 0 rgba(133, 39, 240, 0.15);
-        }
-        
-        .stat-number {
-            font-size: 2.25rem;
-            font-weight: 700;
-            color: #8527F0;
-            margin-bottom: 0.5rem;
-            line-height: 1;
-        }
-        
-        .stat-label {
-            color: #64748b;
-            font-size: 0.875rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-change {
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .stat-change.positive {
-            color: #10b981;
-        }
-        
-        .stat-change.negative {
-            color: #ef4444;
-        }
-        
-        /* Charts Grid */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .chart-card {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-        
-        .chart-card h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .chart-placeholder {
-            height: 300px;
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #64748b;
-            font-size: 0.875rem;
-            padding: 1rem;
-            text-align: center;
-        }
-        
-        .chart-placeholder p {
-            margin-bottom: 0.5rem;
-        }
-        
-        .chart-placeholder p:first-child {
-            font-weight: 600;
-            color: #1e293b;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .chart-placeholder strong {
-            color: #8527F0;
-            font-weight: 600;
-        }
-        
-        /* Table Card */
-        .table-card {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .table-header h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .export-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .data-table th,
-        .data-table td {
-            text-align: left;
-            padding: 0.75rem;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 0.875rem;
-        }
-        
-        .data-table th {
-            background-color: #f8fafc;
-            font-weight: 600;
-            color: #374151;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-        }
-        
-        .data-table tbody tr:hover {
-            background-color: #f8fafc;
-        }
-        
-        /* Status and Type Badges */
-        .status-badge,
-        .type-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .status-open { background-color: #fef3c7; color: #92400e; }
-        .status-in_progress { background-color: #dbeafe; color: #1e40af; }
-        .status-resolved { background-color: #dcfce7; color: #166534; }
-        .status-closed { background-color: #fee2e2; color: #991b1b; }
-        
-        .type-complaint { background-color: #fee2e2; color: #991b1b; }
-        .type-suggestion { background-color: #dbeafe; color: #1e40af; }
-        .type-compliment { background-color: #dcfce7; color: #166534; }
-        .type-inquiry { background-color: #e5e7eb; color: #374151; }
-        
-        /* Loading and No Data States */
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            color: #64748b;
-            background-color: #ffffff;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            font-style: italic;
-        }
-        
-        .no-data {
-            text-align: center;
-            padding: 3rem;
-            color: #64748b;
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-        
-        .no-data h3 {
-            font-size: 1.25rem;
-            color: #6b7280;
-            margin-bottom: 0.5rem;
-        }
-        
-        /* Error Message */
-        .error-message {
-            background-color: #fee2e2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-            font-size: 0.875rem;
-            display: none;
-        }
-        
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .header {
-                padding: 1rem;
-            }
-            
-            .content {
-                padding: 1rem;
-            }
-            
-            .filter-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .export-buttons {
-                margin-top: 1rem;
-                justify-content: flex-start;
-            }
-            
-            .table-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .data-table {
-                font-size: 0.8rem;
-            }
-            
-            .data-table th,
-            .data-table td {
-                padding: 0.5rem;
-            }
-            
-            .user-info {
-                display: none;
-            }
-        }
-        
-        @media (max-width: 1024px) and (min-width: 769px) {
-            .charts-grid {
-                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            }
-        }
-    </style>
+    <title>FeedFast - Report</title>
+    <link rel="stylesheet" href="/css/client-dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
 <body>
-    <div class="app-layout">
-        <!-- Sidebar Navigation -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
         <nav class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-name">FeedFast</div>
-                <div class="brand-tagline">Client Dashboard</div>
+            <div class="sidebar-logo">
+                <img src="/logo-feedfast.webp" alt="FeedFast">
+                <div class="logo-text">
+                    <span class="brand-name">FeedFast</span>
+                    <span class="company-name" id="sidebarClientName">[Company Name]</span>
+                </div>
             </div>
             
-            <ul class="nav-menu">
-                <li class="nav-item">
+            <div class="sidebar-nav">
+                <div class="nav-item">
                     <a href="/dashboard" class="nav-link">
-                        <span class="nav-icon">📊</span>
+                        <img src="/icon-dashboard.png" alt="" class="nav-icon">
                         Dashboard
                     </a>
-                </li>
-                <li class="nav-item">
+                </div>
+                <div class="nav-item">
                     <a href="/ticket" class="nav-link">
-                        <span class="nav-icon">🎫</span>
+                        <img src="/icon-ticket.png" alt="" class="nav-icon">
                         Ticket
                     </a>
-                </li>
-                <li class="nav-item">
+                </div>
+                <div class="nav-item">
                     <a href="/branch" class="nav-link">
-                        <span class="nav-icon">🏢</span>
+                        <img src="/icon-branch.png" alt="" class="nav-icon">
                         Branch
                     </a>
-                </li>
-                <li class="nav-item">
+                </div>
+                <div class="nav-item">
                     <a href="/report" class="nav-link active">
-                        <span class="nav-icon">📈</span>
+                        <img src="/icon-report.png" alt="" class="nav-icon">
                         Report
                     </a>
-                <li class="nav-item">
-                    <a href="/user-management" class="nav-link">
-                        <span class="nav-icon">👥</span>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="manageUsers()">
+                        <img src="/icon-usermanagement.png" alt="" class="nav-icon">
                         User Management
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/setting" class="nav-link">
-                        <span class="nav-icon">⚙️</span>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="settings()">
+                        <img src="/icon-settings.png" alt="" class="nav-icon">
                         Settings
                     </a>
-                </li>
-                </li>
-            </ul>
+                </div>
+            </div>
         </nav>
-        
+
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <h1 class="header-title">Analytics & Reports</h1>
-                
-                <div class="header-right">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-content">
                     <div class="user-info">
-                        <div class="user-avatar" id="userAvatar">U</div>
-                        <div>
-                            <div id="userName" style="font-weight: 500; color: #1e293b;">Loading...</div>
-                            <div id="userRole" style="font-size: 0.75rem;">Loading...</div>
-                        </div>
+                        <span class="user-name" id="userName">Loading...</span>
+                        <span class="user-role" id="userRole">[User Role]</span>
+                        <div class="user-avatar" id="userAvatar">L</div>
                     </div>
                     <button class="logout-btn" onclick="logout()">Logout</button>
                 </div>
             </header>
-            
+
             <!-- Content Area -->
-            <main class="content">
-                <!-- Welcome Card -->
-                <div class="welcome-card">
-                    <h2 class="welcome-title">📈 Analytics & Reports</h2>
-                    <div class="welcome-info">
-                        Comprehensive insights into your customer feedback • 
-                        <strong>Today:</strong> <span id="currentDate">Loading...</span>
+            <main class="content-area">
+                <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+                <!-- Report Header -->
+                <div class="report-header">
+                    <div class="report-title-section">
+                        <h1 class="report-title">Report</h1>
+                        <p class="report-subtitle">Analyze your company feedback</p>
+                    </div>
+                    <button class="btn btn-primary export-btn" onclick="exportCSV()">Export CSV</button>
+                </div>
+
+                <!-- Key Performance Indicator Section -->
+                <div class="kpi-section">
+                    <div class="kpi-header">
+                        <div class="kpi-title-section">
+                            <h2 class="kpi-title">Key Performance Indicator</h2>
+                            <p class="kpi-date" id="kpiDateRange">01 Jan 2025 - 31 Dec 2025</p>
+                        </div>
+                        
+                        <div class="kpi-filters">
+                            <div class="filter-group">
+                                <select id="periodFilter" class="filter-select">
+                                    <option value="annually">Annually</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <select id="rangeFilter" class="filter-select">
+                                    <!-- Will be populated based on period selection -->
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <select id="branchFilter" class="filter-select">
+                                    <option value="all">All Branch</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Stats Row 1 -->
+                    <div class="kpi-stats-row">
+                        <div class="kpi-card kpi-card-purple">
+                            <div class="kpi-content">
+                                <div class="kpi-number" id="totalTickets">156</div>
+                                <div class="kpi-label">Total Ticket</div>
+                            </div>
+                            <div class="kpi-icon-container">
+                                <div class="kpi-icon-circle kpi-icon-purple">
+                                    <img src="/icon-ticket.png" alt="" class="kpi-icon">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card kpi-card-red">
+                            <div class="kpi-content">
+                                <div class="kpi-number" id="complaintTickets">156</div>
+                                <div class="kpi-label">Complaint</div>
+                            </div>
+                            <div class="kpi-icon-container">
+                                <div class="kpi-icon-circle kpi-icon-red">
+                                    <img src="/icon-ticket.png" alt="" class="kpi-icon">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card kpi-card-yellow">
+                            <div class="kpi-content">
+                                <div class="kpi-number" id="suggestionTickets">156</div>
+                                <div class="kpi-label">Suggestion</div>
+                            </div>
+                            <div class="kpi-icon-container">
+                                <div class="kpi-icon-circle kpi-icon-yellow">
+                                    <img src="/icon-ticket.png" alt="" class="kpi-icon">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card kpi-card-blue">
+                            <div class="kpi-content">
+                                <div class="kpi-number" id="inquiryTickets">156</div>
+                                <div class="kpi-label">Inquiry</div>
+                            </div>
+                            <div class="kpi-icon-container">
+                                <div class="kpi-icon-circle kpi-icon-blue">
+                                    <img src="/icon-ticket.png" alt="" class="kpi-icon">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card kpi-card-green">
+                            <div class="kpi-content">
+                                <div class="kpi-number" id="complimentTickets">156</div>
+                                <div class="kpi-label">Compliment</div>
+                            </div>
+                            <div class="kpi-icon-container">
+                                <div class="kpi-icon-circle kpi-icon-green">
+                                    <img src="/icon-ticket.png" alt="" class="kpi-icon">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Stats Row 2 -->
+                    <div class="kpi-stats-row">
+                        <div class="kpi-card kpi-card-gray">
+                            <div class="kpi-content">
+                                <div class="kpi-number" id="ticketResolved">156</div>
+                                <div class="kpi-label">Ticket Resolved</div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card kpi-card-gray">
+                            <div class="kpi-content">
+                                <div class="kpi-number" id="ticketUnresolved">156</div>
+                                <div class="kpi-label">Ticket Unresolved</div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card kpi-card-gray">
+                            <div class="kpi-content">
+                                <div class="kpi-time" id="avgResponseTime1">1d 2h 30m</div>
+                                <div class="kpi-label">Avg Response Time</div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card kpi-card-gray">
+                            <div class="kpi-content">
+                                <div class="kpi-time" id="avgResponseTime2">1d 2h 30m</div>
+                                <div class="kpi-label">Avg Response Time</div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card kpi-card-gray">
+                            <div class="kpi-content">
+                                <div class="kpi-time" id="avgResponseTime3">1d 2h 30m</div>
+                                <div class="kpi-label">Avg Response Time</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Error Message -->
-                <div id="errorMessage" class="error-message"></div>
-                
-                <!-- Filters Section -->
-                <div class="filters">
-                    <h3>🔧 Report Filters</h3>
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label for="dateRange">Date Range</label>
-                            <select id="dateRange">
-                                <option value="7">Last 7 days</option>
-                                <option value="30" selected>Last 30 days</option>
-                                <option value="90">Last 3 months</option>
-                                <option value="365">Last 12 months</option>
-                                <option value="custom">Custom Range</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="startDate">Start Date</label>
-                            <input type="date" id="startDate" style="display: none;">
-                        </div>
-                        <div class="filter-group">
-                            <label for="endDate">End Date</label>
-                            <input type="date" id="endDate" style="display: none;">
-                        </div>
-                        <div class="filter-group">
-                            <label for="branchFilter">Branch</label>
-                            <select id="branchFilter">
-                                <option value="all">All Branches</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="typeFilter">Type</label>
-                            <select id="typeFilter">
-                                <option value="all">All Types</option>
-                                <option value="complaint">Complaints</option>
-                                <option value="suggestion">Suggestions</option>
-                                <option value="compliment">Compliments</option>
-                                <option value="inquiry">Inquiries</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <button class="btn" onclick="applyFilters()">Apply Filters</button>
-                            <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
-                        </div>
+
+                <!-- Feedback Volume Chart -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Feedback Volume</h3>
+                        <p class="chart-subtitle" id="chartDateRange">Date Range: 01 Jan 2025 - 31 Dec 2025</p>
                     </div>
-                </div>
-                
-                <!-- Loading State -->
-                <div id="loadingState" class="loading">
-                    <p>📊 Loading report data...</p>
-                </div>
-                
-                <!-- Statistics Cards -->
-                <div id="statsGrid" class="stats-grid" style="display: none;">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalTickets">0</div>
-                        <div class="stat-label">Total Tickets</div>
-                        <div class="stat-change" id="totalTicketsChange"></div>
+                    <div class="chart-container">
+                        <canvas id="feedbackChart" width="400" height="200"></canvas>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="avgResponseTime">0h</div>
-                        <div class="stat-label">Avg Response Time</div>
-                        <div class="stat-change" id="responseTimeChange"></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="resolutionRate">0%</div>
-                        <div class="stat-label">Resolution Rate</div>
-                        <div class="stat-change" id="resolutionRateChange"></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="customerSatisfaction">0%</div>
-                        <div class="stat-label">Satisfaction Score</div>
-                        <div class="stat-change" id="satisfactionChange"></div>
-                    </div>
-                </div>
-                
-                <!-- Charts -->
-                <div id="chartsGrid" class="charts-grid" style="display: none;">
-                    <div class="chart-card">
-                        <h3>📈 Tickets Over Time</h3>
-                        <div class="chart-placeholder" id="timelineChart">
-                            Timeline chart will be rendered here
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>📊 Tickets by Type</h3>
-                        <div class="chart-placeholder" id="typeChart">
-                            Type distribution chart will be rendered here
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>🏢 Tickets by Branch</h3>
-                        <div class="chart-placeholder" id="branchChart">
-                            Branch distribution chart will be rendered here
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>📋 Status Distribution</h3>
-                        <div class="chart-placeholder" id="statusChart">
-                            Status distribution chart will be rendered here
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Recent Tickets Table -->
-                <div id="recentTicketsTable" class="table-card" style="display: none;">
-                    <div class="table-header">
-                        <h3>🎫 Recent Tickets</h3>
-                        <div class="export-buttons">
-                            <button class="btn" onclick="exportData('csv')">Export CSV</button>
-                            <button class="btn btn-secondary" onclick="exportData('pdf')">Export PDF</button>
-                        </div>
-                    </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Ticket ID</th>
-                                <th>Customer</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>Branch</th>
-                                <th>Created</th>
-                                <th>Response Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ticketsTableBody">
-                            <!-- Table data will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- No Data State -->
-                <div id="noDataState" class="no-data" style="display: none;">
-                    <h3>📊 No Data Available</h3>
-                    <p>No tickets found for the selected criteria. Try adjusting your filters.</p>
                 </div>
             </main>
         </div>
     </div>
 
+    <style>
+        /* Additional styles for Report page */
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        .report-title-section {
+            flex: 1;
+        }
+
+        .report-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-purple);
+            margin: 0 0 0.25rem 0;
+            line-height: 1.2;
+        }
+
+        .report-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .export-btn {
+            background-color: var(--primary-purple);
+            color: var(--text-white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .export-btn:hover {
+            background-color: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        /* KPI Section */
+        .kpi-section {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .kpi-title-section {
+            flex: 1;
+        }
+
+        .kpi-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.25rem 0;
+        }
+
+        .kpi-date {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .kpi-filters {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+        }
+
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
+        }
+
+        .kpi-stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-stats-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .kpi-content {
+            flex: 1;
+        }
+
+        .kpi-number, .kpi-time {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+            line-height: 1;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .kpi-icon-container {
+            margin-left: 0.75rem;
+        }
+
+        .kpi-icon-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kpi-icon {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        /* KPI Card Color Variants */
+        .kpi-card-purple .kpi-number { color: var(--primary-purple); }
+        .kpi-icon-purple { background-color: var(--primary-purple); }
+
+        .kpi-card-red .kpi-number { color: var(--danger-red); }
+        .kpi-icon-red { background-color: var(--danger-red); }
+
+        .kpi-card-yellow .kpi-number { color: var(--warning-orange); }
+        .kpi-icon-yellow { background-color: var(--warning-orange); }
+
+        .kpi-card-blue .kpi-number { color: var(--info-blue); }
+        .kpi-icon-blue { background-color: var(--info-blue); }
+
+        .kpi-card-green .kpi-number { color: var(--success-green); }
+        .kpi-icon-green { background-color: var(--success-green); }
+
+        .kpi-card-gray .kpi-number,
+        .kpi-card-gray .kpi-time { color: var(--text-primary); }
+
+        /* Chart Section */
+        .chart-section {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.25rem 0;
+        }
+
+        .chart-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .kpi-stats-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .kpi-filters {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .filter-group {
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .report-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .kpi-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .kpi-stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .kpi-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+
+            .kpi-icon-container {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kpi-stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
     <script>
         // Global variables
         let currentUser = null;
-        let currentFilters = {
-            dateRange: 30,
-            startDate: null,
-            endDate: null,
-            branch: 'all',
-            type: 'all'
-        };
-        let reportData = null;
+        let clientToken = null;
         let branches = [];
-
-        // Authentication check
-        const clientToken = localStorage.getItem('clientToken');
-        if (!clientToken) {
-            window.location.href = '/login';
-        }
+        let feedbackChart = null;
+        let currentFilters = {
+            period: 'annually',
+            range: new Date().getFullYear().toString(),
+            branch: 'all'
+        };
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            initializePage();
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Report page initializing...');
+            
+            // Check authentication
+            if (!checkAuth()) {
+                return;
+            }
+
+            // Load user data and initialize
+            await loadUserData();
+            await loadBranches();
+            initializeFilters();
+            await loadReportData();
         });
 
-        async function initializePage() {
+        // Check authentication
+        function checkAuth() {
+            clientToken = localStorage.getItem('clientToken');
+            const clientUserData = localStorage.getItem('clientUser');
+
+            if (!clientToken) {
+                console.log('No client token found, redirecting to login');
+                window.location.href = '/login';
+                return false;
+            }
+
+            if (clientUserData) {
+                try {
+                    currentUser = JSON.parse(clientUserData);
+                    console.log('User data loaded:', currentUser);
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                    localStorage.removeItem('clientUser');
+                }
+            }
+
+            return true;
+        }
+
+        // Load user data
+        async function loadUserData() {
             try {
-                // Verify token and get user info
-                const userResponse = await fetch('/api/auth/client-verify', {
+                const response = await fetch('/api/auth/client-verify', {
                     headers: {
                         'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
-                if (!userResponse.ok) {
-                    throw new Error('Authentication failed');
-                }
-                
-                const userData = await userResponse.json();
-                if (userData.success) {
-                    currentUser = userData.user;
-                    displayUserInfo();
+                if (!response.ok) {
+                    throw new Error('Token verification failed');
                 }
 
-                // Load branches for filter
-                await loadBranches();
+                const data = await response.json();
                 
-                // Load initial report data
-                await loadReportData();
-                
-                // Setup date range change handler
-                document.getElementById('dateRange').addEventListener('change', handleDateRangeChange);
-                
-            } catch (error) {
-                console.error('Initialization error:', error);
-                if (error.message === 'Authentication failed') {
-                    localStorage.removeItem('clientToken');
-                    window.location.href = '/login';
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem('clientUser', JSON.stringify(data.user));
+                    updateUserUI();
                 } else {
-                    showError('Failed to load page data: ' + error.message);
+                    throw new Error('Invalid user data received');
                 }
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError('Failed to load user data. Please try logging in again.');
+                setTimeout(() => {
+                    logout();
+                }, 2000);
             }
         }
-        
-        // Display user information
-        function displayUserInfo() {
+
+        // Update UI with user information
+        function updateUserUI() {
             if (!currentUser) return;
-            
-            const userName = currentUser.name;
-            const userRole = currentUser.role;
-            
-            // Update header user info
-            document.getElementById('userName').textContent = userName;
-            document.getElementById('userRole').textContent = userRole;
-            document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
-            
-            // Update current date
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+
+            const elements = {
+                userName: document.getElementById('userName'),
+                userRole: document.getElementById('userRole'),
+                userAvatar: document.getElementById('userAvatar'),
+                sidebarClientName: document.getElementById('sidebarClientName')
             };
-            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+
+            if (elements.userName) elements.userName.textContent = currentUser.user_name || currentUser.name || 'User';
+            if (elements.userRole) elements.userRole.textContent = currentUser.role || 'Client Admin';
+            if (elements.sidebarClientName) elements.sidebarClientName.textContent = currentUser.clientName || currentUser.client_name || 'Company';
+            
+            if (elements.userAvatar) {
+                const name = currentUser.user_name || currentUser.name || 'U';
+                const initials = name.substring(0, 1).toUpperCase();
+                elements.userAvatar.textContent = initials;
+            }
         }
 
+        // Load branches for filter
         async function loadBranches() {
             try {
                 const response = await fetch('/api/branches', {
@@ -873,67 +629,527 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to load branches');
+                if (response.ok) {
+                    const data = await response.json();
+                    branches = data.branches || [];
+                    
+                    // Populate branch filter
+                    const branchFilter = document.getElementById('branchFilter');
+                    branchFilter.innerHTML = '<option value="all">All Branch</option>';
+                    
+                    branches.forEach(branch => {
+                        const option = document.createElement('option');
+                        option.value = branch.branch_id;
+                        option.textContent = branch.branch_name;
+                        branchFilter.appendChild(option);
+                    });
                 }
-
-                const data = await response.json();
-                branches = data.branches || [];
-                
-                // Populate branch filter
-                const branchFilter = document.getElementById('branchFilter');
-                branchFilter.innerHTML = '<option value="all">All Branches</option>';
-                
-                branches.forEach(branch => {
-                    const option = document.createElement('option');
-                    option.value = branch.branch_id;
-                    option.textContent = `${branch.branch_name} ${branch.branch_code ? '(' + branch.branch_code + ')' : ''}`;
-                    branchFilter.appendChild(option);
-                });
-                
             } catch (error) {
                 console.error('Error loading branches:', error);
             }
         }
 
+        // Initialize filters
+        function initializeFilters() {
+            const periodFilter = document.getElementById('periodFilter');
+            const rangeFilter = document.getElementById('rangeFilter');
+            
+            // Set up event listeners
+            periodFilter.addEventListener('change', updateRangeFilter);
+            rangeFilter.addEventListener('change', updateFilters);
+            document.getElementById('branchFilter').addEventListener('change', updateFilters);
+            
+            // Initialize range filter
+            updateRangeFilter();
+        }
+
+        // Update range filter based on period selection
+        function updateRangeFilter() {
+            const periodFilter = document.getElementById('periodFilter');
+            const rangeFilter = document.getElementById('rangeFilter');
+            const period = periodFilter.value;
+            
+            rangeFilter.innerHTML = '';
+            
+            if (period === 'annually') {
+                // Show year options
+                const currentYear = new Date().getFullYear();
+                for (let year = currentYear; year >= currentYear - 5; year--) {
+                    const option = document.createElement('option');
+                    option.value = year.toString();
+                    option.textContent = year.toString();
+                    rangeFilter.appendChild(option);
+                }
+                currentFilters.period = 'annually';
+                currentFilters.range = currentYear.toString();
+            } else if (period === 'monthly') {
+                // Show month options for current year
+                const currentYear = new Date().getFullYear();
+                const currentMonth = new Date().getMonth();
+                
+                const months = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
+                
+                months.forEach((month, index) => {
+                    const option = document.createElement('option');
+                    option.value = `${currentYear}-${String(index + 1).padStart(2, '0')}`;
+                    option.textContent = `${month} ${currentYear}`;
+                    if (index === currentMonth) {
+                        option.selected = true;
+                    }
+                    rangeFilter.appendChild(option);
+                });
+                
+                currentFilters.period = 'monthly';
+                currentFilters.range = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+            }
+            
+            updateFilters();
+        }
+
+        // Update filters and reload data
+        function updateFilters() {
+            const periodFilter = document.getElementById('periodFilter');
+            const rangeFilter = document.getElementById('rangeFilter');
+            const branchFilter = document.getElementById('branchFilter');
+            
+            currentFilters = {
+                period: periodFilter.value,
+                range: rangeFilter.value,
+                branch: branchFilter.value
+            };
+            
+            updateDateRangeDisplay();
+            loadReportData();
+        }
+
+        // Update date range display
+        function updateDateRangeDisplay() {
+            const kpiDateRange = document.getElementById('kpiDateRange');
+            const chartDateRange = document.getElementById('chartDateRange');
+            
+            let dateRangeText = '';
+            
+            if (currentFilters.period === 'annually') {
+                dateRangeText = `01 Jan ${currentFilters.range} - 31 Dec ${currentFilters.range}`;
+            } else if (currentFilters.period === 'monthly') {
+                const [year, month] = currentFilters.range.split('-');
+                const monthNames = [
+                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                ];
+                const monthName = monthNames[parseInt(month) - 1];
+                const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+                dateRangeText = `01 ${monthName} ${year} - ${daysInMonth} ${monthName} ${year}`;
+            }
+            
+            if (kpiDateRange) kpiDateRange.textContent = dateRangeText;
+            if (chartDateRange) chartDateRange.textContent = `Date Range: ${dateRangeText}`;
+        }
+
+        // Load report data
         async function loadReportData() {
             try {
-                showLoading(true);
+                console.log('Loading report data with filters:', currentFilters);
                 
                 // Build query parameters
                 const params = new URLSearchParams();
-                
-                if (currentFilters.dateRange !== 'custom') {
-                    params.append('days', currentFilters.dateRange);
-                } else {
-                    if (currentFilters.startDate) params.append('startDate', currentFilters.startDate);
-                    if (currentFilters.endDate) params.append('endDate', currentFilters.endDate);
-                }
-                
+                params.append('period', currentFilters.period);
+                params.append('range', currentFilters.range);
                 if (currentFilters.branch !== 'all') {
                     params.append('branchId', currentFilters.branch);
                 }
-                
-                if (currentFilters.type !== 'all') {
-                    params.append('type', currentFilters.type);
-                }
 
-                const response = await fetch(`/api/reports/analytics?${params.toString()}`, {
+                const response = await fetch(`/api/tickets?${params.toString()}`, {
                     headers: {
                         'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                reportData = await response.json();
-                
-                if (reportData.success) {
-                    renderReportData(reportData.data);
+                if (response.ok) {
+                    const data = await response.json();
+                    const tickets = data.tickets || [];
+                    
+                    // Process and display data
+                    processTicketData(tickets);
+                    updateKPICards(tickets);
+                    updateChart(tickets);
                 } else {
-                    throw new Error(reportData.message || 'Failed to load report data');
+                    console.error('Failed to load tickets');
+                    // Set default values
+                    setDefaultValues();
                 }
                 
+            } catch (error) {
+                console.error('Error loading report data:', error);
+                setDefaultValues();
             }
+        }
+
+        // Process ticket data based on current filters
+        function processTicketData(tickets) {
+            const now = new Date();
+            let filteredTickets = tickets;
+            
+            // Filter by date range based on period
+            if (currentFilters.period === 'annually') {
+                const year = parseInt(currentFilters.range);
+                filteredTickets = tickets.filter(ticket => {
+                    const ticketDate = new Date(ticket.submitted_at);
+                    return ticketDate.getFullYear() === year;
+                });
+            } else if (currentFilters.period === 'monthly') {
+                const [year, month] = currentFilters.range.split('-');
+                filteredTickets = tickets.filter(ticket => {
+                    const ticketDate = new Date(ticket.submitted_at);
+                    return ticketDate.getFullYear() === parseInt(year) && 
+                           (ticketDate.getMonth() + 1) === parseInt(month);
+                });
+            }
+            
+            return filteredTickets;
+        }
+
+        // Update KPI cards
+        function updateKPICards(tickets) {
+            const filteredTickets = processTicketData(tickets);
+            
+            // Calculate statistics
+            const stats = {
+                total: filteredTickets.length,
+                complaint: filteredTickets.filter(t => t.type === 'complaint').length,
+                suggestion: filteredTickets.filter(t => t.type === 'suggestion').length,
+                inquiry: filteredTickets.filter(t => t.type === 'inquiry').length,
+                compliment: filteredTickets.filter(t => t.type === 'compliment').length,
+                resolved: filteredTickets.filter(t => t.status === 'resolved' || t.status === 'closed').length,
+                unresolved: filteredTickets.filter(t => t.status === 'open' || t.status === 'in_progress').length
+            };
+            
+            // Update DOM elements
+            document.getElementById('totalTickets').textContent = stats.total;
+            document.getElementById('complaintTickets').textContent = stats.complaint;
+            document.getElementById('suggestionTickets').textContent = stats.suggestion;
+            document.getElementById('inquiryTickets').textContent = stats.inquiry;
+            document.getElementById('complimentTickets').textContent = stats.compliment;
+            document.getElementById('ticketResolved').textContent = stats.resolved;
+            document.getElementById('ticketUnresolved').textContent = stats.unresolved;
+        }
+
+        // Update chart
+        function updateChart(tickets) {
+            const ctx = document.getElementById('feedbackChart').getContext('2d');
+            const filteredTickets = processTicketData(tickets);
+            
+            let labels = [];
+            let branch1Data = [];
+            let branch2Data = [];
+            
+            if (currentFilters.period === 'annually') {
+                // Show monthly data for the year
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                // Group tickets by month
+                const monthlyData = {};
+                labels.forEach((month, index) => {
+                    monthlyData[index] = [];
+                });
+                
+                filteredTickets.forEach(ticket => {
+                    const month = new Date(ticket.submitted_at).getMonth();
+                    if (!monthlyData[month]) monthlyData[month] = [];
+                    monthlyData[month].push(ticket);
+                });
+                
+                // Split data by branches (assuming first 2 branches)
+                const mainBranches = branches.slice(0, 2);
+                if (mainBranches.length >= 1) {
+                    branch1Data = labels.map((_, index) => {
+                        return monthlyData[index] ? monthlyData[index].filter(t => 
+                            t.branch_id === mainBranches[0].branch_id || !t.branch_id
+                        ).length : 0;
+                    });
+                }
+                
+                if (mainBranches.length >= 2) {
+                    branch2Data = labels.map((_, index) => {
+                        return monthlyData[index] ? monthlyData[index].filter(t => 
+                            t.branch_id === mainBranches[1].branch_id
+                        ).length : 0;
+                    });
+                } else {
+                    // If only one branch, split the data randomly for demo
+                    branch2Data = labels.map((_, index) => {
+                        const total = monthlyData[index] ? monthlyData[index].length : 0;
+                        return Math.floor(total * 0.4); // 40% for branch 2
+                    });
+                    branch1Data = labels.map((_, index) => {
+                        const total = monthlyData[index] ? monthlyData[index].length : 0;
+                        return total - branch2Data[index]; // Remaining for branch 1
+                    });
+                }
+            } else if (currentFilters.period === 'monthly') {
+                // Show daily data for the month
+                const [year, month] = currentFilters.range.split('-');
+                const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+                
+                labels = [];
+                for (let day = 1; day <= Math.min(daysInMonth, 31); day++) {
+                    labels.push(day.toString());
+                }
+                
+                // Group tickets by day
+                const dailyData = {};
+                labels.forEach(day => {
+                    dailyData[day] = [];
+                });
+                
+                filteredTickets.forEach(ticket => {
+                    const day = new Date(ticket.submitted_at).getDate();
+                    if (dailyData[day.toString()]) {
+                        dailyData[day.toString()].push(ticket);
+                    }
+                });
+                
+                // Split data by branches
+                const mainBranches = branches.slice(0, 2);
+                if (mainBranches.length >= 1) {
+                    branch1Data = labels.map(day => {
+                        return dailyData[day] ? dailyData[day].filter(t => 
+                            t.branch_id === mainBranches[0].branch_id || !t.branch_id
+                        ).length : 0;
+                    });
+                }
+                
+                if (mainBranches.length >= 2) {
+                    branch2Data = labels.map(day => {
+                        return dailyData[day] ? dailyData[day].filter(t => 
+                            t.branch_id === mainBranches[1].branch_id
+                        ).length : 0;
+                    });
+                } else {
+                    // Demo data split
+                    branch2Data = labels.map(day => {
+                        const total = dailyData[day] ? dailyData[day].length : 0;
+                        return Math.floor(total * 0.4);
+                    });
+                    branch1Data = labels.map(day => {
+                        const total = dailyData[day] ? dailyData[day].length : 0;
+                        return total - branch2Data[labels.indexOf(day)];
+                    });
+                }
+            }
+            
+            // Destroy existing chart
+            if (feedbackChart) {
+                feedbackChart.destroy();
+            }
+            
+            // Create new chart
+            feedbackChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Branch 1',
+                        data: branch1Data,
+                        backgroundColor: '#8527F0',
+                        borderColor: '#8527F0',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }, {
+                        label: 'Branch 2',
+                        data: branch2Data,
+                        backgroundColor: '#C084FC',
+                        borderColor: '#C084FC',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        bar: {
+                            borderRadius: 4
+                        }
+                    }
+                }
+            });
+        }
+
+        // Set default values when no data
+        function setDefaultValues() {
+            const elements = [
+                'totalTickets', 'complaintTickets', 'suggestionTickets', 
+                'inquiryTickets', 'complimentTickets', 'ticketResolved', 'ticketUnresolved'
+            ];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = '0';
+            });
+            
+            // Create empty chart
+            const ctx = document.getElementById('feedbackChart').getContext('2d');
+            if (feedbackChart) feedbackChart.destroy();
+            
+            feedbackChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: currentFilters.period === 'annually' ? 
+                        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] :
+                        Array.from({length: 31}, (_, i) => (i + 1).toString()),
+                    datasets: [{
+                        label: 'Branch 1',
+                        data: [],
+                        backgroundColor: '#8527F0',
+                    }, {
+                        label: 'Branch 2',
+                        data: [],
+                        backgroundColor: '#C084FC',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Export CSV functionality
+        function exportCSV() {
+            try {
+                // Get current data
+                const totalTickets = document.getElementById('totalTickets').textContent;
+                const complaints = document.getElementById('complaintTickets').textContent;
+                const suggestions = document.getElementById('suggestionTickets').textContent;
+                const inquiries = document.getElementById('inquiryTickets').textContent;
+                const compliments = document.getElementById('complimentTickets').textContent;
+                const resolved = document.getElementById('ticketResolved').textContent;
+                const unresolved = document.getElementById('ticketUnresolved').textContent;
+                
+                // Create CSV content
+                const csvContent = [
+                    ['Metric', 'Value'],
+                    ['Total Tickets', totalTickets],
+                    ['Complaints', complaints],
+                    ['Suggestions', suggestions],
+                    ['Inquiries', inquiries],
+                    ['Compliments', compliments],
+                    ['Resolved Tickets', resolved],
+                    ['Unresolved Tickets', unresolved],
+                    ['Report Period', currentFilters.period],
+                    ['Report Range', currentFilters.range],
+                    ['Generated On', new Date().toLocaleDateString()]
+                ].map(row => row.join(',')).join('\n');
+                
+                // Download file
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `feedfast-report-${currentFilters.period}-${currentFilters.range}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                console.log('CSV export completed');
+            } catch (error) {
+                console.error('Error exporting CSV:', error);
+                showError('Failed to export CSV file');
+            }
+        }
+
+        // Navigation functions
+        function manageUsers() {
+            alert('User Management feature coming soon!');
+        }
+
+        function settings() {
+            alert('Settings feature coming soon!');
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            console.log('Logging out...');
+            localStorage.removeItem('clientToken');
+            localStorage.removeItem('clientUser');
+            window.location.href = '/login';
+        }
+
+        // Handle errors globally
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+        });
+
+    </script>
+</body>
+</html>
