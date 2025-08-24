@@ -1404,6 +1404,676 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
 });
 
 // =============================================================================
+// USER MANAGEMENT ROUTES - Add these to your existing server.js
+// =============================================================================
+
+// Serve user management page
+app.get('/usermanagement', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'user-management.html'));
+});
+
+// Get all users for the authenticated client (User Management - extended version)
+app.get('/api/users/management', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        
+        const result = await adminPool.query(`
+            SELECT 
+                u.user_id,
+                u.client_id,
+                u.branch_id,
+                u.user_name,
+                u.email,
+                u.status,
+                u.role,
+                u.created_at,
+                u.updated_at,
+                u.last_login,
+                u.created_by
+            FROM users u
+            WHERE u.client_id = $1
+            ORDER BY u.created_at DESC
+        `, [clientId]);
+        
+        console.log(`👥 Fetched ${result.rows.length} users for management (client ${clientId})`);
+        
+        res.json({
+            success: true,
+            users: result.rows,
+            count: result.rows.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching users for management:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching users'
+        });
+    }
+});
+
+// Get single user details (User Management)
+app.get('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const clientId = req.user.clientId;
+        
+        const result = await adminPool.query(`
+            SELECT 
+                u.user_id,
+                u.client_id,
+                u.branch_id,
+                u.user_name,
+                u.email,
+                u.status,
+                u.role,
+                u.created_at,
+                u.updated_at,
+                u.last_login,
+                u.created_by
+            FROM users u
+            WHERE u.user_id = $1 AND u.client_id = $2
+        `, [userId, clientId]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found or access denied'
+            });
+        }
+        
+        res.json({
+            success: true,
+            user: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching user:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching user'
+        });
+    }
+});
+
+// Create new user (User Management)
+app.post('/api/users/management', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const clientId = req.user.clientId;
+        const createdBy = req.user.name || req.user.email;
+        
+        const {
+            user_name,
+            email,
+            password,
+            role,
+            status,
+            branch_id
+        } = req.body;
+        
+        // Validation
+        if (!user_name || !email || !password || !role) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Name, email, password, and role are required'
+            });
+        }
+
+        if (user_name.trim().length === 0 || user_name.trim().length > 255) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'User name must be between 1 and 255 characters'
+            });
+        }
+
+        if (!isValidEmail(email.trim())) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid email address'
+            });
+        }
+
+        if (password.length < 8 || password.length > 255) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be between 8 and 255 characters'
+            });
+        }
+
+        // Validate role
+        const validRoles = ['client_admin', 'manager', 'staff'];
+        if (!validRoles.includes(role)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid role. Must be one of: ' + validRoles.join(', ')
+            });
+        }
+
+        // Check if email already exists
+        const existingUser = await client.query(
+            'SELECT user_id FROM users WHERE email = $1',
+            [email.trim().toLowerCase()]
+        );
+        
+        if (existingUser.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({
+                success: false,
+                message: 'Email address already exists'
+            });
+        }
+
+        // Validate branch IDs if provided
+        if (branch_id && Array.isArray(branch_id) && branch_id.length > 0) {
+            const branchCheck = await client.query(
+                'SELECT COUNT(*) as count FROM branches WHERE branch_id = ANY($1) AND client_id = $2 AND status = true',
+                [branch_id, clientId]
+            );
+            
+            if (parseInt(branchCheck.rows[0].count) !== branch_id.length) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    success: false,
+                    message: 'One or more invalid branch assignments'
+                });
+            }
+        }
+        
+        // Hash password
+        const hashedPassword = await hashPassword(password);
+        
+        // Create user record
+        const result = await client.query(`
+            INSERT INTO users (
+                client_id,
+                branch_id,
+                user_name,
+                email,
+                password,
+                status,
+                role,
+                created_by
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING 
+                user_id,
+                client_id,
+                branch_id,
+                user_name,
+                email,
+                status,
+                role,
+                created_at,
+                updated_at,
+                created_by
+        `, [
+            clientId,
+            branch_id && branch_id.length > 0 ? branch_id : null,
+            user_name.trim(),
+            email.trim().toLowerCase(),
+            hashedPassword,
+            status !== undefined ? status : true, // Default to active
+            role,
+            createdBy
+        ]);
+        
+        const newUser = result.rows[0];
+
+        // Update client's total_users count
+        await client.query(
+            'UPDATE clients SET total_users = total_users + 1, updated_at = CURRENT_TIMESTAMP WHERE client_id = $1',
+            [clientId]
+        );
+        
+        await client.query('COMMIT');
+        
+        console.log(`✅ New user created: ${newUser.user_name} (${newUser.email}) for client ${clientId}`);
+        
+        // Remove password from response
+        delete newUser.password;
+        
+        res.status(201).json({
+            success: true,
+            message: 'User created successfully',
+            data: newUser
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error creating user:', error);
+        
+        // Handle specific PostgreSQL errors
+        if (error.code === '23505') { // Unique constraint violation
+            return res.status(409).json({
+                success: false,
+                message: 'Email address already exists'
+            });
+        }
+        
+        if (error.code === '22001') { // String data too long
+            return res.status(400).json({
+                success: false,
+                message: 'One of the fields is too long. Please check your input.'
+            });
+        }
+
+        if (error.code === '23503') { // Foreign key constraint violation
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid client or branch reference'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error while creating user'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Update user (User Management)
+app.put('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const { userId } = req.params;
+        const clientId = req.user.clientId;
+        
+        const {
+            user_name,
+            email,
+            role,
+            status,
+            branch_id
+        } = req.body;
+        
+        // Validation
+        if (!user_name || !email || !role) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Name, email, and role are required'
+            });
+        }
+
+        if (user_name.trim().length === 0 || user_name.trim().length > 255) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'User name must be between 1 and 255 characters'
+            });
+        }
+
+        if (!isValidEmail(email.trim())) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid email address'
+            });
+        }
+
+        // Validate role
+        const validRoles = ['client_admin', 'manager', 'staff'];
+        if (!validRoles.includes(role)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid role. Must be one of: ' + validRoles.join(', ')
+            });
+        }
+
+        // Check if user exists and belongs to this client
+        const existingUser = await client.query(
+            'SELECT user_id, email FROM users WHERE user_id = $1 AND client_id = $2',
+            [userId, clientId]
+        );
+        
+        if (existingUser.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                success: false,
+                message: 'User not found or access denied'
+            });
+        }
+
+        // Check if email already exists (excluding current user)
+        const emailCheck = await client.query(
+            'SELECT user_id FROM users WHERE email = $1 AND user_id != $2',
+            [email.trim().toLowerCase(), userId]
+        );
+        
+        if (emailCheck.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({
+                success: false,
+                message: 'Email address already exists'
+            });
+        }
+
+        // Validate branch IDs if provided
+        if (branch_id && Array.isArray(branch_id) && branch_id.length > 0) {
+            const branchCheck = await client.query(
+                'SELECT COUNT(*) as count FROM branches WHERE branch_id = ANY($1) AND client_id = $2 AND status = true',
+                [branch_id, clientId]
+            );
+            
+            if (parseInt(branchCheck.rows[0].count) !== branch_id.length) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    success: false,
+                    message: 'One or more invalid branch assignments'
+                });
+            }
+        }
+        
+        // Update user record
+        const result = await client.query(`
+            UPDATE users SET
+                user_name = $1,
+                email = $2,
+                role = $3,
+                status = $4,
+                branch_id = $5,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = $6 AND client_id = $7
+            RETURNING 
+                user_id,
+                client_id,
+                branch_id,
+                user_name,
+                email,
+                status,
+                role,
+                created_at,
+                updated_at,
+                last_login,
+                created_by
+        `, [
+            user_name.trim(),
+            email.trim().toLowerCase(),
+            role,
+            status !== undefined ? status : true,
+            branch_id && branch_id.length > 0 ? branch_id : null,
+            userId,
+            clientId
+        ]);
+        
+        await client.query('COMMIT');
+        
+        const updatedUser = result.rows[0];
+        
+        console.log(`🔄 User updated: ${updatedUser.user_name} (ID: ${userId}) for client ${clientId}`);
+        
+        res.json({
+            success: true,
+            message: 'User updated successfully',
+            data: updatedUser
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error updating user:', error);
+        
+        // Handle specific PostgreSQL errors
+        if (error.code === '23505') {
+            return res.status(409).json({
+                success: false,
+                message: 'Email address already exists'
+            });
+        }
+        
+        if (error.code === '22001') {
+            return res.status(400).json({
+                success: false,
+                message: 'One of the fields is too long. Please check your input.'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating user'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Update user status (activate/deactivate)
+app.patch('/api/users/management/:userId/status', authenticateClientToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { status } = req.body;
+        const clientId = req.user.clientId;
+        
+        if (typeof status !== 'boolean') {
+            return res.status(400).json({
+                success: false,
+                message: 'Status must be true or false'
+            });
+        }
+        
+        // Check if user exists and belongs to this client
+        const existingUser = await adminPool.query(
+            'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2',
+            [userId, clientId]
+        );
+        
+        if (existingUser.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found or access denied'
+            });
+        }
+        
+        // Don't allow deactivating yourself
+        if (parseInt(userId) === req.user.userId && !status) {
+            return res.status(400).json({
+                success: false,
+                message: 'You cannot deactivate your own account'
+            });
+        }
+        
+        const result = await adminPool.query(`
+            UPDATE users 
+            SET status = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = $2 AND client_id = $3
+            RETURNING user_id, user_name, status
+        `, [status, userId, clientId]);
+        
+        const updatedUser = result.rows[0];
+        
+        console.log(`🔄 User status updated: ${updatedUser.user_name} -> ${status ? 'Active' : 'Inactive'}`);
+        
+        res.json({
+            success: true,
+            message: `User ${status ? 'activated' : 'deactivated'} successfully`,
+            data: updatedUser
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating user status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating user status'
+        });
+    }
+});
+
+// Delete user (soft delete - set status to false instead of actual deletion)
+app.delete('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const { userId } = req.params;
+        const clientId = req.user.clientId;
+        
+        // Don't allow deleting yourself
+        if (parseInt(userId) === req.user.userId) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'You cannot delete your own account'
+            });
+        }
+        
+        // Check if user exists and belongs to this client
+        const existingUser = await client.query(
+            'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2',
+            [userId, clientId]
+        );
+        
+        if (existingUser.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                success: false,
+                message: 'User not found or access denied'
+            });
+        }
+        
+        // Check if user has assigned tickets
+        const assignedTickets = await client.query(
+            'SELECT COUNT(*) as count FROM tickets WHERE pic_ticket = $1 AND status NOT IN (\'resolved\', \'closed\')',
+            [userId]
+        );
+        
+        const activeTicketCount = parseInt(assignedTickets.rows[0].count);
+        
+        if (activeTicketCount > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: `Cannot delete user. They have ${activeTicketCount} active ticket(s) assigned. Please reassign these tickets first.`
+            });
+        }
+        
+        // Soft delete: set status to false and add deletion timestamp
+        await client.query(`
+            UPDATE users 
+            SET status = false, 
+                updated_at = CURRENT_TIMESTAMP,
+                email = email || '_deleted_' || EXTRACT(EPOCH FROM NOW())
+            WHERE user_id = $1
+        `, [userId]);
+
+        // Update client's total_users count (only count active users)
+        await client.query(`
+            UPDATE clients 
+            SET total_users = (
+                SELECT COUNT(*) FROM users 
+                WHERE client_id = $1 AND status = true
+            ),
+            updated_at = CURRENT_TIMESTAMP
+            WHERE client_id = $1
+        `, [clientId]);
+        
+        await client.query('COMMIT');
+        
+        const userName = existingUser.rows[0].user_name;
+        
+        console.log(`🗑️ User soft deleted: ${userName} (ID: ${userId}) for client ${clientId}`);
+        
+        res.json({
+            success: true,
+            message: 'User deleted successfully'
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error deleting user:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while deleting user'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Reset user password (User Management)
+app.patch('/api/users/management/:userId/password', authenticateClientToken, async (req, res) => {
+    const client = await adminPool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const { userId } = req.params;
+        const { password } = req.body;
+        const clientId = req.user.clientId;
+        
+        if (!password || password.length < 8 || password.length > 255) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be between 8 and 255 characters'
+            });
+        }
+        
+        // Check if user exists and belongs to this client
+        const existingUser = await client.query(
+            'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2',
+            [userId, clientId]
+        );
+        
+        if (existingUser.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                success: false,
+                message: 'User not found or access denied'
+            });
+        }
+        
+        // Hash new password
+        const hashedPassword = await hashPassword(password);
+        
+        // Update password
+        await client.query(
+            'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2',
+            [hashedPassword, userId]
+        );
+        
+        await client.query('COMMIT');
+        
+        const userName = existingUser.rows[0].user_name;
+        
+        console.log(`🔑 Password reset for user: ${userName} (ID: ${userId})`);
+        
+        res.json({
+            success: true,
+            message: 'Password updated successfully'
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error resetting password:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while resetting password'
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// =============================================================================
+// END OF USER MANAGEMENT ROUTES
+// =============================================================================
+
+// =============================================================================
 // BRANCH MANAGEMENT ROUTES - FIXED VERSION
 // =============================================================================
 
