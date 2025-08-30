@@ -615,6 +615,7 @@
 
     <script>
         let currentUser = null;
+        let clientToken = null;
         let allUsers = [];
         let allBranches = [];
         let isEditMode = false;
@@ -629,9 +630,9 @@
 
         // Authentication check
         async function checkAuth() {
-            const token = localStorage.getItem('feedfast_client_token');
+            const clientToken = localStorage.getItem('clientToken');
             
-            if (!token) {
+            if (!clientToken) {
                 window.location.href = '/login';
                 return;
             }
@@ -639,7 +640,7 @@
             try {
                 const response = await fetch('/api/auth/client-verify', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
@@ -659,12 +660,12 @@
                         loadBranches()
                     ]);
                 } else {
-                    localStorage.removeItem('feedfast_client_token');
+                    localStorage.removeItem('clientToken');
                     window.location.href = '/login';
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
-                localStorage.removeItem('feedfast_client_token');
+                localStorage.removeItem('clientToken');
                 window.location.href = '/login';
             }
         }
@@ -674,10 +675,10 @@
             try {
                 showLoading(true);
                 
-                const token = localStorage.getItem('feedfast_client_token');
+                const clientToken = localStorage.getItem('clientToken');
                 const response = await fetch('/api/users/management', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
@@ -699,10 +700,10 @@
         // Load all branches
         async function loadBranches() {
             try {
-                const token = localStorage.getItem('feedfast_client_token');
+                const clientToken = localStorage.getItem('clientToken');
                 const response = await fetch('/api/branches', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
@@ -850,10 +851,10 @@
         // Edit user
         async function editUser(userId) {
             try {
-                const token = localStorage.getItem('feedfast_client_token');
+                const clientToken = localStorage.getItem('clientToken');
                 const response = await fetch(`/api/users/management/${userId}`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
@@ -973,7 +974,7 @@
                     requestData.password = userData.password;
                 }
 
-                const token = localStorage.getItem('feedfast_client_token');
+                const clientToken = localStorage.getItem('clientToken');
                 const url = isEditMode ? 
                     `/api/users/management/${userData.userId}` : 
                     '/api/users/management';
@@ -983,7 +984,7 @@
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     },
                     body: JSON.stringify(requestData)
                 });
@@ -1012,12 +1013,12 @@
                 const userId = document.getElementById('resetUserId').value;
                 const newPassword = document.getElementById('newPassword').value;
 
-                const token = localStorage.getItem('feedfast_client_token');
+                const clientToken = localStorage.getItem('clientToken');
                 const response = await fetch(`/api/users/management/${userId}/password`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     },
                     body: JSON.stringify({
                         password: newPassword
@@ -1058,12 +1059,12 @@
             }
 
             try {
-                const token = localStorage.getItem('feedfast_client_token');
+                const clientToken = localStorage.getItem('clientToken');
                 const response = await fetch(`/api/users/management/${userId}/status`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${}`
                     },
                     body: JSON.stringify({
                         status: newStatus
@@ -1092,11 +1093,11 @@
             }
 
             try {
-                const token = localStorage.getItem('feedfast_client_token');
+                const  = localStorage.getItem('feedfast_client_');
                 const response = await fetch(`/api/users/management/${userId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${}`
                     }
                 });
 
@@ -1178,7 +1179,7 @@
         // Logout function
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('feedfast_client_token');
+                localStorage.removeItem('feedfast_client_');
                 window.location.href = '/login';
             }
         }
