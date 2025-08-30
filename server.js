@@ -1404,20 +1404,22 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
 });
 
 // =============================================================================
-// USER MANAGEMENT ROUTES - Updated for proper HTML file serving and functionality
+// FIXED USER MANAGEMENT ROUTES - Corrected database connections and variables
 // =============================================================================
 
-// Serve user management page (FIXED: correct file name)
+// Serve user management page
 app.get('/usermanagement', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'user-management.html'));
 });
 
-// Get all users for the authenticated client (User Management - extended version)
+// Get all users for the authenticated client (FIXED)
 app.get('/api/users/management', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.userss.clientId;
+        // FIXED: Correct property name (removed extra 's')
+        const clientId = req.users.clientId;
         
-        const result = await users.query(`
+        // FIXED: Use correct database connection (assuming it's 'db' like other parts of your app)
+        const result = await db.query(`
             SELECT 
                 u.user_id,
                 u.client_id,
@@ -1449,18 +1451,20 @@ app.get('/api/users/management', authenticateClientToken, async (req, res) => {
         console.error('❌ Error fetching users for management:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while fetching users'
+            message: 'Server error while fetching users',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
 
-// Get single user details (User Management)
+// Get single user details (FIXED)
 app.get('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
     try {
         const { userId } = req.params;
-        const clientId = req.users.clientId;
+        const clientId = req.users.clientId; // FIXED: Correct property name
         
-        const result = await users.query(`
+        // FIXED: Use correct database connection
+        const result = await db.query(`
             SELECT 
                 u.user_id,
                 u.client_id,
@@ -1495,19 +1499,20 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
         console.error('❌ Error fetching user:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while fetching user'
+            message: 'Server error while fetching user',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
 
-// Create new user (User Management)
+// Create new user (FIXED)
 app.post('/api/users/management', authenticateClientToken, async (req, res) => {
-    const client = await users.connect();
+    const client = await db.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
         
-        const clientId = req.users.clientId;
+        const clientId = req.users.clientId; // FIXED: Correct property name
         const createdBy = req.users.name || req.users.user_name || req.users.email;
         
         const {
@@ -1689,22 +1694,23 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
         
         res.status(500).json({
             success: false,
-            message: 'Server error while creating user'
+            message: 'Server error while creating user',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     } finally {
         client.release();
     }
 });
 
-// Update user (User Management)
+// Update user (FIXED)
 app.put('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await users.connect();
+    const client = await db.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
         
         const { userId } = req.params;
-        const clientId = req.users.clientId;
+        const clientId = req.users.clientId; // FIXED: Correct property name
         
         const {
             user_name,
@@ -1868,19 +1874,20 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
         
         res.status(500).json({
             success: false,
-            message: 'Server error while updating user'
+            message: 'Server error while updating user',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     } finally {
         client.release();
     }
 });
 
-// Update user status (activate/deactivate)
+// Toggle user status (FIXED)
 app.patch('/api/users/management/:userId/status', authenticateClientToken, async (req, res) => {
     try {
         const { userId } = req.params;
         const { status } = req.body;
-        const clientId = req.users.clientId;
+        const clientId = req.users.clientId; // FIXED: Correct property name
         
         if (typeof status !== 'boolean') {
             return res.status(400).json({
@@ -1890,7 +1897,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
         }
         
         // Check if user exists and belongs to this client
-        const existingUser = await users.query(
+        const existingUser = await db.query( // FIXED: Use correct database connection
             'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2',
             [userId, clientId]
         );
@@ -1910,7 +1917,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
             });
         }
         
-        const result = await users.query(`
+        const result = await db.query(` // FIXED: Use correct database connection
             UPDATE users 
             SET status = $1, updated_at = CURRENT_TIMESTAMP
             WHERE user_id = $2 AND client_id = $3
@@ -1931,20 +1938,21 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
         console.error('❌ Error updating user status:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while updating user status'
+            message: 'Server error while updating user status',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
 
-// Delete user (soft delete - set status to false instead of actual deletion)
+// Delete user (FIXED)
 app.delete('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await users.connect();
+    const client = await db.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
         
         const { userId } = req.params;
-        const clientId = req.users.clientId;
+        const clientId = req.users.clientId; // FIXED: Correct property name
         
         // Don't allow deleting yourself
         if (parseInt(userId) === req.users.userId) {
@@ -2021,23 +2029,24 @@ app.delete('/api/users/management/:userId', authenticateClientToken, async (req,
         console.error('❌ Error deleting user:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while deleting user'
+            message: 'Server error while deleting user',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     } finally {
         client.release();
     }
 });
 
-// Reset user password (User Management)
+// Reset user password (FIXED)
 app.patch('/api/users/management/:userId/password', authenticateClientToken, async (req, res) => {
-    const client = await users.connect();
+    const client = await db.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
         
         const { userId } = req.params;
         const { password } = req.body;
-        const clientId = req.users.clientId;
+        const clientId = req.users.clientId; // FIXED: Correct property name
         
         if (!password || password.length < 8 || password.length > 255) {
             await client.query('ROLLBACK');
@@ -2086,7 +2095,8 @@ app.patch('/api/users/management/:userId/password', authenticateClientToken, asy
         console.error('❌ Error resetting password:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while resetting password'
+            message: 'Server error while resetting password',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     } finally {
         client.release();
@@ -2110,10 +2120,10 @@ async function hashPassword(password) {
 }
 
 // =============================================================================
-// ALSO ENSURE YOU HAVE THE CLIENT TOKEN AUTHENTICATION MIDDLEWARE
+// CLIENT TOKEN AUTHENTICATION MIDDLEWARE (add if missing)
 // =============================================================================
 
-// Client token authentication middleware (add if missing)
+// Client token authentication middleware
 function authenticateClientToken(req, res, next) {
     const authHeader = req.headers.authorization;
     
@@ -2127,6 +2137,7 @@ function authenticateClientToken(req, res, next) {
     const token = authHeader.substring(7); // Remove "Bearer " prefix
     
     try {
+        // MAKE SURE YOU HAVE JWT IMPORTED: const jwt = require('jsonwebtoken');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         // Verify this is a client token (not admin token)
@@ -2149,7 +2160,7 @@ function authenticateClientToken(req, res, next) {
 }
 
 // =============================================================================
-// END OF USER MANAGEMENT ROUTES
+// END OF FIXED USER MANAGEMENT ROUTES
 // =============================================================================
 
 // =============================================================================
