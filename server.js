@@ -123,7 +123,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
       WHERE LOWER(REPLACE(client_name, ' ', '')) = LOWER(REPLACE($1, ' ', '')) 
       AND status = true
     `;
-    const clientResult = await adminPool.query(clientQuery, [client_name]);
+    const clientResult = await users.query(clientQuery, [client_name]);
     
     if (clientResult.rows.length === 0) {
       return res.status(404).json({ 
@@ -173,11 +173,11 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
       attachmentUrl
     ];
 
-    const ticketResult = await adminPool.query(ticketQuery, ticketValues);
+    const ticketResult = await users.query(ticketQuery, ticketValues);
     const ticketId = ticketResult.rows[0].ticket_id;
 
     // Update client's total_tickets counter
-    await adminPool.query(
+    await users.query(
       'UPDATE clients SET total_tickets = total_tickets + 1, updated_at = NOW() WHERE client_id = $1',
       [client.client_id]
     );
@@ -220,7 +220,7 @@ app.use((error, req, res, next) => {
 });
 
 // Admin database (new)
-const adminPool = new Pool({
+const users = new Pool({
     connectionString: process.env.ADMIN_DATABASE_URL, // You'll need to add this env variable
     ssl: process.env.NODE_ENV === 'production' ? {
         rejectUnauthorized: false
@@ -236,7 +236,7 @@ async function testConnections() {
         mainClient.release();
         
         // Test admin database
-        const adminClient = await adminPool.connect();
+        const adminClient = await users.connect();
         console.log('✅ Admin database connected successfully');
         adminClient.release();
     } catch (error) {
@@ -459,7 +459,7 @@ app.post('/api/auth/login', async (req, res) => {
         }
         
         // Find user in admin database
-        const userQuery = await adminPool.query(
+        const userQuery = await users.query(
             'SELECT * FROM adminbo WHERE email = $1',
             [email]
         );
@@ -545,14 +545,14 @@ app.post('/api/auth/client-login', async (req, res) => {
         
         console.log('🔍 About to query database...');
         console.log('Database pool status:', { 
-            totalCount: adminPool.totalCount,
-            idleCount: adminPool.idleCount,
-            waitingCount: adminPool.waitingCount 
+            totalCount: users.totalCount,
+            idleCount: users.idleCount,
+            waitingCount: users.waitingCount 
         });
         
         // Test database connection first
         try {
-            await adminPool.query('SELECT 1 as test');
+            await users.query('SELECT 1 as test');
             console.log('✅ Database connection test passed');
         } catch (dbTestError) {
             console.error('❌ Database connection test failed:', dbTestError);
@@ -561,7 +561,7 @@ app.post('/api/auth/client-login', async (req, res) => {
         
         // Find user in users table (client users)
         console.log('🔍 Executing user query...');
-        const userQuery = await adminPool.query(
+        const userQuery = await users.query(
             `SELECT 
                 u.user_id, 
                 u.client_id, 
@@ -652,7 +652,7 @@ app.post('/api/auth/client-login', async (req, res) => {
         
         console.log('🔄 Updating last_login timestamp...');
         // Update last_login timestamp
-        await adminPool.query(
+        await users.query(
             'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1',
             [user.user_id]
         );
@@ -717,7 +717,7 @@ app.get('/api/debug/test-db', async (req, res) => {
         console.log('🔍 Testing database structure...');
         
         // Test 1: Check if users table exists and has data
-        const usersTest = await adminPool.query(`
+        const usersTest = await users.query(`
             SELECT 
                 u.user_id, 
                 u.email, 
@@ -730,7 +730,7 @@ app.get('/api/debug/test-db', async (req, res) => {
         `);
         
         // Test 2: Check if clients table exists and has data  
-        const clientsTest = await adminPool.query(`
+        const clientsTest = await users.query(`
             SELECT 
                 client_id, 
                 client_name, 
@@ -740,7 +740,7 @@ app.get('/api/debug/test-db', async (req, res) => {
         `);
         
         // Test 3: Test the JOIN query
-        const joinTest = await adminPool.query(`
+        const joinTest = await users.query(`
             SELECT 
                 u.user_id, 
                 u.email, 
@@ -1374,7 +1374,7 @@ async function hashPassword(password) {
 // Get all clients (protected route)
 app.get('/api/clients', authenticateToken, async (req, res) => {
     try {
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 client_id,
                 client_name,
@@ -1417,7 +1417,7 @@ app.get('/api/users/management', authenticateClientToken, async (req, res) => {
     try {
         const clientId = req.user.clientId;
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 u.user_id,
                 u.client_id,
@@ -1460,7 +1460,7 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
         const { userId } = req.params;
         const clientId = req.user.clientId;
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 u.user_id,
                 u.client_id,
@@ -1502,7 +1502,7 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
 
 // Create new user (User Management)
 app.post('/api/users/management', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -1698,7 +1698,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
 
 // Update user (User Management)
 app.put('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -1890,7 +1890,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
         }
         
         // Check if user exists and belongs to this client
-        const existingUser = await adminPool.query(
+        const existingUser = await users.query(
             'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2',
             [userId, clientId]
         );
@@ -1910,7 +1910,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
             });
         }
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             UPDATE users 
             SET status = $1, updated_at = CURRENT_TIMESTAMP
             WHERE user_id = $2 AND client_id = $3
@@ -1938,7 +1938,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
 
 // Delete user (soft delete - set status to false instead of actual deletion)
 app.delete('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -2030,7 +2030,7 @@ app.delete('/api/users/management/:userId', authenticateClientToken, async (req,
 
 // Reset user password (User Management)
 app.patch('/api/users/management/:userId/password', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -2166,7 +2166,7 @@ app.get('/api/branches', authenticateClientToken, async (req, res) => {
     try {
         const clientId = req.user.clientId;
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 branch_id,
                 client_id,
@@ -2229,7 +2229,7 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
 
 // Create new branch
 app.post('/api/branches', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -2413,7 +2413,7 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
 
 // Update branch
 app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -2607,7 +2607,7 @@ app.patch('/api/branches/:branchId/status', authenticateClientToken, async (req,
         }
         
         // Check if branch exists and belongs to this client
-        const existingBranch = await adminPool.query(
+        const existingBranch = await users.query(
             'SELECT branch_id, branch_name FROM branches WHERE branch_id = $1 AND client_id = $2',
             [branchId, clientId]
         );
@@ -2619,7 +2619,7 @@ app.patch('/api/branches/:branchId/status', authenticateClientToken, async (req,
             });
         }
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             UPDATE branches 
             SET status = $1, updated_at = CURRENT_TIMESTAMP
             WHERE branch_id = $2 AND client_id = $3
@@ -2651,7 +2651,7 @@ app.get('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
         const { branchId } = req.params;
         const clientId = req.user.clientId;
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 branch_id,
                 client_id,
@@ -2694,7 +2694,7 @@ app.get('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
 
 // Delete branch (soft delete - set status to false instead of actual deletion)
 app.delete('/api/branches/:branchId', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -2774,7 +2774,7 @@ app.get('/api/tickets', authenticateClientToken, async (req, res) => {
     try {
         const clientId = req.user.clientId;
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 t.ticket_id,
                 t.client_id,
@@ -2823,7 +2823,7 @@ app.get('/api/tickets/:ticketId', authenticateClientToken, async (req, res) => {
         const { ticketId } = req.params;
         const clientId = req.user.clientId;
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 t.ticket_id,
                 t.client_id,
@@ -2872,7 +2872,7 @@ app.get('/api/tickets/:ticketId', authenticateClientToken, async (req, res) => {
 
 // Update ticket status
 app.patch('/api/tickets/:ticketId/status', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -2962,7 +2962,7 @@ app.patch('/api/tickets/:ticketId/assign', authenticateClientToken, async (req, 
         
         // If userId is provided, validate that the user belongs to the same client
         if (userId) {
-            const userCheck = await adminPool.query(
+            const userCheck = await users.query(
                 'SELECT user_id FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
                 [userId, clientId]
             );
@@ -2976,7 +2976,7 @@ app.patch('/api/tickets/:ticketId/assign', authenticateClientToken, async (req, 
         }
         
         // Check if ticket exists and belongs to this client
-        const existingTicket = await adminPool.query(
+        const existingTicket = await users.query(
             'SELECT ticket_id FROM tickets WHERE ticket_id = $1 AND client_id = $2',
             [ticketId, clientId]
         );
@@ -2989,7 +2989,7 @@ app.patch('/api/tickets/:ticketId/assign', authenticateClientToken, async (req, 
         }
         
         // Update ticket assignment
-        const result = await adminPool.query(`
+        const result = await users.query(`
             UPDATE tickets 
             SET pic_ticket = $1, updated_at = CURRENT_TIMESTAMP
             WHERE ticket_id = $2 AND client_id = $3
@@ -3015,7 +3015,7 @@ app.patch('/api/tickets/:ticketId/assign', authenticateClientToken, async (req, 
 
 // Create new ticket (for testing purposes - normally this would be from public form)
 app.post('/api/tickets', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -3169,7 +3169,7 @@ app.get('/api/tickets/stats', authenticateClientToken, async (req, res) => {
     try {
         const clientId = req.user.clientId;
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 status,
                 COUNT(*) as count,
@@ -3223,7 +3223,7 @@ app.get('/api/users', authenticateClientToken, async (req, res) => {
     try {
         const clientId = req.user.clientId;
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             SELECT 
                 user_id,
                 user_name,
@@ -3252,7 +3252,7 @@ app.get('/api/users', authenticateClientToken, async (req, res) => {
 
 // Bulk update ticket statuses (for advanced operations)
 app.patch('/api/tickets/bulk-update', authenticateClientToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -3442,7 +3442,7 @@ app.get('/api/reports/analytics', authenticateClientToken, async (req, res) => {
         `;
 
         const allParams = [clientId, ...dateParams, ...additionalParams];
-        const ticketsResult = await adminPool.query(ticketsQuery, allParams);
+        const ticketsResult = await users.query(ticketsQuery, allParams);
         const tickets = ticketsResult.rows;
 
         console.log(`📈 Found ${tickets.length} tickets for analysis`);
@@ -3570,7 +3570,7 @@ app.get('/api/reports/summary', authenticateClientToken, async (req, res) => {
             AND submitted_at >= CURRENT_DATE - INTERVAL '${parseInt(days)} days'
         `;
 
-        const result = await adminPool.query(summaryQuery, [clientId]);
+        const result = await users.query(summaryQuery, [clientId]);
         const row = result.rows[0];
 
         const summary = {
@@ -3628,7 +3628,7 @@ app.get('/api/reports/top-performers', authenticateClientToken, async (req, res)
             LIMIT $2
         `;
 
-        const branchResult = await adminPool.query(branchQuery, [clientId, limit]);
+        const branchResult = await users.query(branchQuery, [clientId, limit]);
 
         // Top performing users by response time
         const userQuery = `
@@ -3654,7 +3654,7 @@ app.get('/api/reports/top-performers', authenticateClientToken, async (req, res)
             LIMIT $2
         `;
 
-        const userResult = await adminPool.query(userQuery, [clientId, limit]);
+        const userResult = await users.query(userQuery, [clientId, limit]);
 
         res.json({
             success: true,
@@ -3710,7 +3710,7 @@ app.get('/api/reports/trends', authenticateClientToken, async (req, res) => {
             ORDER BY period ASC
         `;
 
-        const result = await adminPool.query(trendQuery, [clientId]);
+        const result = await users.query(trendQuery, [clientId]);
 
         res.json({
             success: true,
@@ -3751,7 +3751,7 @@ app.get('/feedback/:clientname', async (req, res) => {
       AND status = true
     `;
     
-    const clientResult = await adminPool.query(clientQuery, [clientname.toLowerCase()]);
+    const clientResult = await users.query(clientQuery, [clientname.toLowerCase()]);
     
     if (clientResult.rows.length === 0) {
       return res.status(404).send(`
@@ -3783,7 +3783,7 @@ app.get('/feedback/:clientname', async (req, res) => {
       ORDER BY branch_name
     `;
     
-    const branchesResult = await adminPool.query(branchesQuery, [client.client_id]);
+    const branchesResult = await users.query(branchesQuery, [client.client_id]);
     const branches = branchesResult.rows;
     
     // Serve the feedback form HTML
@@ -3817,7 +3817,7 @@ app.post('/api/feedback', async (req, res) => {
       AND status = true
     `;
     
-    const clientResult = await adminPool.query(clientQuery, [client_name.toLowerCase()]);
+    const clientResult = await users.query(clientQuery, [client_name.toLowerCase()]);
     
     if (clientResult.rows.length === 0) {
       return res.status(404).json({ error: 'Client not found' });
@@ -3846,11 +3846,11 @@ app.post('/api/feedback', async (req, res) => {
       attachment || null
     ];
     
-    const result = await adminPool.query(insertTicketQuery, values);
+    const result = await users.query(insertTicketQuery, values);
     const ticket_id = result.rows[0].ticket_id;
     
     // Update client total_tickets count
-    await adminPool.query(
+    await users.query(
       'UPDATE clients SET total_tickets = total_tickets + 1 WHERE client_id = $1',
       [client_id]
     );
@@ -3870,7 +3870,7 @@ app.post('/api/feedback', async (req, res) => {
 });
 
 app.post('/api/clients', authenticateToken, async (req, res) => {
-    const client = await adminPool.connect();
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
@@ -4089,7 +4089,7 @@ app.patch('/api/clients/:clientId/status', authenticateToken, async (req, res) =
             });
         }
         
-        const result = await adminPool.query(`
+        const result = await users.query(`
             UPDATE clients 
             SET status = $1, updated_at = CURRENT_TIMESTAMP
             WHERE client_id = $2
@@ -4219,7 +4219,7 @@ app.get('/login', (req, res) => {
 async function updateUserTableSchema() {
     try {
         // Check if only_assigned_tickets column exists
-        const columnCheck = await adminPool.query(`
+        const columnCheck = await users.query(`
             SELECT column_name 
             FROM information_schema.columns 
             WHERE table_name = 'users' AND column_name = 'only_assigned_tickets'
@@ -4227,7 +4227,7 @@ async function updateUserTableSchema() {
         
         if (columnCheck.rows.length === 0) {
             // Add the column
-            await adminPool.query(`
+            await users.query(`
                 ALTER TABLE users 
                 ADD COLUMN only_assigned_tickets BOOLEAN DEFAULT false
             `);
@@ -4235,7 +4235,7 @@ async function updateUserTableSchema() {
         }
         
         // Also check if branch_id column can store arrays (should be integer array or null)
-        const branchColumnCheck = await adminPool.query(`
+        const branchColumnCheck = await users.query(`
             SELECT data_type, udt_name
             FROM information_schema.columns 
             WHERE table_name = 'users' AND column_name = 'branch_id'
@@ -4245,7 +4245,7 @@ async function updateUserTableSchema() {
             const dataType = branchColumnCheck.rows[0].data_type;
             // If it's not already an array type, alter it
             if (dataType !== 'ARRAY') {
-                await adminPool.query(`
+                await users.query(`
                     ALTER TABLE users 
                     ALTER COLUMN branch_id TYPE integer[] USING 
                     CASE 
@@ -4285,13 +4285,13 @@ startServer().catch(console.error);
 process.on('SIGTERM', async () => {
     console.log('⏹️  SIGTERM received, shutting down gracefully');
     await mainPool.end();
-    await adminPool.end();
+    await users.end();
     process.exit(0);
 });
 
 process.on('SIGINT', async () => {
     console.log('⏹️  SIGINT received, shutting down gracefully');
     await mainPool.end();
-    await adminPool.end();
+    await users.end();
     process.exit(0);
 });
