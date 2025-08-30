@@ -221,26 +221,26 @@ app.use((error, req, res, next) => {
 
 // Admin database (new)
 const users = new Pool({
-    ionString: process.env.ADMIN_DATABASE_URL, // You'll need to add this env variable
+    connectionString: process.env.ADMIN_DATABASE_URL, // You'll need to add this env variable
     ssl: process.env.NODE_ENV === 'production' ? {
         rejectUnauthorized: false
     } : false
 });
 
-// Test database ions
-async function testions() {
+// Test database connections
+async function testConnections() {
     try {
         // Test main database
-        const mainClient = await mainPool.();
-        console.log('✅ Main database ed successfully');
+        const mainClient = await mainPool.connect();
+        console.log('✅ Main database connected successfully');
         mainClient.release();
         
         // Test admin database
-        const adminClient = await users.();
-        console.log('✅ Admin database ed successfully');
+        const adminClient = await users.connect();
+        console.log('✅ Admin database connected successfully');
         adminClient.release();
     } catch (error) {
-        console.error('❌ Database ion failed:', error.message);
+        console.error('❌ Database connection failed:', error.message);
     }
 }
 
@@ -286,7 +286,7 @@ function authenticateToken(req, res, next) {
                 message: 'Invalid or expired token'
             });
         }
-        req.users = user;
+        req.user = user;
         next();
     });
 }
@@ -550,12 +550,12 @@ app.post('/api/auth/client-login', async (req, res) => {
             waitingCount: users.waitingCount 
         });
         
-        // Test database ion first
+        // Test database connection first
         try {
             await users.query('SELECT 1 as test');
-            console.log('✅ Database ion test passed');
+            console.log('✅ Database connection test passed');
         } catch (dbTestError) {
-            console.error('❌ Database ion test failed:', dbTestError);
+            console.error('❌ Database connection test failed:', dbTestError);
             throw new Error('Database connection failed');
         }
         
@@ -808,7 +808,7 @@ function authenticateClientToken(req, res, next) {
             });
         }
         
-        req.users = user;
+        req.user = user;
         next();
     });
 }
@@ -822,7 +822,7 @@ app.get('/dashboard', (req, res) => {
 app.get('/api/auth/client-verify', authenticateClientToken, (req, res) => {
     res.json({
         success: true,
-        user: req.users
+        user: req.user
     });
 });
 
@@ -1404,22 +1404,20 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
 });
 
 // =============================================================================
-// FIXED USER MANAGEMENT ROUTES - Corrected database connections and variables
+// USER MANAGEMENT ROUTES - Updated for proper HTML file serving and functionality
 // =============================================================================
 
-// Serve user management page
+// Serve user management page (FIXED: correct file name)
 app.get('/usermanagement', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'user-management.html'));
 });
 
-// Get all users for the authenticated client (FIXED)
+// Get all users for the authenticated client (User Management - extended version)
 app.get('/api/users/management', authenticateClientToken, async (req, res) => {
     try {
-        // FIXED: Correct property name (removed extra 's')
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
-        // FIXED: Use correct database connection (assuming it's 'db' like other parts of your app)
-        const result = await db.query(`
+        const result = await users.query(`
             SELECT 
                 u.user_id,
                 u.client_id,
@@ -1451,20 +1449,18 @@ app.get('/api/users/management', authenticateClientToken, async (req, res) => {
         console.error('❌ Error fetching users for management:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while fetching users',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Server error while fetching users'
         });
     }
 });
 
-// Get single user details (FIXED)
+// Get single user details (User Management)
 app.get('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
     try {
         const { userId } = req.params;
-        const clientId = req.users.clientId; // FIXED: Correct property name
+        const clientId = req.user.clientId;
         
-        // FIXED: Use correct database connection
-        const result = await db.query(`
+        const result = await users.query(`
             SELECT 
                 u.user_id,
                 u.client_id,
@@ -1499,21 +1495,20 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
         console.error('❌ Error fetching user:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while fetching user',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Server error while fetching user'
         });
     }
 });
 
-// Create new user (FIXED)
+// Create new user (User Management)
 app.post('/api/users/management', authenticateClientToken, async (req, res) => {
-    const client = await db.connect(); // FIXED: Use correct database connection
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
         
-        const clientId = req.users.clientId; // FIXED: Correct property name
-        const createdBy = req.users.name || req.users.user_name || req.users.email;
+        const clientId = req.user.clientId;
+        const createdBy = req.user.name || req.user.user_name || req.user.email;
         
         const {
             user_name,
@@ -1694,23 +1689,22 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
         
         res.status(500).json({
             success: false,
-            message: 'Server error while creating user',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Server error while creating user'
         });
     } finally {
         client.release();
     }
 });
 
-// Update user (FIXED)
+// Update user (User Management)
 app.put('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await db.connect(); // FIXED: Use correct database connection
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
         
         const { userId } = req.params;
-        const clientId = req.users.clientId; // FIXED: Correct property name
+        const clientId = req.user.clientId;
         
         const {
             user_name,
@@ -1874,20 +1868,19 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
         
         res.status(500).json({
             success: false,
-            message: 'Server error while updating user',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Server error while updating user'
         });
     } finally {
         client.release();
     }
 });
 
-// Toggle user status (FIXED)
+// Update user status (activate/deactivate)
 app.patch('/api/users/management/:userId/status', authenticateClientToken, async (req, res) => {
     try {
         const { userId } = req.params;
         const { status } = req.body;
-        const clientId = req.users.clientId; // FIXED: Correct property name
+        const clientId = req.user.clientId;
         
         if (typeof status !== 'boolean') {
             return res.status(400).json({
@@ -1897,7 +1890,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
         }
         
         // Check if user exists and belongs to this client
-        const existingUser = await db.query( // FIXED: Use correct database connection
+        const existingUser = await users.query(
             'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2',
             [userId, clientId]
         );
@@ -1910,14 +1903,14 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
         }
         
         // Don't allow deactivating yourself
-        if (parseInt(userId) === req.users.userId && !status) {
+        if (parseInt(userId) === req.user.userId && !status) {
             return res.status(400).json({
                 success: false,
                 message: 'You cannot deactivate your own account'
             });
         }
         
-        const result = await db.query(` // FIXED: Use correct database connection
+        const result = await users.query(`
             UPDATE users 
             SET status = $1, updated_at = CURRENT_TIMESTAMP
             WHERE user_id = $2 AND client_id = $3
@@ -1938,24 +1931,23 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
         console.error('❌ Error updating user status:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while updating user status',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Server error while updating user status'
         });
     }
 });
 
-// Delete user (FIXED)
+// Delete user (soft delete - set status to false instead of actual deletion)
 app.delete('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await db.connect(); // FIXED: Use correct database connection
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
         
         const { userId } = req.params;
-        const clientId = req.users.clientId; // FIXED: Correct property name
+        const clientId = req.user.clientId;
         
         // Don't allow deleting yourself
-        if (parseInt(userId) === req.users.userId) {
+        if (parseInt(userId) === req.user.userId) {
             await client.query('ROLLBACK');
             return res.status(400).json({
                 success: false,
@@ -2029,24 +2021,23 @@ app.delete('/api/users/management/:userId', authenticateClientToken, async (req,
         console.error('❌ Error deleting user:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while deleting user',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Server error while deleting user'
         });
     } finally {
         client.release();
     }
 });
 
-// Reset user password (FIXED)
+// Reset user password (User Management)
 app.patch('/api/users/management/:userId/password', authenticateClientToken, async (req, res) => {
-    const client = await db.connect(); // FIXED: Use correct database connection
+    const client = await users.connect();
     
     try {
         await client.query('BEGIN');
         
         const { userId } = req.params;
         const { password } = req.body;
-        const clientId = req.users.clientId; // FIXED: Correct property name
+        const clientId = req.user.clientId;
         
         if (!password || password.length < 8 || password.length > 255) {
             await client.query('ROLLBACK');
@@ -2095,8 +2086,7 @@ app.patch('/api/users/management/:userId/password', authenticateClientToken, asy
         console.error('❌ Error resetting password:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while resetting password',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Server error while resetting password'
         });
     } finally {
         client.release();
@@ -2120,10 +2110,10 @@ async function hashPassword(password) {
 }
 
 // =============================================================================
-// CLIENT TOKEN AUTHENTICATION MIDDLEWARE (add if missing)
+// ALSO ENSURE YOU HAVE THE CLIENT TOKEN AUTHENTICATION MIDDLEWARE
 // =============================================================================
 
-// Client token authentication middleware
+// Client token authentication middleware (add if missing)
 function authenticateClientToken(req, res, next) {
     const authHeader = req.headers.authorization;
     
@@ -2137,7 +2127,6 @@ function authenticateClientToken(req, res, next) {
     const token = authHeader.substring(7); // Remove "Bearer " prefix
     
     try {
-        // MAKE SURE YOU HAVE JWT IMPORTED: const jwt = require('jsonwebtoken');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         // Verify this is a client token (not admin token)
@@ -2148,7 +2137,7 @@ function authenticateClientToken(req, res, next) {
             });
         }
         
-        req.users = decoded;
+        req.user = decoded;
         next();
     } catch (error) {
         console.error('❌ Client token verification failed:', error.message);
@@ -2160,10 +2149,8 @@ function authenticateClientToken(req, res, next) {
 }
 
 // =============================================================================
-// END OF FIXED USER MANAGEMENT ROUTES
+// END OF USER MANAGEMENT ROUTES
 // =============================================================================
-
-
 
 // =============================================================================
 // BRANCH MANAGEMENT ROUTES - FIXED VERSION
@@ -2177,7 +2164,7 @@ app.get('/branch', (req, res) => {
 // Get all branches for the authenticated client (API route - protected)
 app.get('/api/branches', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -2222,7 +2209,7 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
     try {
         const { id } = req.params;
         const { pic_ticket } = req.body;
-        const clientId = req.users.client_id;
+        const clientId = req.user.client_id;
         
         const result = await adminDb.query(
             'UPDATE tickets SET pic_ticket = $1 WHERE ticket_id = $2 AND client_id = $3 RETURNING *',
@@ -2247,8 +2234,8 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        const clientId = req.users.clientId;
-        const createdBy = req.users.name || req.users.email;
+        const clientId = req.user.clientId;
+        const createdBy = req.user.name || req.user.email;
         
         const {
             branch_name,
@@ -2432,7 +2419,7 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
         await client.query('BEGIN');
         
         const { branchId } = req.params;
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         const {
             branch_name,
@@ -2610,7 +2597,7 @@ app.patch('/api/branches/:branchId/status', authenticateClientToken, async (req,
     try {
         const { branchId } = req.params;
         const { status } = req.body;
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         if (typeof status !== 'boolean') {
             return res.status(400).json({
@@ -2662,7 +2649,7 @@ app.patch('/api/branches/:branchId/status', authenticateClientToken, async (req,
 app.get('/api/branches/:branchId', authenticateClientToken, async (req, res) => {
     try {
         const { branchId } = req.params;
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -2713,7 +2700,7 @@ app.delete('/api/branches/:branchId', authenticateClientToken, async (req, res) 
         await client.query('BEGIN');
         
         const { branchId } = req.params;
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         // Check if branch exists and belongs to this client
         const existingBranch = await client.query(
@@ -2785,7 +2772,7 @@ app.get('/ticket', (req, res) => {
 // Get all tickets for the authenticated client (API route - protected)
 app.get('/api/tickets', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -2834,7 +2821,7 @@ app.get('/api/tickets', authenticateClientToken, async (req, res) => {
 app.get('/api/tickets/:ticketId', authenticateClientToken, async (req, res) => {
     try {
         const { ticketId } = req.params;
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -2892,7 +2879,7 @@ app.patch('/api/tickets/:ticketId/status', authenticateClientToken, async (req, 
         
         const { ticketId } = req.params;
         const { status } = req.body;
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         // Validate status
         const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
@@ -2971,7 +2958,7 @@ app.patch('/api/tickets/:ticketId/assign', authenticateClientToken, async (req, 
     try {
         const { ticketId } = req.params;
         const { userId } = req.body;
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         // If userId is provided, validate that the user belongs to the same client
         if (userId) {
@@ -3033,7 +3020,7 @@ app.post('/api/tickets', authenticateClientToken, async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         const {
             branch_id,
@@ -3180,7 +3167,7 @@ app.post('/api/tickets', authenticateClientToken, async (req, res) => {
 // Get ticket statistics for dashboard
 app.get('/api/tickets/stats', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -3234,7 +3221,7 @@ app.get('/api/tickets/stats', authenticateClientToken, async (req, res) => {
 // Get users for ticket assignment dropdown
 app.get('/api/users', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -3271,7 +3258,7 @@ app.patch('/api/tickets/bulk-update', authenticateClientToken, async (req, res) 
         await client.query('BEGIN');
         
         const { ticketIds, status, assignTo } = req.body;
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         
         if (!ticketIds || !Array.isArray(ticketIds) || ticketIds.length === 0) {
             await client.query('ROLLBACK');
@@ -3382,7 +3369,7 @@ app.get('/report', (req, res) => {
 // Analytics API endpoint - comprehensive report data
 app.get('/api/reports/analytics', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         const { 
             days, 
             startDate, 
@@ -3563,7 +3550,7 @@ function calculateAnalyticsStats(tickets) {
 // Summary statistics API - lightweight version for dashboards
 app.get('/api/reports/summary', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         const { days = 30 } = req.query;
 
         const summaryQuery = `
@@ -3616,7 +3603,7 @@ app.get('/api/reports/summary', authenticateClientToken, async (req, res) => {
 // Top performers report - branches/users with best metrics
 app.get('/api/reports/top-performers', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         const { days = 30, limit = 10 } = req.query;
 
         // Top performing branches by resolution rate
@@ -3690,7 +3677,7 @@ app.get('/api/reports/top-performers', authenticateClientToken, async (req, res)
 // Trend analysis - tickets over time
 app.get('/api/reports/trends', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.users.clientId;
+        const clientId = req.user.clientId;
         const { days = 30, groupBy = 'day' } = req.query;
 
         let dateFormat;
@@ -4144,14 +4131,14 @@ app.get('/backoffice/dashboard', (req, res) => {
 app.get('/api/auth/verify', authenticateToken, (req, res) => {
     res.json({
         success: true,
-        user: req.users
+        user: req.user
     });
 });
 
 // Protected API endpoint for admin logout (optional)
 app.post('/api/auth/logout', authenticateToken, (req, res) => {
     // In a stateless JWT setup, logout is handled client-side by removing the token
-    console.log(`🔓 Admin logout: ${req.users.email}`);
+    console.log(`🔓 Admin logout: ${req.user.email}`);
     res.json({
         success: true,
         message: 'Logged out successfully'
