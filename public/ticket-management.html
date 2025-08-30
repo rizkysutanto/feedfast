@@ -846,7 +846,7 @@
     <script>
         // Global variables
         let currentUser = null;
-        let token = null;
+        let clientToken = null;
         let allTickets = [];
         let allBranches = [];
         let allUsers = [];
@@ -872,10 +872,10 @@
 
         // Check authentication
         function checkAuth() {
-            token = localStorage.getItem('feedfast_client_token');
+            clientToken = localStorage.getItem('clientToken');
             const clientUserData = localStorage.getItem('clientUser');
 
-            if (!token) {
+            if (!clientToken) {
                 console.log('No client token found, redirecting to login');
                 window.location.href = '/login';
                 return false;
@@ -899,7 +899,7 @@
             try {
                 const response = await fetch('/api/auth/client-verify', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
@@ -954,7 +954,7 @@
             try {
                 const response = await fetch('/api/branches', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
@@ -983,7 +983,7 @@
             try {
                 const response = await fetch('/api/users', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
@@ -1012,7 +1012,7 @@
             try {
                 const response = await fetch('/api/tickets', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
@@ -1375,7 +1375,7 @@
                 const statusResponse = await fetch(`/api/tickets/${ticketId}/status`, {
                     method: 'PATCH',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${clientToken}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ status: newStatus })
@@ -1390,7 +1390,7 @@
                     const picResponse = await fetch(`/api/tickets/${ticketId}/assign`, {
                         method: 'PATCH',
                         headers: {
-                            'Authorization': `Bearer ${token}`,
+                            'Authorization': `Bearer ${clientToken}`,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({ pic_ticket: newPIC })
@@ -1462,7 +1462,7 @@
 
         // Logout function
         function logout() {
-            localStorage.removeItem('token');
+            localStorage.removeItem('clientToken');
             localStorage.removeItem('clientUser');
             window.location.href = '/login';
         }
