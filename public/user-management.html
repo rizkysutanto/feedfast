@@ -153,6 +153,12 @@
             color: #1e293b;
         }
 
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
         @media (max-width: 768px) {
             .actions {
                 flex-direction: column;
@@ -165,6 +171,10 @@
             .users-table th,
             .users-table td {
                 padding: 0.75rem 0.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -402,6 +412,7 @@
             const clientToken = localStorage.getItem(TOKEN_KEY);
             
             if (!clientToken) {
+                console.log('❌ No client token found, redirecting to login');
                 window.location.href = '/login';
                 return;
             }
@@ -417,10 +428,12 @@
                     const result = await response.json();
                     currentUser = result.user;
                     
+                    console.log('✅ Auth verified for user:', currentUser);
+                    
                     // Update client info display
                     document.getElementById('clientInfo').innerHTML = `
-                        <div class="user-name">${currentUser.name}</div>
-                        <div class="user-role">${currentUser.role}</div>
+                        <div class="user-name">${currentUser.name || currentUser.user_name}</div>
+                        <div class="user-role">${formatRole(currentUser.role)}</div>
                         <div class="client-name">${currentUser.clientName}</div>
                     `;
                     
@@ -430,11 +443,12 @@
                         loadBranches()
                     ]);
                 } else {
+                    console.log('❌ Auth verification failed, clearing token');
                     localStorage.removeItem(TOKEN_KEY);
                     window.location.href = '/login';
                 }
             } catch (error) {
-                console.error('Auth check failed:', error);
+                console.error('❌ Auth check failed:', error);
                 localStorage.removeItem(TOKEN_KEY);
                 window.location.href = '/login';
             }
@@ -443,6 +457,7 @@
         // Load all users
         async function loadUsers() {
             try {
+                console.log('📊 Loading users...');
                 showLoading(true);
                 
                 const clientToken = localStorage.getItem(TOKEN_KEY);
@@ -454,14 +469,17 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    allUsers = result.users;
+                    allUsers = result.users || [];
+                    console.log(`✅ Loaded ${allUsers.length} users`);
                     displayUsers(allUsers);
                 } else {
-                    throw new Error('Failed to load users');
+                    console.error('❌ Failed to load users:', response.status, response.statusText);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || 'Failed to load users');
                 }
             } catch (error) {
-                console.error('Error loading users:', error);
-                showError('Failed to load users. Please refresh the page.');
+                console.error('❌ Error loading users:', error);
+                showError('Failed to load users: ' + error.message);
             } finally {
                 showLoading(false);
             }
@@ -470,6 +488,7 @@
         // Load all branches
         async function loadBranches() {
             try {
+                console.log('🏢 Loading branches...');
                 const clientToken = localStorage.getItem(TOKEN_KEY);
                 const response = await fetch('/api/branches', {
                     headers: {
@@ -479,15 +498,18 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    allBranches = result.branches.filter(branch => branch.status);
+                    allBranches = (result.branches || []).filter(branch => branch.status);
+                    console.log(`✅ Loaded ${allBranches.length} active branches`);
                     populateBranchOptions();
                 } else {
-                    console.warn('Failed to load branches');
+                    console.warn('⚠️ Failed to load branches:', response.status);
                     allBranches = [];
+                    populateBranchOptions();
                 }
             } catch (error) {
-                console.error('Error loading branches:', error);
+                console.error('❌ Error loading branches:', error);
                 allBranches = [];
+                populateBranchOptions();
             }
         }
 
@@ -496,12 +518,17 @@
             const branchOptions = document.getElementById('branchOptions');
             branchOptions.innerHTML = '';
 
+            if (allBranches.length === 0) {
+                branchOptions.innerHTML = '<p style="color: #64748b; margin: 0;">No active branches available</p>';
+                return;
+            }
+
             allBranches.forEach(branch => {
                 const optionDiv = document.createElement('div');
                 optionDiv.className = 'branch-option';
                 optionDiv.innerHTML = `
                     <input type="checkbox" id="branch_${branch.branch_id}" name="branch_id" value="${branch.branch_id}">
-                    <label for="branch_${branch.branch_id}">${branch.branch_name} ${branch.branch_code ? '(' + branch.branch_code + ')' : ''}</label>
+                    <label for="branch_${branch.branch_id}">${branch.branch_name}${branch.branch_code ? ' (' + branch.branch_code + ')' : ''}</label>
                 `;
                 branchOptions.appendChild(optionDiv);
             });
@@ -530,10 +557,10 @@
                 return `
                     <tr>
                         <td>
-                            <strong>${user.user_name}</strong>
-                            ${user.created_by ? `<br><small style="color: #64748b;">Created by: ${user.created_by}</small>` : ''}
+                            <strong>${escapeHtml(user.user_name)}</strong>
+                            ${user.created_by ? `<br><small style="color: #64748b;">Created by: ${escapeHtml(user.created_by)}</small>` : ''}
                         </td>
-                        <td>${user.email}</td>
+                        <td>${escapeHtml(user.email)}</td>
                         <td><span class="role-badge role-${user.role}">${formatRole(user.role)}</span></td>
                         <td>${branchDisplay}</td>
                         <td><span class="status-badge status-${user.status ? 'active' : 'inactive'}">${user.status ? 'Active' : 'Inactive'}</span></td>
@@ -541,13 +568,13 @@
                         <td>
                             <div class="actions">
                                 <button class="btn btn-primary btn-sm" onclick="editUser(${user.user_id})">Edit</button>
-                                <button class="btn btn-warning btn-sm" onclick="resetPassword(${user.user_id}, '${user.user_name}')">Reset Password</button>
+                                <button class="btn btn-warning btn-sm" onclick="resetPassword(${user.user_id}, '${escapeHtml(user.user_name)}')">Reset Password</button>
                                 <button class="btn btn-${user.status ? 'warning' : 'success'} btn-sm" 
                                         onclick="toggleUserStatus(${user.user_id}, ${!user.status})">
                                     ${user.status ? 'Deactivate' : 'Activate'}
                                 </button>
-                                ${user.user_id !== currentUser.userId ? `
-                                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.user_id}, '${user.user_name}')">Delete</button>
+                                ${currentUser && user.user_id !== currentUser.userId ? `
+                                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.user_id}, '${escapeHtml(user.user_name)}')">Delete</button>
                                 ` : ''}
                             </div>
                         </td>
@@ -564,7 +591,7 @@
 
             const branchNames = branchIds.map(id => {
                 const branch = allBranches.find(b => b.branch_id === id);
-                return branch ? branch.branch_name : `Branch ${id}`;
+                return branch ? escapeHtml(branch.branch_name) : `Branch ${id}`;
             });
 
             if (branchNames.length > 2) {
@@ -582,6 +609,13 @@
                 'staff': 'Staff'
             };
             return roleMap[role] || role;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Filter users based on search
@@ -603,6 +637,7 @@
 
         // Open create modal
         function openCreateModal() {
+            console.log('📝 Opening create user modal');
             isEditMode = false;
             document.getElementById('modalTitle').textContent = 'Add New User';
             document.getElementById('submitBtn').textContent = 'Create User';
@@ -622,6 +657,7 @@
         // Edit user
         async function editUser(userId) {
             try {
+                console.log(`✏️ Editing user ${userId}`);
                 const clientToken = localStorage.getItem(TOKEN_KEY);
                 const response = await fetch(`/api/users/management/${userId}`, {
                     headers: {
@@ -632,6 +668,8 @@
                 if (response.ok) {
                     const result = await response.json();
                     const user = result.user;
+
+                    console.log('📄 User data loaded:', user);
 
                     isEditMode = true;
                     document.getElementById('modalTitle').textContent = 'Edit User';
@@ -657,7 +695,10 @@
                         // Specific branches
                         document.getElementById('selectAllBranches').checked = false;
                         // Uncheck all first
-                        document.querySelectorAll('input[name="branch_id"]').forEach(cb => cb.checked = false);
+                        document.querySelectorAll('input[name="branch_id"]').forEach(cb => {
+                            cb.checked = false;
+                            cb.disabled = false;
+                        });
                         // Check selected branches
                         user.branch_id.forEach(branchId => {
                             const checkbox = document.getElementById(`branch_${branchId}`);
@@ -668,11 +709,12 @@
                     clearModalMessages();
                     document.getElementById('userModal').style.display = 'block';
                 } else {
-                    throw new Error('Failed to load user details');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || 'Failed to load user details');
                 }
             } catch (error) {
-                console.error('Error loading user:', error);
-                showError('Failed to load user details');
+                console.error('❌ Error loading user:', error);
+                showError('Failed to load user details: ' + error.message);
             }
         }
 
@@ -721,8 +763,12 @@
             clearModalMessages();
 
             try {
+                console.log('💾 Submitting user form...');
+                
                 const formData = new FormData(this);
                 const userData = Object.fromEntries(formData);
+
+                console.log('📋 Form data:', userData);
 
                 // Get selected branch IDs
                 const selectedBranches = [];
@@ -732,10 +778,12 @@
                     });
                 }
 
+                console.log('🏢 Selected branches:', selectedBranches);
+
                 // Prepare request data
                 const requestData = {
-                    user_name: userData.user_name,
-                    email: userData.email,
+                    user_name: userData.user_name?.trim(),
+                    email: userData.email?.trim(),
                     role: userData.role,
                     status: userData.status === 'true',
                     branch_id: selectedBranches.length > 0 ? selectedBranches : null,
@@ -748,9 +796,11 @@
                 }
 
                 // Add password for new users
-                if (!isEditMode) {
+                if (!isEditMode && userData.password) {
                     requestData.password = userData.password;
                 }
+
+                console.log('📤 Request data:', { ...requestData, password: requestData.password ? '[HIDDEN]' : undefined });
 
                 const clientToken = localStorage.getItem(TOKEN_KEY);
                 const url = isEditMode ? 
@@ -770,10 +820,12 @@
                 const result = await response.json();
 
                 if (result.success) {
+                    console.log('User saved successfully');
                     showSuccess(result.message);
                     closeModal();
                     await loadUsers(); // Reload users list
                 } else {
+                    console.error('Failed to save user:', result.message);
                     showModalError(result.message);
                 }
 
@@ -788,8 +840,16 @@
             e.preventDefault();
             
             try {
+                console.log('Resetting password...');
+                
                 const userId = document.getElementById('resetUserId').value;
                 const newPassword = document.getElementById('newPassword').value;
+
+                if (!newPassword || newPassword.length < 8) {
+                    document.getElementById('passwordModalError').textContent = 'Password must be at least 8 characters';
+                    document.getElementById('passwordModalError').style.display = 'block';
+                    return;
+                }
 
                 const clientToken = localStorage.getItem(TOKEN_KEY);
                 const response = await fetch(`/api/users/management/${userId}/password`, {
@@ -822,6 +882,7 @@
 
         // Reset password
         function resetPassword(userId, userName) {
+            console.log(`Resetting password for user ${userId}: ${userName}`);
             document.getElementById('resetUserId').value = userId;
             document.getElementById('newPassword').value = '';
             document.getElementById('passwordModalError').style.display = 'none';
@@ -837,6 +898,8 @@
             }
 
             try {
+                console.log(`${action} user ${userId}`);
+                
                 const clientToken = localStorage.getItem(TOKEN_KEY);
                 const response = await fetch(`/api/users/management/${userId}/status`, {
                     method: 'PATCH',
@@ -871,6 +934,8 @@
             }
 
             try {
+                console.log(`Deleting user ${userId}: ${userName}`);
+                
                 const clientToken = localStorage.getItem(TOKEN_KEY);
                 const response = await fetch(`/api/users/management/${userId}`, {
                     method: 'DELETE',
@@ -969,15 +1034,11 @@
         // Handle branch checkbox changes
         document.addEventListener('change', function(e) {
             if (e.target.name === 'branch_id') {
-                // If any individual branch is unchecked, uncheck "All Branches"
+                // If any individual branch is checked, uncheck "All Branches"
                 const allBranchesCheckbox = document.getElementById('selectAllBranches');
-                const branchCheckboxes = document.querySelectorAll('input[name="branch_id"]');
                 const checkedBranches = document.querySelectorAll('input[name="branch_id"]:checked');
                 
-                if (checkedBranches.length === 0) {
-                    allBranchesCheckbox.checked = true;
-                    branchCheckboxes.forEach(cb => cb.disabled = true);
-                } else {
+                if (checkedBranches.length > 0) {
                     allBranchesCheckbox.checked = false;
                 }
             }
