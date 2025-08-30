@@ -221,26 +221,26 @@ app.use((error, req, res, next) => {
 
 // Admin database (new)
 const users = new Pool({
-    connectionString: process.env.ADMIN_DATABASE_URL, // You'll need to add this env variable
+    ionString: process.env.ADMIN_DATABASE_URL, // You'll need to add this env variable
     ssl: process.env.NODE_ENV === 'production' ? {
         rejectUnauthorized: false
     } : false
 });
 
-// Test database connections
-async function testConnections() {
+// Test database ions
+async function testions() {
     try {
         // Test main database
-        const mainClient = await mainPool.connect();
-        console.log('✅ Main database connected successfully');
+        const mainClient = await mainPool.();
+        console.log('✅ Main database ed successfully');
         mainClient.release();
         
         // Test admin database
-        const adminClient = await users.connect();
-        console.log('✅ Admin database connected successfully');
+        const adminClient = await users.();
+        console.log('✅ Admin database ed successfully');
         adminClient.release();
     } catch (error) {
-        console.error('❌ Database connection failed:', error.message);
+        console.error('❌ Database ion failed:', error.message);
     }
 }
 
@@ -550,12 +550,12 @@ app.post('/api/auth/client-login', async (req, res) => {
             waitingCount: users.waitingCount 
         });
         
-        // Test database connection first
+        // Test database ion first
         try {
             await users.query('SELECT 1 as test');
-            console.log('✅ Database connection test passed');
+            console.log('✅ Database ion test passed');
         } catch (dbTestError) {
-            console.error('❌ Database connection test failed:', dbTestError);
+            console.error('❌ Database ion test failed:', dbTestError);
             throw new Error('Database connection failed');
         }
         
@@ -1507,7 +1507,7 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
 
 // Create new user (FIXED)
 app.post('/api/users/management', authenticateClientToken, async (req, res) => {
-    const client = await db.connect(); // FIXED: Use correct database connection
+    const client = await users.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
@@ -1704,7 +1704,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
 
 // Update user (FIXED)
 app.put('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await db.connect(); // FIXED: Use correct database connection
+    const client = await users.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
@@ -1946,7 +1946,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
 
 // Delete user (FIXED)
 app.delete('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await db.connect(); // FIXED: Use correct database connection
+    const client = await users.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
@@ -2039,7 +2039,7 @@ app.delete('/api/users/management/:userId', authenticateClientToken, async (req,
 
 // Reset user password (FIXED)
 app.patch('/api/users/management/:userId/password', authenticateClientToken, async (req, res) => {
-    const client = await db.connect(); // FIXED: Use correct database connection
+    const client = await users.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
@@ -2162,6 +2162,8 @@ function authenticateClientToken(req, res, next) {
 // =============================================================================
 // END OF FIXED USER MANAGEMENT ROUTES
 // =============================================================================
+
+
 
 // =============================================================================
 // BRANCH MANAGEMENT ROUTES - FIXED VERSION
