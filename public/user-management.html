@@ -896,8 +896,8 @@
         let currentTab = 'list';
         let allUsers = [];
         let branches = [];
-        let clientToken = localStorage.getItem('client_token');
-        let currentUser = JSON.parse(localStorage.getItem('client_user') || '{}');
+        let clientToken = localStorage.getItem('clientToken');
+        let currentUser = JSON.parse(localStorage.getItem('clientUser') || '{}');
 
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -936,8 +936,8 @@
 
             } catch (error) {
                 console.error('Token verification failed:', error);
-                localStorage.removeItem('client_token');
-                localStorage.removeItem('client_user');
+                localStorage.removeItem('clientToken');
+                localStorage.removeItem('clientUser');
                 window.location.href = '/login';
             }
         }
@@ -1081,7 +1081,7 @@
                                     Reset Pwd
                                 </button>
                                 <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.user_id}, '${user.user_name}')"
-                                        ${user.user_id === currentUser.userId ? 'disabled title="Cannot delete yourself"' : ''}>
+                                        ${user.user_id === currentUser.user_id ? 'disabled title="Cannot delete yourself"' : ''}>
                                     Delete
                                 </button>
                             </div>
