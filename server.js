@@ -286,7 +286,7 @@ function authenticateToken(req, res, next) {
                 message: 'Invalid or expired token'
             });
         }
-        req.user = user;
+        req.users = user;
         next();
     });
 }
@@ -808,7 +808,7 @@ function authenticateClientToken(req, res, next) {
             });
         }
         
-        req.user = user;
+        req.users = user;
         next();
     });
 }
@@ -822,7 +822,7 @@ app.get('/dashboard', (req, res) => {
 app.get('/api/auth/client-verify', authenticateClientToken, (req, res) => {
     res.json({
         success: true,
-        user: req.user
+        user: req.users
     });
 });
 
@@ -1415,7 +1415,7 @@ app.get('/usermanagement', (req, res) => {
 // Get all users for the authenticated client (User Management - extended version)
 app.get('/api/users/management', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.userss.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -1458,7 +1458,7 @@ app.get('/api/users/management', authenticateClientToken, async (req, res) => {
 app.get('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
     try {
         const { userId } = req.params;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -1507,8 +1507,8 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        const clientId = req.user.clientId;
-        const createdBy = req.user.name || req.user.user_name || req.user.email;
+        const clientId = req.users.clientId;
+        const createdBy = req.users.name || req.users.user_name || req.users.email;
         
         const {
             user_name,
@@ -1704,7 +1704,7 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
         await client.query('BEGIN');
         
         const { userId } = req.params;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const {
             user_name,
@@ -1880,7 +1880,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
     try {
         const { userId } = req.params;
         const { status } = req.body;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         if (typeof status !== 'boolean') {
             return res.status(400).json({
@@ -1903,7 +1903,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
         }
         
         // Don't allow deactivating yourself
-        if (parseInt(userId) === req.user.userId && !status) {
+        if (parseInt(userId) === req.users.userId && !status) {
             return res.status(400).json({
                 success: false,
                 message: 'You cannot deactivate your own account'
@@ -1944,10 +1944,10 @@ app.delete('/api/users/management/:userId', authenticateClientToken, async (req,
         await client.query('BEGIN');
         
         const { userId } = req.params;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         // Don't allow deleting yourself
-        if (parseInt(userId) === req.user.userId) {
+        if (parseInt(userId) === req.users.userId) {
             await client.query('ROLLBACK');
             return res.status(400).json({
                 success: false,
@@ -2037,7 +2037,7 @@ app.patch('/api/users/management/:userId/password', authenticateClientToken, asy
         
         const { userId } = req.params;
         const { password } = req.body;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         if (!password || password.length < 8 || password.length > 255) {
             await client.query('ROLLBACK');
@@ -2137,7 +2137,7 @@ function authenticateClientToken(req, res, next) {
             });
         }
         
-        req.user = decoded;
+        req.users = decoded;
         next();
     } catch (error) {
         console.error('❌ Client token verification failed:', error.message);
@@ -2164,7 +2164,7 @@ app.get('/branch', (req, res) => {
 // Get all branches for the authenticated client (API route - protected)
 app.get('/api/branches', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -2209,7 +2209,7 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
     try {
         const { id } = req.params;
         const { pic_ticket } = req.body;
-        const clientId = req.user.client_id;
+        const clientId = req.users.client_id;
         
         const result = await adminDb.query(
             'UPDATE tickets SET pic_ticket = $1 WHERE ticket_id = $2 AND client_id = $3 RETURNING *',
@@ -2234,8 +2234,8 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        const clientId = req.user.clientId;
-        const createdBy = req.user.name || req.user.email;
+        const clientId = req.users.clientId;
+        const createdBy = req.users.name || req.users.email;
         
         const {
             branch_name,
@@ -2419,7 +2419,7 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
         await client.query('BEGIN');
         
         const { branchId } = req.params;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const {
             branch_name,
@@ -2597,7 +2597,7 @@ app.patch('/api/branches/:branchId/status', authenticateClientToken, async (req,
     try {
         const { branchId } = req.params;
         const { status } = req.body;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         if (typeof status !== 'boolean') {
             return res.status(400).json({
@@ -2649,7 +2649,7 @@ app.patch('/api/branches/:branchId/status', authenticateClientToken, async (req,
 app.get('/api/branches/:branchId', authenticateClientToken, async (req, res) => {
     try {
         const { branchId } = req.params;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -2700,7 +2700,7 @@ app.delete('/api/branches/:branchId', authenticateClientToken, async (req, res) 
         await client.query('BEGIN');
         
         const { branchId } = req.params;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         // Check if branch exists and belongs to this client
         const existingBranch = await client.query(
@@ -2772,7 +2772,7 @@ app.get('/ticket', (req, res) => {
 // Get all tickets for the authenticated client (API route - protected)
 app.get('/api/tickets', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -2821,7 +2821,7 @@ app.get('/api/tickets', authenticateClientToken, async (req, res) => {
 app.get('/api/tickets/:ticketId', authenticateClientToken, async (req, res) => {
     try {
         const { ticketId } = req.params;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -2879,7 +2879,7 @@ app.patch('/api/tickets/:ticketId/status', authenticateClientToken, async (req, 
         
         const { ticketId } = req.params;
         const { status } = req.body;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         // Validate status
         const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
@@ -2958,7 +2958,7 @@ app.patch('/api/tickets/:ticketId/assign', authenticateClientToken, async (req, 
     try {
         const { ticketId } = req.params;
         const { userId } = req.body;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         // If userId is provided, validate that the user belongs to the same client
         if (userId) {
@@ -3020,7 +3020,7 @@ app.post('/api/tickets', authenticateClientToken, async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const {
             branch_id,
@@ -3167,7 +3167,7 @@ app.post('/api/tickets', authenticateClientToken, async (req, res) => {
 // Get ticket statistics for dashboard
 app.get('/api/tickets/stats', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -3221,7 +3221,7 @@ app.get('/api/tickets/stats', authenticateClientToken, async (req, res) => {
 // Get users for ticket assignment dropdown
 app.get('/api/users', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         const result = await users.query(`
             SELECT 
@@ -3258,7 +3258,7 @@ app.patch('/api/tickets/bulk-update', authenticateClientToken, async (req, res) 
         await client.query('BEGIN');
         
         const { ticketIds, status, assignTo } = req.body;
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         
         if (!ticketIds || !Array.isArray(ticketIds) || ticketIds.length === 0) {
             await client.query('ROLLBACK');
@@ -3369,7 +3369,7 @@ app.get('/report', (req, res) => {
 // Analytics API endpoint - comprehensive report data
 app.get('/api/reports/analytics', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         const { 
             days, 
             startDate, 
@@ -3550,7 +3550,7 @@ function calculateAnalyticsStats(tickets) {
 // Summary statistics API - lightweight version for dashboards
 app.get('/api/reports/summary', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         const { days = 30 } = req.query;
 
         const summaryQuery = `
@@ -3603,7 +3603,7 @@ app.get('/api/reports/summary', authenticateClientToken, async (req, res) => {
 // Top performers report - branches/users with best metrics
 app.get('/api/reports/top-performers', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         const { days = 30, limit = 10 } = req.query;
 
         // Top performing branches by resolution rate
@@ -3677,7 +3677,7 @@ app.get('/api/reports/top-performers', authenticateClientToken, async (req, res)
 // Trend analysis - tickets over time
 app.get('/api/reports/trends', authenticateClientToken, async (req, res) => {
     try {
-        const clientId = req.user.clientId;
+        const clientId = req.users.clientId;
         const { days = 30, groupBy = 'day' } = req.query;
 
         let dateFormat;
@@ -4131,14 +4131,14 @@ app.get('/backoffice/dashboard', (req, res) => {
 app.get('/api/auth/verify', authenticateToken, (req, res) => {
     res.json({
         success: true,
-        user: req.user
+        user: req.users
     });
 });
 
 // Protected API endpoint for admin logout (optional)
 app.post('/api/auth/logout', authenticateToken, (req, res) => {
     // In a stateless JWT setup, logout is handled client-side by removing the token
-    console.log(`🔓 Admin logout: ${req.user.email}`);
+    console.log(`🔓 Admin logout: ${req.users.email}`);
     res.json({
         success: true,
         message: 'Logged out successfully'
