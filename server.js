@@ -1507,7 +1507,7 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
 
 // Create new user (FIXED)
 app.post('/api/users/management', authenticateClientToken, async (req, res) => {
-    const client = await users.connect(); // FIXED: Use correct database connection
+    const client = await db.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
@@ -1704,7 +1704,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
 
 // Update user (FIXED)
 app.put('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await users.connect(); // FIXED: Use correct database connection
+    const client = await db.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
@@ -1946,7 +1946,7 @@ app.patch('/api/users/management/:userId/status', authenticateClientToken, async
 
 // Delete user (FIXED)
 app.delete('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
-    const client = await users.connect(); // FIXED: Use correct database connection
+    const client = await db.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
@@ -2039,7 +2039,7 @@ app.delete('/api/users/management/:userId', authenticateClientToken, async (req,
 
 // Reset user password (FIXED)
 app.patch('/api/users/management/:userId/password', authenticateClientToken, async (req, res) => {
-    const client = await users.connect(); // FIXED: Use correct database connection
+    const client = await db.connect(); // FIXED: Use correct database connection
     
     try {
         await client.query('BEGIN');
