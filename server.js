@@ -1404,10 +1404,10 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
 });
 
 // =============================================================================
-// USER MANAGEMENT ROUTES - Add these to your existing server.js
+// USER MANAGEMENT ROUTES - Updated for proper HTML file serving and functionality
 // =============================================================================
 
-// Serve user management page
+// Serve user management page (FIXED: correct file name)
 app.get('/usermanagement', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'user-management.html'));
 });
@@ -1426,6 +1426,8 @@ app.get('/api/users/management', authenticateClientToken, async (req, res) => {
                 u.email,
                 u.status,
                 u.role,
+                u.phone,
+                u.only_assigned_tickets,
                 u.created_at,
                 u.updated_at,
                 u.last_login,
@@ -1467,6 +1469,8 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
                 u.email,
                 u.status,
                 u.role,
+                u.phone,
+                u.only_assigned_tickets,
                 u.created_at,
                 u.updated_at,
                 u.last_login,
@@ -1496,7 +1500,7 @@ app.get('/api/users/management/:userId', authenticateClientToken, async (req, re
     }
 });
 
-// Replace the existing POST /api/users/management route with this updated version:
+// Create new user (User Management)
 app.post('/api/users/management', authenticateClientToken, async (req, res) => {
     const client = await adminPool.connect();
     
@@ -1504,7 +1508,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
         await client.query('BEGIN');
         
         const clientId = req.user.clientId;
-        const createdBy = req.user.name || req.user.email;
+        const createdBy = req.user.name || req.user.user_name || req.user.email;
         
         const {
             user_name,
@@ -1512,6 +1516,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
             password,
             role,
             status,
+            phone,
             branch_id, // This can now be an array or null (for all branches)
             only_assigned_tickets
         } = req.body;
@@ -1604,10 +1609,11 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
                 password,
                 status,
                 role,
+                phone,
                 created_by,
                 only_assigned_tickets
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING 
                 user_id,
                 client_id,
@@ -1616,6 +1622,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
                 email,
                 status,
                 role,
+                phone,
                 created_at,
                 updated_at,
                 created_by,
@@ -1628,6 +1635,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
             hashedPassword,
             status !== undefined ? status : true, // Default to active
             role,
+            phone ? phone.trim() : null,
             createdBy,
             only_assigned_tickets || false
         ]);
@@ -1688,7 +1696,7 @@ app.post('/api/users/management', authenticateClientToken, async (req, res) => {
     }
 });
 
-// Replace the existing PUT /api/users/management/:userId route with this updated version:
+// Update user (User Management)
 app.put('/api/users/management/:userId', authenticateClientToken, async (req, res) => {
     const client = await adminPool.connect();
     
@@ -1703,6 +1711,7 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
             email,
             role,
             status,
+            phone,
             branch_id, // This can now be an array or null (for all branches)
             only_assigned_tickets
         } = req.body;
@@ -1795,10 +1804,11 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
                 email = $2,
                 role = $3,
                 status = $4,
-                branch_id = $5,
-                only_assigned_tickets = $6,
+                phone = $5,
+                branch_id = $6,
+                only_assigned_tickets = $7,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE user_id = $7 AND client_id = $8
+            WHERE user_id = $8 AND client_id = $9
             RETURNING 
                 user_id,
                 client_id,
@@ -1807,6 +1817,7 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
                 email,
                 status,
                 role,
+                phone,
                 created_at,
                 updated_at,
                 last_login,
@@ -1817,6 +1828,7 @@ app.put('/api/users/management/:userId', authenticateClientToken, async (req, re
             email.trim().toLowerCase(),
             role,
             status !== undefined ? status : true,
+            phone ? phone.trim() : null,
             branchIdValue,
             only_assigned_tickets || false,
             userId,
@@ -2080,6 +2092,61 @@ app.patch('/api/users/management/:userId/password', authenticateClientToken, asy
         client.release();
     }
 });
+
+// =============================================================================
+// REQUIRED HELPER FUNCTIONS - Add these if not already in your server.js
+// =============================================================================
+
+// Email validation function (add if missing)
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Password hashing function (add if missing)
+async function hashPassword(password) {
+    const bcrypt = require('bcryptjs');
+    return await bcrypt.hash(password, 10);
+}
+
+// =============================================================================
+// ALSO ENSURE YOU HAVE THE CLIENT TOKEN AUTHENTICATION MIDDLEWARE
+// =============================================================================
+
+// Client token authentication middleware (add if missing)
+function authenticateClientToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({
+            success: false,
+            message: 'Access token required'
+        });
+    }
+    
+    const token = authHeader.substring(7); // Remove "Bearer " prefix
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Verify this is a client token (not admin token)
+        if (decoded.type !== 'client') {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token type'
+            });
+        }
+        
+        req.user = decoded;
+        next();
+    } catch (error) {
+        console.error('❌ Client token verification failed:', error.message);
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid or expired token'
+        });
+    }
+}
 
 // =============================================================================
 // END OF USER MANAGEMENT ROUTES
