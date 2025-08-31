@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - FeedFast</title>
+    <link rel="stylesheet" href="/css/client-dashboard.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="/logo-feedfast.webp" alt="FeedFast" class="sidebar-logo">
+            <div class="company-info">
+                <h3 id="sidebarCompanyName">FeedFast</h3>
+                <span id="sidebarCompanyRole">[Company Name]</span>
+            </div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li><a href="/dashboard" class="nav-link"><img src="/icon-dashboard.png" alt="" class="nav-icon">Dashboard</a></li>
+            <li><a href="/ticket" class="nav-link"><img src="/icon-ticket.png" alt="" class="nav-icon">Ticket</a></li>
+            <li><a href="/branch" class="nav-link"><img src="/icon-branch.png" alt="" class="nav-icon">Branch</a></li>
+            <li><a href="/report" class="nav-link"><img src="/icon-report.png" alt="" class="nav-icon">Report</a></li>
+            <li><a href="#" class="nav-link"><img src="/icon-usermanagement.png" alt="" class="nav-icon">User Management</a></li>
+            <li><a href="/settings" class="nav-link active"><img src="/icon-settings.png" alt="" class="nav-icon">Settings</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="page-title">Settings</h1>
+                <div class="user-info">
+                    <span id="headerUserName">[User Name]</span>
+                    <span id="headerUserRole" class="user-role">[User Role]</span>
+                    <button onclick="logout()" class="btn btn-danger">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>Loading settings...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="error-container" style="display: none;">
+                <div class="error-message">
+                    <h3>Error Loading Settings</h3>
+                    <p id="errorMessage">Failed to load settings. Please try again.</p>
+                    <button onclick="loadSettings()" class="btn btn-primary">Retry</button>
+                </div>
+            </div>
+
+            <!-- Main Settings Content -->
+            <div id="settingsContent" style="display: none;">
+                <div class="settings-header">
+                    <p class="text-secondary">Manage Your Company Information</p>
+                </div>
+
+                <!-- Company Information Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Company Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="companyForm">
+                            <!-- Logo Upload -->
+                            <div class="form-group">
+                                <label class="form-label required">Logo</label>
+                                <div class="logo-upload-container">
+                                    <div class="logo-preview" id="logoPreview">
+                                        <img id="logoImage" src="" alt="Company Logo" style="display: none;">
+                                        <div class="upload-placeholder" id="uploadPlaceholder">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="upload-icon">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                <polyline points="17,8 12,3 7,8"/>
+                                                <line x1="12" y1="3" x2="12" y2="15"/>
+                                            </svg>
+                                            <p>Click to upload or drag your file here</p>
+                                            <small>Supported formats: JPEG, PNG, WebP (max 5MB)</small>
+                                        </div>
+                                    </div>
+                                    <input type="file" id="logoInput" accept="image/*" style="display: none;">
+                                    <div class="logo-actions">
+                                        <button type="button" onclick="triggerLogoUpload()" class="btn btn-secondary">Choose File</button>
+                                        <button type="button" onclick="removeLogo()" class="btn btn-outline" id="removeLogoBtn" style="display: none;">Remove</button>
+                                    </div>
+                                    <div id="logoFileName" class="file-name"></div>
+                                </div>
+                            </div>
+
+                            <!-- Company Name -->
+                            <div class="form-group">
+                                <label for="companyName" class="form-label required">Company Name</label>
+                                <input type="text" id="companyName" name="companyName" class="form-input" placeholder="Enter company name" required>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Feedback Form Configuration -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Feedback Form</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="feedbackForm">
+                            <!-- Form Title -->
+                            <div class="form-group">
+                                <label for="feedbackTitle" class="form-label required">Title</label>
+                                <input type="text" id="feedbackTitle" name="feedbackTitle" class="form-input" placeholder="Enter feedback form title" required>
+                            </div>
+
+                            <!-- Form Description -->
+                            <div class="form-group">
+                                <label for="feedbackDescription" class="form-label required">Description</label>
+                                <textarea id="feedbackDescription" name="feedbackDescription" class="form-textarea" rows="4" placeholder="Enter feedback form description" required></textarea>
+                            </div>
+
+                            <!-- Form Thank You Message -->
+                            <div class="form-group">
+                                <label for="thankYouMessage" class="form-label required">Thank You Message</label>
+                                <textarea id="thankYouMessage" name="thankYouMessage" class="form-textarea" rows="3" placeholder="Message shown after successful submission" required></textarea>
+                            </div>
+
+                            <!-- Background Color -->
+                            <div class="form-group">
+                                <label for="backgroundColor" class="form-label required">Background / Main Color</label>
+                                <div class="color-input-container">
+                                    <input type="color" id="backgroundColor" name="backgroundColor" class="color-input" value="#4f46e5">
+                                    <input type="text" id="backgroundColorText" class="form-input color-text" placeholder="#4f46e5" readonly>
+                                </div>
+                            </div>
+
+                            <!-- Text Color -->
+                            <div class="form-group">
+                                <label for="textColor" class="form-label required">Text Color</label>
+                                <div class="color-input-container">
+                                    <input type="color" id="textColor" name="textColor" class="color-input" value="#ffffff">
+                                    <input type="text" id="textColorText" class="form-input color-text" placeholder="#ffffff" readonly>
+                                </div>
+                            </div>
+
+                            <!-- Button Text Color -->
+                            <div class="form-group">
+                                <label for="buttonTextColor" class="form-label required">Button Text Color</label>
+                                <div class="color-input-container">
+                                    <input type="color" id="buttonTextColor" name="buttonTextColor" class="color-input" value="#ffffff">
+                                    <input type="text" id="buttonTextColorText" class="form-input color-text" placeholder="#ffffff" readonly>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Preview</h3>
+                        <button type="button" onclick="openPreviewModal()" class="btn btn-outline">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            Full Preview
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="preview-container" id="previewContainer">
+                            <div class="preview-form">
+                                <div class="preview-header">
+                                    <img id="previewLogo" src="" alt="" style="display: none;">
+                                    <h3 id="previewTitle">Feedback Form Title</h3>
+                                    <p id="previewDescription">Form description will appear here</p>
+                                </div>
+                                <div class="preview-form-fields">
+                                    <div class="form-group">
+                                        <label>Full Name *</label>
+                                        <input type="text" disabled placeholder="Customer name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Feedback Type *</label>
+                                        <select disabled>
+                                            <option>Complaint</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Message *</label>
+                                        <textarea disabled placeholder="Your feedback message"></textarea>
+                                    </div>
+                                    <button type="button" class="preview-submit-btn" id="previewSubmitBtn">Submit Feedback</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <button type="button" onclick="resetForm()" class="btn btn-outline">Reset</button>
+                    <button type="button" onclick="saveSettings()" class="btn btn-primary">
+                        <span id="saveButtonText">Save Changes</span>
+                        <div id="saveButtonSpinner" class="button-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Feedback Form Preview</h3>
+                <button onclick="closePreviewModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-preview" id="modalPreview"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closePreviewModal()" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="successToast" class="toast toast-success" style="display: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20,6 9,17 4,12"/>
+        </svg>
+        <span id="successMessage">Settings saved successfully!</span>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast toast-error" style="display: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <span id="errorToastMessage">Error saving settings!</span>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSettings = {};
+        let logoFile = null;
+        let logoUrl = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadSettings();
+            initializeEventListeners();
+        });
+
+        // Authentication check
+        function checkAuth() {
+            const token = localStorage.getItem('clientToken');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Load user info from token
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                document.getElementById('headerUserName').textContent = payload.user_name || '[User Name]';
+                document.getElementById('headerUserRole').textContent = payload.role || '[User Role]';
+                document.getElementById('sidebarCompanyName').textContent = payload.client_name || 'FeedFast';
+            } catch (error) {
+                console.error('Error parsing token:', error);
+            }
+        }
+
+        // Initialize event listeners
+        function initializeEventListeners() {
+            // Logo upload
+            document.getElementById('logoInput').addEventListener('change', handleLogoUpload);
+            
+            // Color inputs
+            document.getElementById('backgroundColor').addEventListener('input', updateBackgroundColor);
+            document.getElementById('textColor').addEventListener('input', updateTextColor);
+            document.getElementById('buttonTextColor').addEventListener('input', updateButtonTextColor);
+            
+            // Form inputs for live preview
+            document.getElementById('companyName').addEventListener('input', updatePreview);
+            document.getElementById('feedbackTitle').addEventListener('input', updatePreview);
+            document.getElementById('feedbackDescription').addEventListener('input', updatePreview);
+            
+            // Click upload area
+            document.getElementById('logoPreview').addEventListener('click', triggerLogoUpload);
+        }
+
+        // Load current settings
+        async function loadSettings() {
+            try {
+                const token = localStorage.getItem('clientToken');
+                const response = await fetch('/api/settings', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const settings = await response.json();
+                    currentSettings = settings;
+                    populateForm(settings);
+                    hideLoading();
+                } else if (response.status === 404) {
+                    // No settings exist yet, use defaults
+                    useDefaultSettings();
+                    hideLoading();
+                } else {
+                    throw new Error('Failed to load settings');
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showError('Failed to load settings. Please try again.');
+            }
+        }
+
+        // Use default settings for new clients
+        function useDefaultSettings() {
+            const defaults = {
+                company_name: '',
+                logo_url: null,
+                feedback_title: 'We Value Your Feedback',
+                feedback_description: 'Please share your experience with us. Your feedback helps us improve our services.',
+                thank_you_message: 'Thank you for your feedback! We appreciate you taking the time to share your experience with us.',
+                background_color: '#4f46e5',
+                text_color: '#ffffff',
+                button_text_color: '#ffffff'
+            };
+            
+            currentSettings = defaults;
+            populateForm(defaults);
+        }
+
+        // Populate form with settings data
+        function populateForm(settings) {
+            document.getElementById('companyName').value = settings.company_name || '';
+            document.getElementById('feedbackTitle').value = settings.feedback_title || '';
+            document.getElementById('feedbackDescription').value = settings.feedback_description || '';
+            document.getElementById('thankYouMessage').value = settings.thank_you_message || '';
+            
+            // Set colors
+            document.getElementById('backgroundColor').value = settings.background_color || '#4f46e5';
+            document.getElementById('textColor').value = settings.text_color || '#ffffff';
+            document.getElementById('buttonTextColor').value = settings.button_text_color || '#ffffff';
+            
+            updateColorTexts();
+            
+            // Set logo if exists
+            if (settings.logo_url) {
+                setLogoPreview(settings.logo_url);
+                logoUrl = settings.logo_url;
+            }
+            
+            updatePreview();
+        }
+
+        // Handle logo upload
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select a valid image file', 'error');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('File size must be less than 5MB', 'error');
+                return;
+            }
+
+            logoFile = file;
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                setLogoPreview(e.target.result);
+                document.getElementById('logoFileName').textContent = file.name;
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Set logo preview
+        function setLogoPreview(src) {
+            const logoImage = document.getElementById('logoImage');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const removeBtn = document.getElementById('removeLogoBtn');
+            
+            logoImage.src = src;
+            logoImage.style.display = 'block';
+            placeholder.style.display = 'none';
+            removeBtn.style.display = 'inline-block';
+        }
+
+        // Trigger logo upload
+        function triggerLogoUpload() {
+            document.getElementById('logoInput').click();
+        }
+
+        // Remove logo
+        function removeLogo() {
+            const logoImage = document.getElementById('logoImage');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const removeBtn = document.getElementById('removeLogoBtn');
+            const fileName = document.getElementById('logoFileName');
+            
+            logoImage.style.display = 'none';
+            placeholder.style.display = 'flex';
+            removeBtn.style.display = 'none';
+            fileName.textContent = '';
+            
+            logoFile = null;
+            logoUrl = null;
+            document.getElementById('logoInput').value = '';
+            updatePreview();
+        }
+
+        // Update color text inputs
+        function updateColorTexts() {
+            document.getElementById('backgroundColorText').value = document.getElementById('backgroundColor').value;
+            document.getElementById('textColorText').value = document.getElementById('textColor').value;
+            document.getElementById('buttonTextColorText').value = document.getElementById('buttonTextColor').value;
+        }
+
+        // Color change handlers
+        function updateBackgroundColor() {
+            updateColorTexts();
+            updatePreview();
+        }
+
+        function updateTextColor() {
+            updateColorTexts();
+            updatePreview();
+        }
+
+        function updateButtonTextColor() {
+            updateColorTexts();
+            updatePreview();
+        }
+
+        // Update preview
+        function updatePreview() {
+            const previewContainer = document.getElementById('previewContainer');
+            const previewLogo = document.getElementById('previewLogo');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewDescription = document.getElementById('previewDescription');
+            const previewSubmitBtn = document.getElementById('previewSubmitBtn');
+            
+            // Update colors
+            const bgColor = document.getElementById('backgroundColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const buttonTextColor = document.getElementById('buttonTextColor').value;
+            
+            previewContainer.style.background = `linear-gradient(135deg, ${bgColor}, ${adjustBrightness(bgColor, -20)})`;
+            previewContainer.style.color = textColor;
+            previewSubmitBtn.style.backgroundColor = bgColor;
+            previewSubmitBtn.style.color = buttonTextColor;
+            
+            // Update content
+            previewTitle.textContent = document.getElementById('feedbackTitle').value || 'Feedback Form Title';
+            previewDescription.textContent = document.getElementById('feedbackDescription').value || 'Form description will appear here';
+            
+            // Update logo
+            if (logoFile || logoUrl) {
+                previewLogo.src = logoFile ? URL.createObjectURL(logoFile) : logoUrl;
+                previewLogo.style.display = 'block';
+            } else {
+                previewLogo.style.display = 'none';
+            }
+        }
+
+        // Adjust color brightness
+        function adjustBrightness(hex, percent) {
+            const num = parseInt(hex.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+
+        // Open preview modal
+        function openPreviewModal() {
+            const modal = document.getElementById('previewModal');
+            const modalPreview = document.getElementById('modalPreview');
+            
+            // Create full preview
+            const bgColor = document.getElementById('backgroundColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const buttonTextColor = document.getElementById('buttonTextColor').value;
+            
+            modalPreview.innerHTML = `
+                <div style="background: linear-gradient(135deg, ${bgColor}, ${adjustBrightness(bgColor, -20)}); color: ${textColor}; padding: 2rem; border-radius: 12px; text-align: center; max-width: 500px; margin: 0 auto;">
+                    ${logoFile || logoUrl ? `<img src="${logoFile ? URL.createObjectURL(logoFile) : logoUrl}" alt="Logo" style="height: 60px; margin-bottom: 1rem;">` : ''}
+                    <h2 style="margin-bottom: 1rem; color: ${textColor};">${document.getElementById('feedbackTitle').value || 'Feedback Form Title'}</h2>
+                    <p style="margin-bottom: 2rem; opacity: 0.9; color: ${textColor};">${document.getElementById('feedbackDescription').value || 'Form description'}</p>
+                    <div style="text-align: left; margin-bottom: 1.5rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: ${textColor};">Full Name *</label>
+                            <input type="text" style="width: 100%; padding: 0.75rem; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: ${textColor}; backdrop-filter: blur(10px);" placeholder="Enter your name">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: ${textColor};">Feedback Type *</label>
+                            <select style="width: 100%; padding: 0.75rem; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: ${textColor};">
+                                <option>Complaint</option>
+                                <option>Suggestion</option>
+                                <option>Compliment</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: ${textColor};">Message *</label>
+                            <textarea style="width: 100%; padding: 0.75rem; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: ${textColor}; backdrop-filter: blur(10px); resize: vertical; min-height: 100px;" placeholder="Share your feedback"></textarea>
+                        </div>
+                    </div>
+                    <button type="button" style="background: ${bgColor}; color: ${buttonTextColor}; border: none; padding: 0.875rem 2rem; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; filter: brightness(1.1);">Submit Feedback</button>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        // Close preview modal
+        function closePreviewModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        // Reset form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset all changes? This will restore the last saved settings.')) {
+                populateForm(currentSettings);
+                removeLogo();
+                logoFile = null;
+                logoUrl = currentSettings.logo_url;
+                if (logoUrl) {
+                    setLogoPreview(logoUrl);
+                }
+            }
+        }
+
+        // Save settings
+        async function saveSettings() {
+            const saveBtn = document.getElementById('saveButtonText');
+            const saveSpinner = document.getElementById('saveButtonSpinner');
+            
+            // Validate required fields
+            const companyName = document.getElementById('companyName').value.trim();
+            const feedbackTitle = document.getElementById('feedbackTitle').value.trim();
+            const feedbackDescription = document.getElementById('feedbackDescription').value.trim();
+            const thankYouMessage = document.getElementById('thankYouMessage').value.trim();
+            
+            if (!companyName || !feedbackTitle || !feedbackDescription || !thankYouMessage) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Show loading state
+            saveBtn.style.display = 'none';
+            saveSpinner.style.display = 'inline-block';
+
+            try {
+                const token = localStorage.getItem('clientToken');
+                const formData = new FormData();
+                
+                // Add form data
+                formData.append('company_name', companyName);
+                formData.append('feedback_title', feedbackTitle);
+                formData.append('feedback_description', feedbackDescription);
+                formData.append('thank_you_message', thankYouMessage);
+                formData.append('background_color', document.getElementById('backgroundColor').value);
+                formData.append('text_color', document.getElementById('textColor').value);
+                formData.append('button_text_color', document.getElementById('buttonTextColor').value);
+                
+                // Add logo if changed
+                if (logoFile) {
+                    formData.append('logo', logoFile);
+                }
+
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    currentSettings = result.settings;
+                    showToast('Settings saved successfully!', 'success');
+                    
+                    // Update sidebar company name
+                    document.getElementById('sidebarCompanyName').textContent = companyName;
+                    
+                    // Clear logo file since it's now saved
+                    logoFile = null;
+                    logoUrl = result.settings.logo_url;
+                } else {
+                    throw new Error(result.error || 'Failed to save settings');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showToast(error.message || 'Error saving settings', 'error');
+            } finally {
+                // Reset button state
+                saveBtn.style.display = 'inline-block';
+                saveSpinner.style.display = 'none';
+            }
+        }
+
+        // Hide loading state
+        function hideLoading() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('settingsContent').style.display = 'block';
+        }
+
+        // Show error state
+        function showError(message) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorState').style.display = 'block';
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastId = type === 'success' ? 'successToast' : 'errorToast';
+            const messageId = type === 'success' ? 'successMessage' : 'errorToastMessage';
+            
+            document.getElementById(messageId).textContent = message;
+            const toast = document.getElementById(toastId);
+            toast.style.display = 'flex';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('clientToken');
+                window.location.href = '/login';
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('previewModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePreviewModal();
+            }
+        });
+    </script>
+
+    <style>
+        /* Additional styles specific to settings page */
+        .settings-header {
+            margin-bottom: 2rem;
+        }
+
+        .logo-upload-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .logo-preview {
+            width: 200px;
+            height: 120px;
+            border: 2px dashed var(--color-border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--color-background);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-preview:hover {
+            border-color: var(--color-primary);
+            background: var(--color-background-hover);
+        }
+
+        .logo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        .upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .upload-icon {
+            color: var(--color-text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-placeholder p {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .upload-placeholder small {
+            color: var(--color-text-light);
+            font-size: 0.75rem;
+        }
+
+        .logo-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .file-name {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .color-input-container {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .color-input {
+            width: 60px;
+            height: 40px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        .color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: 4px;
+        }
+
+        .color-text {
+            flex: 1;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+
+        .preview-container {
+            background: linear-gradient(135deg, #4f46e5, #3b35c7);
+            border-radius: 12px;
+            padding: 2rem;
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .preview-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .preview-header img {
+            height: 50px;
+            margin-bottom: 1rem;
+        }
+
+        .preview-header h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .preview-header p {
+            margin: 0 0 2rem 0;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .preview-form-fields {
+            text-align: left;
+        }
+
+        .preview-form-fields .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .preview-form-fields label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .preview-form-fields input,
+        .preview-form-fields select,
+        .preview-form-fields textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            color: inherit;
+            backdrop-filter: blur(10px);
+            font-size: 0.875rem;
+        }
+
+        .preview-form-fields input::placeholder,
+        .preview-form-fields textarea::placeholder {
+            color: inherit;
+            opacity: 0.7;
+        }
+
+        .preview-submit-btn {
+            width: 100%;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .preview-submit-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--color-text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-light);
+            padding: 0.25rem;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: var(--color-background-hover);
+            color: var(--color-text-primary);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--color-border);
+            border-top: 3px solid var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            text-align: center;
+        }
+
+        .error-message h3 {
+            color: var(--color-danger);
+            margin-bottom: 1rem;
+        }
+
+        .error-message p {
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .toast-success {
+            background: var(--color-success);
+        }
+
+        .toast-error {
+            background: var(--color-danger);
+        }
+
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .button-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--color-danger);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .color-input-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .color-input {
+                width: 100%;
+            }
+            
+            .logo-actions {
+                flex-direction: column;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .modal-container {
+                margin: 1rem;
+                max-width: calc(100vw - 2rem);
+            }
+        }
+
+        /* Card spacing adjustments for settings */
+        .card + .card {
+            margin-top: 2rem;
+        }
+
+        .form-group + .form-group {
+            margin-top: 1.5rem;
+        }
+
+        /* Enhanced form styling */
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h3 {
+            margin: 0;
+        }
+    </style>
+</body>
+</html>
