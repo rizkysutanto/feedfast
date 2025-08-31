@@ -3,598 +3,714 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - FeedFast</title>
-    <link rel="stylesheet" href="/css/client-dashboard.css">
+    <title>Settings | FeedFast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .settings-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .color-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-input {
+            width: 60px !important;
+            height: 40px;
+            padding: 0;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .color-text {
+            flex: 1;
+            padding: 8px 12px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .logo-upload-area {
+            border: 2px dashed #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .logo-upload-area:hover {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .logo-upload-area.dragover {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .logo-upload-area input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .logo-preview {
+            max-width: 200px;
+            max-height: 120px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 10px 0;
+        }
+
+        .remove-logo {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .preview-section {
+            grid-column: 1 / -1;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .preview-content {
+            max-width: 400px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transform: scale(0.8);
+        }
+
+        .preview-header {
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .preview-logo {
+            max-width: 80px;
+            max-height: 50px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .preview-body {
+            padding: 20px;
+            background: white;
+        }
+
+        .navigation {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .nav-links a.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <!-- Sidebar Navigation -->
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            <img src="/logo-feedfast.webp" alt="FeedFast" class="sidebar-logo">
-            <div class="company-info">
-                <h3 id="sidebarCompanyName">FeedFast</h3>
-                <span id="sidebarCompanyRole">[Company Name]</span>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="navigation">
+            <div class="nav-links">
+                <a href="/dashboard">📊 Dashboard</a>
+                <a href="/usermanagement">👥 Users</a>
+                <a href="/branch">🏢 Branches</a>
+                <a href="/ticket">🎫 Tickets</a>
+                <a href="/report">📈 Reports</a>
+                <a href="/settings" class="active">⚙️ Settings</a>
             </div>
         </div>
-        
-        <ul class="nav-menu">
-            <li><a href="/dashboard" class="nav-link"><img src="/icon-dashboard.png" alt="" class="nav-icon">Dashboard</a></li>
-            <li><a href="/ticket" class="nav-link"><img src="/icon-ticket.png" alt="" class="nav-icon">Ticket</a></li>
-            <li><a href="/branch" class="nav-link"><img src="/icon-branch.png" alt="" class="nav-icon">Branch</a></li>
-            <li><a href="/report" class="nav-link"><img src="/icon-report.png" alt="" class="nav-icon">Report</a></li>
-            <li><a href="#" class="nav-link"><img src="/icon-usermanagement.png" alt="" class="nav-icon">User Management</a></li>
-            <li><a href="/settings" class="nav-link active"><img src="/icon-settings.png" alt="" class="nav-icon">Settings</a></li>
-        </ul>
-    </nav>
 
-    <!-- Main Content -->
-    <div class="main-content">
         <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="page-title">Settings</h1>
-                <div class="user-info">
-                    <span id="headerUserName">[User Name]</span>
-                    <span id="headerUserRole" class="user-role">[User Role]</span>
-                    <button onclick="logout()" class="btn btn-danger">Logout</button>
-                </div>
-            </div>
-        </header>
+        <div class="header">
+            <h1>Settings & Customization</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
 
-        <!-- Content Area -->
-        <div class="content">
-            <!-- Loading State -->
-            <div id="loadingState" class="loading-container">
-                <div class="loading-spinner"></div>
-                <p>Loading settings...</p>
-            </div>
+        <!-- Success/Error Messages -->
+        <div class="success-message" id="successMessage"></div>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="loading" id="loading">Loading settings...</div>
 
-            <!-- Error State -->
-            <div id="errorState" class="error-container" style="display: none;">
-                <div class="error-message">
-                    <h3>Error Loading Settings</h3>
-                    <p id="errorMessage">Failed to load settings. Please try again.</p>
-                    <button onclick="loadSettings()" class="btn btn-primary">Retry</button>
-                </div>
-            </div>
-
-            <!-- Main Settings Content -->
-            <div id="settingsContent" style="display: none;">
-                <div class="settings-header">
-                    <p class="text-secondary">Manage Your Company Information</p>
-                </div>
-
-                <!-- Company Information Section -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Company Information</h3>
+        <!-- Settings Form -->
+        <div class="settings-grid">
+            <!-- Company Information -->
+            <div class="settings-card">
+                <h2 class="card-title">Company Information</h2>
+                <form id="companyForm">
+                    <div class="form-group">
+                        <label for="clientName">Company Name *</label>
+                        <input type="text" id="clientName" name="client_name" required>
                     </div>
-                    <div class="card-body">
-                        <form id="companyForm">
-                            <!-- Logo Upload -->
-                            <div class="form-group">
-                                <label class="form-label required">Logo</label>
-                                <div class="logo-upload-container">
-                                    <div class="logo-preview" id="logoPreview">
-                                        <img id="logoImage" src="" alt="Company Logo" style="display: none;">
-                                        <div class="upload-placeholder" id="uploadPlaceholder">
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="upload-icon">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                                <polyline points="17,8 12,3 7,8"/>
-                                                <line x1="12" y1="3" x2="12" y2="15"/>
-                                            </svg>
-                                            <p>Click to upload or drag your file here</p>
-                                            <small>Supported formats: JPEG, PNG, WebP (max 5MB)</small>
-                                        </div>
-                                    </div>
-                                    <input type="file" id="logoInput" accept="image/*" style="display: none;">
-                                    <div class="logo-actions">
-                                        <button type="button" onclick="triggerLogoUpload()" class="btn btn-secondary">Choose File</button>
-                                        <button type="button" onclick="removeLogo()" class="btn btn-outline" id="removeLogoBtn" style="display: none;">Remove</button>
-                                    </div>
-                                    <div id="logoFileName" class="file-name"></div>
-                                </div>
-                            </div>
 
-                            <!-- Company Name -->
-                            <div class="form-group">
-                                <label for="companyName" class="form-label required">Company Name</label>
-                                <input type="text" id="companyName" name="companyName" class="form-input" placeholder="Enter company name" required>
+                    <div class="form-group">
+                        <label for="logoUpload">Company Logo</label>
+                        <div class="logo-upload-area" id="logoUploadArea">
+                            <input type="file" id="logoUpload" name="logo" accept="image/*">
+                            <div id="logoPlaceholder">
+                                <p>🏢 Click to upload company logo</p>
+                                <p style="font-size: 0.9rem; color: #666;">Max 5MB • JPG, PNG, GIF</p>
                             </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Feedback Form Configuration -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Feedback Form</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="feedbackForm">
-                            <!-- Form Title -->
-                            <div class="form-group">
-                                <label for="feedbackTitle" class="form-label required">Title</label>
-                                <input type="text" id="feedbackTitle" name="feedbackTitle" class="form-input" placeholder="Enter feedback form title" required>
-                            </div>
-
-                            <!-- Form Description -->
-                            <div class="form-group">
-                                <label for="feedbackDescription" class="form-label required">Description</label>
-                                <textarea id="feedbackDescription" name="feedbackDescription" class="form-textarea" rows="4" placeholder="Enter feedback form description" required></textarea>
-                            </div>
-
-                            <!-- Form Thank You Message -->
-                            <div class="form-group">
-                                <label for="thankYouMessage" class="form-label required">Thank You Message</label>
-                                <textarea id="thankYouMessage" name="thankYouMessage" class="form-textarea" rows="3" placeholder="Message shown after successful submission" required></textarea>
-                            </div>
-
-                            <!-- Background Color -->
-                            <div class="form-group">
-                                <label for="backgroundColor" class="form-label required">Background / Main Color</label>
-                                <div class="color-input-container">
-                                    <input type="color" id="backgroundColor" name="backgroundColor" class="color-input" value="#4f46e5">
-                                    <input type="text" id="backgroundColorText" class="form-input color-text" placeholder="#4f46e5" readonly>
-                                </div>
-                            </div>
-
-                            <!-- Text Color -->
-                            <div class="form-group">
-                                <label for="textColor" class="form-label required">Text Color</label>
-                                <div class="color-input-container">
-                                    <input type="color" id="textColor" name="textColor" class="color-input" value="#ffffff">
-                                    <input type="text" id="textColorText" class="form-input color-text" placeholder="#ffffff" readonly>
-                                </div>
-                            </div>
-
-                            <!-- Button Text Color -->
-                            <div class="form-group">
-                                <label for="buttonTextColor" class="form-label required">Button Text Color</label>
-                                <div class="color-input-container">
-                                    <input type="color" id="buttonTextColor" name="buttonTextColor" class="color-input" value="#ffffff">
-                                    <input type="text" id="buttonTextColorText" class="form-input color-text" placeholder="#ffffff" readonly>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Preview Section -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Preview</h3>
-                        <button type="button" onclick="openPreviewModal()" class="btn btn-outline">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                            Full Preview
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="preview-container" id="previewContainer">
-                            <div class="preview-form">
-                                <div class="preview-header">
-                                    <img id="previewLogo" src="" alt="" style="display: none;">
-                                    <h3 id="previewTitle">Feedback Form Title</h3>
-                                    <p id="previewDescription">Form description will appear here</p>
-                                </div>
-                                <div class="preview-form-fields">
-                                    <div class="form-group">
-                                        <label>Full Name *</label>
-                                        <input type="text" disabled placeholder="Customer name">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Feedback Type *</label>
-                                        <select disabled>
-                                            <option>Complaint</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Message *</label>
-                                        <textarea disabled placeholder="Your feedback message"></textarea>
-                                    </div>
-                                    <button type="button" class="preview-submit-btn" id="previewSubmitBtn">Submit Feedback</button>
-                                </div>
+                            <div id="logoPreview" style="display: none;">
+                                <img id="logoImage" class="logo-preview" src="" alt="Logo Preview">
+                                <button type="button" class="remove-logo" onclick="removeLogo()">Remove</button>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Action Buttons -->
-                <div class="form-actions">
-                    <button type="button" onclick="resetForm()" class="btn btn-outline">Reset</button>
-                    <button type="button" onclick="saveSettings()" class="btn btn-primary">
-                        <span id="saveButtonText">Save Changes</span>
-                        <div id="saveButtonSpinner" class="button-spinner" style="display: none;"></div>
+                    <button type="submit" class="save-btn">Save Company Info</button>
+                </form>
+            </div>
+
+            <!-- Feedback Form Customization -->
+            <div class="settings-card">
+                <h2 class="card-title">Feedback Form Customization</h2>
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="feedbackTitle">Form Title *</label>
+                        <input type="text" id="feedbackTitle" name="feedback_title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="feedbackDescription">Form Description</label>
+                        <textarea id="feedbackDescription" name="feedback_description" 
+                                  placeholder="Describe what customers should expect..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mainColor">Main Theme Color</label>
+                        <div class="color-input-group">
+                            <input type="color" id="mainColor" name="main_color" class="color-input">
+                            <input type="text" id="mainColorText" class="color-text" placeholder="#667eea">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="textColor">Text Color</label>
+                        <div class="color-input-group">
+                            <input type="color" id="textColor" name="text_color" class="color-input">
+                            <input type="text" id="textColorText" class="color-text" placeholder="#333333">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buttonColor">Button Color</label>
+                        <div class="color-input-group">
+                            <input type="color" id="buttonColor" name="button_color" class="color-input">
+                            <input type="text" id="buttonColorText" class="color-text" placeholder="#667eea">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="save-btn">Save Customization</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="preview-section">
+            <h2 class="card-title">Live Preview</h2>
+            <p style="margin-bottom: 20px; color: #666;">This is how your feedback form will look to customers:</p>
+            
+            <div class="preview-content" id="previewContent">
+                <div class="preview-header" id="previewHeader">
+                    <img id="previewHeaderLogo" class="preview-logo" style="display: none;">
+                    <h3 id="previewTitle">Share Your Feedback</h3>
+                    <p id="previewDescription">Help us improve our service</p>
+                </div>
+                <div class="preview-body">
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-weight: 600; margin-bottom: 5px; display: block;">Feedback Type *</label>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                            <div style="padding: 8px; border: 2px solid #e1e5e9; border-radius: 6px; text-align: center; font-size: 0.9rem;">Complaint</div>
+                            <div style="padding: 8px; border: 2px solid #e1e5e9; border-radius: 6px; text-align: center; font-size: 0.9rem;">Suggestion</div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-weight: 600; margin-bottom: 5px; display: block;">Subject *</label>
+                        <div style="padding: 8px; border: 2px solid #e1e5e9; border-radius: 6px; background: #f8f9fa; font-size: 0.9rem;">Your feedback subject...</div>
+                    </div>
+                    <button id="previewButton" style="width: 100%; padding: 10px; border: none; border-radius: 6px; font-weight: 600; color: white; cursor: pointer;">
+                        Submit Feedback
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Preview Modal -->
-    <div id="previewModal" class="modal-overlay" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3>Feedback Form Preview</h3>
-                <button onclick="closePreviewModal()" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-preview" id="modalPreview"></div>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closePreviewModal()" class="btn btn-secondary">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Success Toast -->
-    <div id="successToast" class="toast toast-success" style="display: none;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20,6 9,17 4,12"/>
-        </svg>
-        <span id="successMessage">Settings saved successfully!</span>
-    </div>
-
-    <!-- Error Toast -->
-    <div id="errorToast" class="toast toast-error" style="display: none;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-        <span id="errorToastMessage">Error saving settings!</span>
-    </div>
-
     <script>
-        // Global variables
         let currentSettings = {};
-        let logoFile = null;
-        let logoUrl = null;
 
-        // Initialize page
+        // Check authentication on page load
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
-            loadSettings();
-            initializeEventListeners();
         });
 
-        // Authentication check
-        function checkAuth() {
+        async function checkAuth() {
             const token = localStorage.getItem('clientToken');
+            
             if (!token) {
                 window.location.href = '/login';
                 return;
             }
-            
-            // Load user info from token
+
             try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                document.getElementById('headerUserName').textContent = payload.user_name || '[User Name]';
-                document.getElementById('headerUserRole').textContent = payload.role || '[User Role]';
-                document.getElementById('sidebarCompanyName').textContent = payload.client_name || 'FeedFast';
+                const response = await fetch('/api/auth/client-verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+
+                const result = await response.json();
+                console.log('✅ Authentication successful:', result.user.name);
+                
+                // Load current settings
+                loadSettings();
+
             } catch (error) {
-                console.error('Error parsing token:', error);
+                console.error('❌ Authentication failed:', error);
+                localStorage.removeItem('clientToken');
+                window.location.href = '/login';
             }
         }
 
-        // Initialize event listeners
-        function initializeEventListeners() {
-            // Logo upload
-            document.getElementById('logoInput').addEventListener('change', handleLogoUpload);
-            
-            // Color inputs
-            document.getElementById('backgroundColor').addEventListener('input', updateBackgroundColor);
-            document.getElementById('textColor').addEventListener('input', updateTextColor);
-            document.getElementById('buttonTextColor').addEventListener('input', updateButtonTextColor);
-            
-            // Form inputs for live preview
-            document.getElementById('companyName').addEventListener('input', updatePreview);
-            document.getElementById('feedbackTitle').addEventListener('input', updatePreview);
-            document.getElementById('feedbackDescription').addEventListener('input', updatePreview);
-            
-            // Click upload area
-            document.getElementById('logoPreview').addEventListener('click', triggerLogoUpload);
-        }
-
-        // Load current settings
         async function loadSettings() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+
             try {
                 const token = localStorage.getItem('clientToken');
                 const response = await fetch('/api/settings', {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
-                if (response.ok) {
-                    const settings = await response.json();
-                    currentSettings = settings;
-                    populateForm(settings);
-                    hideLoading();
-                } else if (response.status === 404) {
-                    // No settings exist yet, use defaults
-                    useDefaultSettings();
-                    hideLoading();
-                } else {
+                if (!response.ok) {
                     throw new Error('Failed to load settings');
                 }
+
+                const result = await response.json();
+                currentSettings = result.settings;
+                
+                // Populate form fields
+                populateSettings(currentSettings);
+                updatePreview();
+
             } catch (error) {
-                console.error('Error loading settings:', error);
-                showError('Failed to load settings. Please try again.');
+                console.error('❌ Error loading settings:', error);
+                showError('Failed to load settings. Please refresh the page.');
+            } finally {
+                loading.style.display = 'none';
             }
         }
 
-        // Use default settings for new clients
-        function useDefaultSettings() {
-            const defaults = {
-                company_name: '',
-                logo_url: null,
-                feedback_title: 'We Value Your Feedback',
-                feedback_description: 'Please share your experience with us. Your feedback helps us improve our services.',
-                thank_you_message: 'Thank you for your feedback! We appreciate you taking the time to share your experience with us.',
-                background_color: '#4f46e5',
-                text_color: '#ffffff',
-                button_text_color: '#ffffff'
-            };
+        function populateSettings(settings) {
+            // Company information
+            document.getElementById('clientName').value = settings.client_name || '';
             
-            currentSettings = defaults;
-            populateForm(defaults);
-        }
+            // Feedback customization
+            document.getElementById('feedbackTitle').value = settings.feedback_title || 'Share Your Feedback';
+            document.getElementById('feedbackDescription').value = settings.feedback_description || 'Help us improve our service';
+            
+            // Colors
+            document.getElementById('mainColor').value = settings.main_color || '#667eea';
+            document.getElementById('mainColorText').value = settings.main_color || '#667eea';
+            
+            document.getElementById('textColor').value = settings.text_color || '#333333';
+            document.getElementById('textColorText').value = settings.text_color || '#333333';
+            
+            document.getElementById('buttonColor').value = settings.button_color || '#667eea';
+            document.getElementById('buttonColorText').value = settings.button_color || '#667eea';
 
-        // Populate form with settings data
-        function populateForm(settings) {
-            document.getElementById('companyName').value = settings.company_name || '';
-            document.getElementById('feedbackTitle').value = settings.feedback_title || '';
-            document.getElementById('feedbackDescription').value = settings.feedback_description || '';
-            document.getElementById('thankYouMessage').value = settings.thank_you_message || '';
-            
-            // Set colors
-            document.getElementById('backgroundColor').value = settings.background_color || '#4f46e5';
-            document.getElementById('textColor').value = settings.text_color || '#ffffff';
-            document.getElementById('buttonTextColor').value = settings.button_text_color || '#ffffff';
-            
-            updateColorTexts();
-            
-            // Set logo if exists
+            // Logo
             if (settings.logo_url) {
-                setLogoPreview(settings.logo_url);
-                logoUrl = settings.logo_url;
+                showLogoPreview(settings.logo_url);
             }
-            
-            updatePreview();
         }
 
-        // Handle logo upload
-        function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function updatePreview() {
+            const title = document.getElementById('feedbackTitle').value || 'Share Your Feedback';
+            const description = document.getElementById('feedbackDescription').value || 'Help us improve our service';
+            const mainColor = document.getElementById('mainColor').value || '#667eea';
+            const textColor = document.getElementById('textColor').value || '#333333';
+            const buttonColor = document.getElementById('buttonColor').value || '#667eea';
 
-            // Validate file
-            if (!file.type.startsWith('image/')) {
-                showToast('Please select a valid image file', 'error');
-                return;
+            // Update preview elements
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewDescription').textContent = description;
+            document.getElementById('previewHeader').style.background = `linear-gradient(135deg, ${mainColor} 0%, ${adjustColor(mainColor, -20)} 100%)`;
+            document.getElementById('previewButton').style.background = buttonColor;
+
+            // Update logo in preview
+            const logoImg = document.getElementById('previewHeaderLogo');
+            if (currentSettings.logo_url) {
+                logoImg.src = currentSettings.logo_url;
+                logoImg.style.display = 'block';
+            } else {
+                logoImg.style.display = 'none';
             }
+        }
 
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('File size must be less than 5MB', 'error');
-                return;
+        // Color input synchronization
+        function setupColorSync() {
+            const colorPairs = [
+                ['mainColor', 'mainColorText'],
+                ['textColor', 'textColorText'],
+                ['buttonColor', 'buttonColorText']
+            ];
+
+            colorPairs.forEach(([colorId, textId]) => {
+                const colorInput = document.getElementById(colorId);
+                const textInput = document.getElementById(textId);
+
+                colorInput.addEventListener('input', function() {
+                    textInput.value = this.value;
+                    updatePreview();
+                });
+
+                textInput.addEventListener('input', function() {
+                    if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                        colorInput.value = this.value;
+                        updatePreview();
+                    }
+                });
+            });
+
+            // Update preview when title/description changes
+            document.getElementById('feedbackTitle').addEventListener('input', updatePreview);
+            document.getElementById('feedbackDescription').addEventListener('input', updatePreview);
+        }
+
+        // Logo upload handling
+        function setupLogoUpload() {
+            const logoUpload = document.getElementById('logoUpload');
+            const logoUploadArea = document.getElementById('logoUploadArea');
+
+            logoUpload.addEventListener('change', handleLogoSelect);
+            logoUploadArea.addEventListener('dragover', handleDragOver);
+            logoUploadArea.addEventListener('dragleave', handleDragLeave);
+            logoUploadArea.addEventListener('drop', handleDrop);
+        }
+
+        function handleLogoSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('Logo file size must be less than 5MB.');
+                    return;
+                }
+                if (!file.type.startsWith('image/')) {
+                    showError('Please select an image file only.');
+                    return;
+                }
+                previewLocalLogo(file);
             }
+        }
 
-            logoFile = file;
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('logoUploadArea').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            document.getElementById('logoUploadArea').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('logoUploadArea').classList.remove('dragover');
             
-            // Create preview
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    document.getElementById('logoUpload').files = files;
+                    previewLocalLogo(file);
+                } else {
+                    showError('Please select an image file only.');
+                }
+            }
+        }
+
+        function previewLocalLogo(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                setLogoPreview(e.target.result);
-                document.getElementById('logoFileName').textContent = file.name;
+                showLogoPreview(e.target.result);
+                // Temporarily update current settings for preview
+                currentSettings.logo_url = e.target.result;
                 updatePreview();
             };
             reader.readAsDataURL(file);
         }
 
-        // Set logo preview
-        function setLogoPreview(src) {
-            const logoImage = document.getElementById('logoImage');
-            const placeholder = document.getElementById('uploadPlaceholder');
-            const removeBtn = document.getElementById('removeLogoBtn');
-            
-            logoImage.src = src;
-            logoImage.style.display = 'block';
-            placeholder.style.display = 'none';
-            removeBtn.style.display = 'inline-block';
+        function showLogoPreview(url) {
+            document.getElementById('logoPlaceholder').style.display = 'none';
+            document.getElementById('logoPreview').style.display = 'block';
+            document.getElementById('logoImage').src = url;
         }
 
-        // Trigger logo upload
-        function triggerLogoUpload() {
-            document.getElementById('logoInput').click();
-        }
-
-        // Remove logo
         function removeLogo() {
-            const logoImage = document.getElementById('logoImage');
-            const placeholder = document.getElementById('uploadPlaceholder');
-            const removeBtn = document.getElementById('removeLogoBtn');
-            const fileName = document.getElementById('logoFileName');
-            
-            logoImage.style.display = 'none';
-            placeholder.style.display = 'flex';
-            removeBtn.style.display = 'none';
-            fileName.textContent = '';
-            
-            logoFile = null;
-            logoUrl = null;
-            document.getElementById('logoInput').value = '';
+            document.getElementById('logoUpload').value = '';
+            document.getElementById('logoPreview').style.display = 'none';
+            document.getElementById('logoPlaceholder').style.display = 'block';
+            currentSettings.logo_url = null;
             updatePreview();
         }
 
-        // Update color text inputs
-        function updateColorTexts() {
-            document.getElementById('backgroundColorText').value = document.getElementById('backgroundColor').value;
-            document.getElementById('textColorText').value = document.getElementById('textColor').value;
-            document.getElementById('buttonTextColorText').value = document.getElementById('buttonTextColor').value;
+        // Form submissions
+        function setupForms() {
+            // Company form
+            document.getElementById('companyForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await saveSettings(e.target, 'Company information');
+            });
+
+            // Feedback form
+            document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await saveSettings(document.getElementById('companyForm'), 'Feedback customization', true);
+            });
         }
 
-        // Color change handlers
-        function updateBackgroundColor() {
-            updateColorTexts();
-            updatePreview();
-        }
-
-        function updateTextColor() {
-            updateColorTexts();
-            updatePreview();
-        }
-
-        function updateButtonTextColor() {
-            updateColorTexts();
-            updatePreview();
-        }
-
-        // Update preview
-        function updatePreview() {
-            const previewContainer = document.getElementById('previewContainer');
-            const previewLogo = document.getElementById('previewLogo');
-            const previewTitle = document.getElementById('previewTitle');
-            const previewDescription = document.getElementById('previewDescription');
-            const previewSubmitBtn = document.getElementById('previewSubmitBtn');
-            
-            // Update colors
-            const bgColor = document.getElementById('backgroundColor').value;
-            const textColor = document.getElementById('textColor').value;
-            const buttonTextColor = document.getElementById('buttonTextColor').value;
-            
-            previewContainer.style.background = `linear-gradient(135deg, ${bgColor}, ${adjustBrightness(bgColor, -20)})`;
-            previewContainer.style.color = textColor;
-            previewSubmitBtn.style.backgroundColor = bgColor;
-            previewSubmitBtn.style.color = buttonTextColor;
-            
-            // Update content
-            previewTitle.textContent = document.getElementById('feedbackTitle').value || 'Feedback Form Title';
-            previewDescription.textContent = document.getElementById('feedbackDescription').value || 'Form description will appear here';
-            
-            // Update logo
-            if (logoFile || logoUrl) {
-                previewLogo.src = logoFile ? URL.createObjectURL(logoFile) : logoUrl;
-                previewLogo.style.display = 'block';
-            } else {
-                previewLogo.style.display = 'none';
-            }
-        }
-
-        // Adjust color brightness
-        function adjustBrightness(hex, percent) {
-            const num = parseInt(hex.replace("#", ""), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = (num >> 16) + amt;
-            const G = (num >> 8 & 0x00FF) + amt;
-            const B = (num & 0x0000FF) + amt;
-            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-        }
-
-        // Open preview modal
-        function openPreviewModal() {
-            const modal = document.getElementById('previewModal');
-            const modalPreview = document.getElementById('modalPreview');
-            
-            // Create full preview
-            const bgColor = document.getElementById('backgroundColor').value;
-            const textColor = document.getElementById('textColor').value;
-            const buttonTextColor = document.getElementById('buttonTextColor').value;
-            
-            modalPreview.innerHTML = `
-                <div style="background: linear-gradient(135deg, ${bgColor}, ${adjustBrightness(bgColor, -20)}); color: ${textColor}; padding: 2rem; border-radius: 12px; text-align: center; max-width: 500px; margin: 0 auto;">
-                    ${logoFile || logoUrl ? `<img src="${logoFile ? URL.createObjectURL(logoFile) : logoUrl}" alt="Logo" style="height: 60px; margin-bottom: 1rem;">` : ''}
-                    <h2 style="margin-bottom: 1rem; color: ${textColor};">${document.getElementById('feedbackTitle').value || 'Feedback Form Title'}</h2>
-                    <p style="margin-bottom: 2rem; opacity: 0.9; color: ${textColor};">${document.getElementById('feedbackDescription').value || 'Form description'}</p>
-                    <div style="text-align: left; margin-bottom: 1.5rem;">
-                        <div style="margin-bottom: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: ${textColor};">Full Name *</label>
-                            <input type="text" style="width: 100%; padding: 0.75rem; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: ${textColor}; backdrop-filter: blur(10px);" placeholder="Enter your name">
-                        </div>
-                        <div style="margin-bottom: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: ${textColor};">Feedback Type *</label>
-                            <select style="width: 100%; padding: 0.75rem; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: ${textColor};">
-                                <option>Complaint</option>
-                                <option>Suggestion</option>
-                                <option>Compliment</option>
-                            </select>
-                        </div>
-                        <div style="margin-bottom: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: ${textColor};">Message *</label>
-                            <textarea style="width: 100%; padding: 0.75rem; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: ${textColor}; backdrop-filter: blur(10px); resize: vertical; min-height: 100px;" placeholder="Share your feedback"></textarea>
-                        </div>
-                    </div>
-                    <button type="button" style="background: ${bgColor}; color: ${buttonTextColor}; border: none; padding: 0.875rem 2rem; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; filter: brightness(1.1);">Submit Feedback</button>
-                </div>
-            `;
-            
-            modal.style.display = 'flex';
-        }
-
-        // Close preview modal
-        function closePreviewModal() {
-            document.getElementById('previewModal').style.display = 'none';
-        }
-
-        // Reset form
-        function resetForm() {
-            if (confirm('Are you sure you want to reset all changes? This will restore the last saved settings.')) {
-                populateForm(currentSettings);
-                removeLogo();
-                logoFile = null;
-                logoUrl = currentSettings.logo_url;
-                if (logoUrl) {
-                    setLogoPreview(logoUrl);
-                }
-            }
-        }
-
-        // Save settings
-        async function saveSettings() {
-            const saveBtn = document.getElementById('saveButtonText');
-            const saveSpinner = document.getElementById('saveButtonSpinner');
-            
-            // Validate required fields
-            const companyName = document.getElementById('companyName').value.trim();
-            const feedbackTitle = document.getElementById('feedbackTitle').value.trim();
-            const feedbackDescription = document.getElementById('feedbackDescription').value.trim();
-            const thankYouMessage = document.getElementById('thankYouMessage').value.trim();
-            
-            if (!companyName || !feedbackTitle || !feedbackDescription || !thankYouMessage) {
-                showToast('Please fill in all required fields', 'error');
-                return;
-            }
-
-            // Show loading state
-            saveBtn.style.display = 'none';
-            saveSpinner.style.display = 'inline-block';
-
+        async function saveSettings(form, section, includeCustomization = false) {
             try {
-                const token = localStorage.getItem('clientToken');
+                hideMessages();
+                
+                const submitBtn = form.querySelector('.save-btn') || document.querySelector('.save-btn');
+                const originalText = submitBtn.textContent;
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+
                 const formData = new FormData();
                 
-                // Add form data
-                formData.append('company_name', companyName);
-                formData.append('feedback_title', feedbackTitle);
-                formData.append('feedback_description', feedbackDescription);
-                formData.append('thank_you_message', thankYouMessage);
-                formData.append('background_color', document.getElementById('backgroundColor').value);
-                formData.append('text_color', document.getElementById('textColor').value);
-                formData.append('button_text_color', document.getElementById('buttonTextColor').value);
+                // Add company info
+                formData.append('client_name', document.getElementById('clientName').value);
                 
-                // Add logo if changed
+                // Add logo if file selected
+                const logoFile = document.getElementById('logoUpload').files[0];
                 if (logoFile) {
                     formData.append('logo', logoFile);
                 }
 
+                // Add customization fields if this is a customization save
+                if (includeCustomization) {
+                    formData.append('feedback_title', document.getElementById('feedbackTitle').value);
+                    formData.append('feedback_description', document.getElementById('feedbackDescription').value);
+                    formData.append('main_color', document.getElementById('mainColor').value);
+                    formData.append('text_color', document.getElementById('textColor').value);
+                    formData.append('button_color', document.getElementById('buttonColor').value);
+                }
+
+                const token = localStorage.getItem('clientToken');
                 const response = await fetch('/api/settings', {
-                    method: 'POST',
+                    method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`
                     },
@@ -603,479 +719,79 @@
 
                 const result = await response.json();
 
-                if (response.ok) {
-                    currentSettings = result.settings;
-                    showToast('Settings saved successfully!', 'success');
+                if (result.success) {
+                    currentSettings = result.data;
+                    showSuccess(`${section} saved successfully!`);
                     
-                    // Update sidebar company name
-                    document.getElementById('sidebarCompanyName').textContent = companyName;
+                    // Update logo preview if new logo was uploaded
+                    if (result.data.logo_url && logoFile) {
+                        showLogoPreview(result.data.logo_url);
+                    }
                     
-                    // Clear logo file since it's now saved
-                    logoFile = null;
-                    logoUrl = result.settings.logo_url;
+                    // Clear file input after successful upload
+                    document.getElementById('logoUpload').value = '';
+                    
+                    updatePreview();
                 } else {
-                    throw new Error(result.error || 'Failed to save settings');
+                    throw new Error(result.message || 'Failed to save settings');
                 }
+
             } catch (error) {
-                console.error('Error saving settings:', error);
-                showToast(error.message || 'Error saving settings', 'error');
+                console.error('❌ Error saving settings:', error);
+                showError(error.message || 'Failed to save settings. Please try again.');
             } finally {
-                // Reset button state
-                saveBtn.style.display = 'inline-block';
-                saveSpinner.style.display = 'none';
+                const submitBtn = form.querySelector('.save-btn') || document.querySelector('.save-btn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = submitBtn.textContent.replace('Saving...', 'Save Company Info');
             }
         }
 
-        // Hide loading state
-        function hideLoading() {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('settingsContent').style.display = 'block';
+        // Utility functions
+        function adjustColor(hex, amount) {
+            const num = parseInt(hex.slice(1), 16);
+            const amt = Math.round(2.55 * amount);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
         }
 
-        // Show error state
+        function showSuccess(message) {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.innerHTML = `<strong>Success!</strong> ${message}`;
+            successMsg.style.display = 'block';
+            successMsg.scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => successMsg.style.display = 'none', 5000);
+        }
+
         function showError(message) {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('errorMessage').textContent = message;
-            document.getElementById('errorState').style.display = 'block';
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.innerHTML = `<strong>Error!</strong> ${message}`;
+            errorMsg.style.display = 'block';
+            errorMsg.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toastId = type === 'success' ? 'successToast' : 'errorToast';
-            const messageId = type === 'success' ? 'successMessage' : 'errorToastMessage';
-            
-            document.getElementById(messageId).textContent = message;
-            const toast = document.getElementById(toastId);
-            toast.style.display = 'flex';
-            
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 4000);
+        function hideMessages() {
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Logout function
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('clientToken');
-                window.location.href = '/login';
-            }
+            localStorage.removeItem('clientToken');
+            window.location.href = '/login';
         }
 
-        // Close modal when clicking outside
-        document.getElementById('previewModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closePreviewModal();
-            }
-        });
+        // Initialize everything when page loads
+        function initializePage() {
+            setupColorSync();
+            setupLogoUpload();
+            setupForms();
+        }
+
+        // Call initialization
+        setTimeout(initializePage, 100);
     </script>
-
-    <style>
-        /* Additional styles specific to settings page */
-        .settings-header {
-            margin-bottom: 2rem;
-        }
-
-        .logo-upload-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .logo-preview {
-            width: 200px;
-            height: 120px;
-            border: 2px dashed var(--color-border);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: var(--color-background);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .logo-preview:hover {
-            border-color: var(--color-primary);
-            background: var(--color-background-hover);
-        }
-
-        .logo-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 6px;
-        }
-
-        .upload-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            text-align: center;
-            padding: 1rem;
-        }
-
-        .upload-icon {
-            color: var(--color-text-light);
-            margin-bottom: 0.5rem;
-        }
-
-        .upload-placeholder p {
-            color: var(--color-text-secondary);
-            font-weight: 500;
-            margin: 0;
-        }
-
-        .upload-placeholder small {
-            color: var(--color-text-light);
-            font-size: 0.75rem;
-        }
-
-        .logo-actions {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        .file-name {
-            font-size: 0.875rem;
-            color: var(--color-text-secondary);
-            font-weight: 500;
-        }
-
-        .color-input-container {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        .color-input {
-            width: 60px;
-            height: 40px;
-            border: 1px solid var(--color-border);
-            border-radius: 6px;
-            cursor: pointer;
-            background: none;
-            padding: 0;
-        }
-
-        .color-input::-webkit-color-swatch-wrapper {
-            padding: 0;
-            border: none;
-            border-radius: 4px;
-        }
-
-        .color-input::-webkit-color-swatch {
-            border: none;
-            border-radius: 4px;
-        }
-
-        .color-text {
-            flex: 1;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.875rem;
-        }
-
-        .preview-container {
-            background: linear-gradient(135deg, #4f46e5, #3b35c7);
-            border-radius: 12px;
-            padding: 2rem;
-            color: white;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .preview-form {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .preview-header img {
-            height: 50px;
-            margin-bottom: 1rem;
-        }
-
-        .preview-header h3 {
-            margin: 0 0 1rem 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .preview-header p {
-            margin: 0 0 2rem 0;
-            opacity: 0.9;
-            line-height: 1.5;
-        }
-
-        .preview-form-fields {
-            text-align: left;
-        }
-
-        .preview-form-fields .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .preview-form-fields label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-
-        .preview-form-fields input,
-        .preview-form-fields select,
-        .preview-form-fields textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            color: inherit;
-            backdrop-filter: blur(10px);
-            font-size: 0.875rem;
-        }
-
-        .preview-form-fields input::placeholder,
-        .preview-form-fields textarea::placeholder {
-            color: inherit;
-            opacity: 0.7;
-        }
-
-        .preview-submit-btn {
-            width: 100%;
-            padding: 0.875rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-            margin-top: 1rem;
-        }
-
-        .preview-submit-btn:hover {
-            filter: brightness(1.1);
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--color-border);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-container {
-            background: white;
-            border-radius: 12px;
-            max-width: 90vw;
-            max-height: 90vh;
-            overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--color-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            color: var(--color-text-primary);
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--color-text-light);
-            padding: 0.25rem;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-        }
-
-        .modal-close:hover {
-            background: var(--color-background-hover);
-            color: var(--color-text-primary);
-        }
-
-        .modal-body {
-            padding: 2rem;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .modal-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid var(--color-border);
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.75rem;
-        }
-
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem;
-            text-align: center;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--color-border);
-            border-top: 3px solid var(--color-primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem;
-            text-align: center;
-        }
-
-        .error-message h3 {
-            color: var(--color-danger);
-            margin-bottom: 1rem;
-        }
-
-        .error-message p {
-            color: var(--color-text-secondary);
-            margin-bottom: 2rem;
-        }
-
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transform: translateX(100%);
-            animation: slideIn 0.3s ease forwards;
-        }
-
-        .toast-success {
-            background: var(--color-success);
-        }
-
-        .toast-error {
-            background: var(--color-danger);
-        }
-
-        @keyframes slideIn {
-            to {
-                transform: translateX(0);
-            }
-        }
-
-        .button-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .required::after {
-            content: " *";
-            color: var(--color-danger);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .color-input-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .color-input {
-                width: 100%;
-            }
-            
-            .logo-actions {
-                flex-direction: column;
-            }
-            
-            .form-actions {
-                flex-direction: column;
-            }
-            
-            .modal-container {
-                margin: 1rem;
-                max-width: calc(100vw - 2rem);
-            }
-        }
-
-        /* Card spacing adjustments for settings */
-        .card + .card {
-            margin-top: 2rem;
-        }
-
-        .form-group + .form-group {
-            margin-top: 1.5rem;
-        }
-
-        /* Enhanced form styling */
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-header h3 {
-            margin: 0;
-        }
-    </style>
 </body>
 </html>
