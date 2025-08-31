@@ -3,849 +3,1015 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management | FeedFast</title>
+    <title>User Management - FeedFast</title>
+    <link rel="stylesheet" href="/css/client-dashboard.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* =========================================
+           User Management Specific Styles
+           ========================================= */
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .client-info {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: inline-block;
-        }
-
-        /* Navigation */
-        .nav-tabs {
+        /* Add User Button */
+        .add-user-btn {
+            background-color: var(--primary-purple);
+            color: var(--text-white);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
             display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e1e5e9;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .nav-tab {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s ease;
+        .add-user-btn:hover {
+            background-color: #7c3aed;
+            transform: translateY(-1px);
         }
 
-        .nav-tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+        /* Filters Section */
+        .user-filters {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .nav-tab:hover {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
+        .filter-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
-        /* Cards */
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 25px;
-            border: 1px solid #e1e5e9;
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
-        /* Buttons */
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            transition: all 0.3s ease;
-            min-width: 100px;
+        .filter-label {
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background-color: var(--bg-card);
+            min-width: 120px;
+            transition: var(--transition);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #667eea;
-            color: #667eea;
-        }
-
-        .btn-outline:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.85rem;
-            min-width: 80px;
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
+        .filter-select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .search-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
+        .search-input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background-color: var(--bg-card);
+            min-width: 200px;
+            transition: var(--transition);
         }
 
-        .required {
-            color: #dc3545;
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
 
-        /* Table Styles */
-        .table-container {
+        .search-btn {
+            padding: 0.5rem 0.75rem;
+            background-color: var(--primary-purple);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover {
+            background-color: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        .search-icon {
+            width: 16px;
+            height: 16px;
+            filter: brightness(0) invert(1);
+        }
+
+        /* Users Table Section */
+        .users-section {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+        }
+
+        .users-table-container {
             overflow-x: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        table {
+        .users-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            font-size: var(--font-size-sm);
+            table-layout: auto;
         }
 
-        th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 12px;
-            text-align: left;
+        .users-table th {
+            background-color: var(--bg-light);
+            color: var(--text-secondary);
             font-weight: 600;
-            font-size: 0.9rem;
+            text-align: left;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: var(--font-size-xs);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
         }
 
-        td {
-            padding: 15px 12px;
-            border-bottom: 1px solid #e1e5e9;
+        .users-table td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
         }
 
-        tr:hover {
-            background: rgba(102, 126, 234, 0.02);
+        .user-row:hover {
+            background-color: var(--bg-light);
         }
 
-        /* Status badges */
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* User Cell Styles */
+        .user-name-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 150px;
         }
 
-        .status-active {
-            background: #d4edda;
-            color: #155724;
+        .user-name {
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
+        .user-email {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .role-cell {
+            min-width: 100px;
         }
 
         .role-badge {
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            text-transform: capitalize;
+            text-align: center;
+            display: inline-block;
         }
 
         .role-client_admin {
-            background: #e7f3ff;
-            color: #0056b3;
+            background-color: #dbeafe;
+            color: #1d4ed8;
         }
 
         .role-manager {
-            background: #fff3cd;
-            color: #856404;
+            background-color: #fef3c7;
+            color: #d97706;
         }
 
         .role-staff {
-            background: #d1ecf1;
-            color: #0c5460;
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .branch-access-cell {
+            min-width: 120px;
+        }
+
+        .branch-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .branch-tag {
+            background-color: #f1f5f9;
+            color: var(--text-secondary);
+            padding: 0.125rem 0.5rem;
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+        }
+
+        .all-branches-tag {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            text-transform: capitalize;
+            text-align: center;
+            min-width: 70px;
+            display: inline-block;
+        }
+
+        .status-active {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-inactive {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            min-width: 140px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.375rem 0.625rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .btn-edit {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .btn-edit:hover {
+            background-color: #bfdbfe;
+        }
+
+        .btn-reset {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .btn-reset:hover {
+            background-color: #fde68a;
+        }
+
+        .btn-toggle {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-toggle:hover {
+            background-color: #fecaca;
+        }
+
+        .btn-toggle.activate {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .btn-toggle.activate:hover {
+            background-color: #bbf7d0;
         }
 
         /* Modal Styles */
-        .modal {
-            display: none;
+        .modal-overlay {
             position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
 
         .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            animation: modalSlideIn 0.3s ease;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 25px;
-            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .modal-header h3 {
+        .modal-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
             margin: 0;
-            font-size: 1.3rem;
         }
 
-        .close {
-            color: white;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
+        .modal-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin: 0.25rem 0 0 0;
+        }
+
+        .modal-close {
             background: none;
-            opacity: 0.8;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: var(--transition);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius);
         }
 
-        .close:hover {
-            opacity: 1;
+        .modal-close:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-light);
         }
 
         .modal-body {
-            padding: 25px;
+            padding: 1.5rem;
         }
 
-        /* Alert Messages */
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            display: none;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        .alert-warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-        }
-
-        /* Loading States */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Search and Filter */
-        .search-filter {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .filter-select {
-            min-width: 150px;
-        }
-
-        /* Statistics Cards */
-        .stats-row {
+        /* Form Styles */
+        .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
         }
 
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            border-left: 4px solid #667eea;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Branch Selection */
-        .branch-tags {
+        .form-group {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .branch-tag {
-            background: #e7f3ff;
-            color: #0056b3;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: var(--font-size-sm);
             font-weight: 500;
+            color: var(--text-secondary);
         }
 
-        .branch-checkbox-group {
+        .form-label .required {
+            color: #dc2626;
+            margin-left: 0.25rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background-color: var(--bg-card);
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
+        }
+
+        .form-input:disabled,
+        .form-textarea:disabled,
+        .form-select:disabled {
+            background-color: var(--bg-light);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        /* Branch Access Section */
+        .branch-access-section {
+            grid-column: 1 / -1;
+            margin-top: 1rem;
+        }
+
+        .branch-access-title {
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .branch-access-description {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .branch-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.75rem;
             max-height: 200px;
             overflow-y: auto;
-            border: 1px solid #e1e5e9;
-            border-radius: 6px;
-            padding: 10px;
-            background: #f8f9fa;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--bg-light);
         }
 
-        .branch-checkbox {
+        .branch-checkbox-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
         }
 
-        .branch-checkbox input {
-            margin-right: 8px;
-            width: auto;
+        .branch-checkbox-item:hover {
+            background-color: var(--bg-card);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            
-            .search-filter {
-                flex-direction: column;
-            }
-            
-            .search-box, .filter-select {
-                width: 100%;
-            }
-            
-            table {
-                font-size: 0.9rem;
-            }
-            
-            th, td {
-                padding: 10px 8px;
-            }
-            
-            .btn-sm {
-                padding: 4px 8px;
-                font-size: 0.8rem;
-                margin: 2px;
-            }
+        .branch-checkbox-input {
+            width: auto !important;
+            margin: 0;
         }
 
-        /* Action buttons container */
-        .actions {
+        .branch-checkbox-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .form-actions {
             display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
         }
 
-        /* Empty state */
+        .btn-secondary {
+            background-color: var(--bg-light);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-purple);
+            color: var(--text-white);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            background-color: #7c3aed;
+        }
+
+        /* Loading and Empty States */
+        .loading-row td,
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #666;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
         }
 
-        .empty-state h3 {
-            color: #333;
-            margin-bottom: 10px;
+        .loading-container,
+        .empty-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
         }
 
-        /* Toggle Switch for Status */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+            opacity: 0.3;
         }
 
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-light);
         }
 
-        .toggle-slider {
-            position: absolute;
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #ccc;
-            transition: 0.3s;
-            border-radius: 24px;
+            transition: var(--transition);
         }
 
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background: white;
-            transition: 0.3s;
-            border-radius: 50%;
+        .pagination-btn:hover {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
         }
 
-        input:checked + .toggle-slider {
-            background: #28a745;
+        .pagination-btn.active {
+            background-color: var(--primary-purple);
+            color: var(--text-white);
+            border-color: var(--primary-purple);
         }
 
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
-        }
-
-        .logout-btn {
+        /* Success/Error Messages */
+        .success-message {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(220, 53, 69, 0.9);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            background-color: #dcfce7;
+            color: #16a34a;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #bbf7d0;
+            z-index: 10000;
+            box-shadow: var(--shadow-card);
         }
 
-        .logout-btn:hover {
-            background: #dc3545;
-            transform: translateY(-2px);
+        /* Last Login Cell */
+        .last-login-cell {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            min-width: 100px;
+        }
+
+        /* Special indicators */
+        .assigned-only-indicator {
+            font-size: var(--font-size-xs);
+            color: #d97706;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .users-table {
+                font-size: var(--font-size-xs);
+            }
+            
+            .users-table th,
+            .users-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                justify-content: space-between;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .branch-checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .users-table-container {
+                font-size: var(--font-size-xs);
+            }
+
+            .users-table {
+                min-width: 800px;
+            }
+
+            .users-table th,
+            .users-table td {
+                padding: 0.5rem 0.25rem;
+            }
+
+            .user-name-cell,
+            .branch-access-cell {
+                min-width: 100px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                min-width: 80px;
+            }
+
+            .action-btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 10px;
+            }
+
+            .pagination {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .modal-content {
+                margin: 0.5rem;
+                max-height: 95vh;
+            }
+
+            .modal-header,
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-    
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>User Management</h1>
-            <p>Manage users and access permissions for your organization</p>
-            <div class="client-info" id="clientInfo">
-                <strong>Loading client information...</strong>
-            </div>
-        </div>
-
-        <!-- Alert Messages -->
-        <div class="alert alert-success" id="successAlert"></div>
-        <div class="alert alert-error" id="errorAlert"></div>
-        <div class="alert alert-warning" id="warningAlert"></div>
-
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('list')">User List</button>
-            <button class="nav-tab" onclick="switchTab('create')">Add New User</button>
-            <button class="nav-tab" onclick="switchTab('statistics')">Statistics</button>
-        </div>
-
-        <!-- Statistics Tab -->
-        <div id="statisticsTab" class="tab-content" style="display: none;">
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalUsers">-</div>
-                    <div class="stat-label">Total Users</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="activeUsers">-</div>
-                    <div class="stat-label">Active Users</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="adminUsers">-</div>
-                    <div class="stat-label">Administrators</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="recentLogins">-</div>
-                    <div class="stat-label">Recent Logins (7d)</div>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/logo-feedfast.webp" alt="FeedFast">
+                <div class="logo-text">
+                    <span class="brand-name">FeedFast</span>
+                    <span class="company-name" id="sidebarClientName">[Company Name]</span>
                 </div>
             </div>
-        </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <img src="/icon-dashboard.png" alt="" class="nav-icon">
+                        Dashboard
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="/ticket" class="nav-link">
+                        <img src="/icon-ticket.png" alt="" class="nav-icon">
+                        Ticket
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="/branch" class="nav-link">
+                        <img src="/icon-branch.png" alt="" class="nav-icon">
+                        Branch
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="/report" class="nav-link">
+                        <img src="/icon-report.png" alt="" class="nav-icon">
+                        Report
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="/usermanagement" class="nav-link active">
+                        <img src="/icon-usermanagement.png" alt="" class="nav-icon">
+                        User Management
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="/settings" class="nav-link">
+                        <img src="/icon-settings.png" alt="" class="nav-icon">
+                        Settings
+                    </a>
+                </div>
+            </div>
+        </nav>
 
-        <!-- User List Tab -->
-        <div id="listTab" class="tab-content">
-            <div class="card">
-                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-                    <h3>All Users</h3>
-                    <button class="btn btn-primary" onclick="switchTab('create')">
-                        Add New User
-                    </button>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-content">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Loading...</span>
+                        <span class="user-role" id="userRole">[User Role]</span>
+                        <div class="user-avatar" id="userAvatar">L</div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+                <!-- Page Title -->
+                <div class="welcome-section">
+                    <h1 class="welcome-title">User Management</h1>
+                    <p class="welcome-subtitle">Manage Your Users</p>
                 </div>
 
-                <!-- Search and Filter -->
-                <div class="search-filter">
-                    <div class="search-box">
-                        <input type="text" id="searchUsers" placeholder="Search users..." 
-                               onkeyup="filterUsers()">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon-container">
+                            <img src="/icon-usermanagement.png" alt="Total Users" class="stat-icon-img">
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="totalUsers">1,248</h3>
+                            <p class="stat-label">Total Users</p>
+                        </div>
                     </div>
-                    <div class="filter-select">
-                        <select id="roleFilter" onchange="filterUsers()">
-                            <option value="">All Roles</option>
-                            <option value="client_admin">Admin</option>
-                            <option value="manager">Manager</option>
-                            <option value="staff">Staff</option>
-                        </select>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-container">
+                            <img src="/icon-on.png" alt="Active Users" class="stat-icon-img">
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="activeUsers">750</h3>
+                            <p class="stat-label">Active Users</p>
+                        </div>
                     </div>
-                    <div class="filter-select">
-                        <select id="statusFilter" onchange="filterUsers()">
-                            <option value="">All Status</option>
-                            <option value="true">Active</option>
-                            <option value="false">Inactive</option>
-                        </select>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-container">
+                            <img src="/icon-warning.png" alt="Inactive Users" class="stat-icon-img">
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="inactiveUsers">342</h3>
+                            <p class="stat-label">Inactive Users</p>
+                        </div>
                     </div>
-                    <button class="btn btn-outline" onclick="loadUsers()">
-                        Refresh
-                    </button>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-container">
+                            <img src="/icon-recent.png" alt="Recent Logins" class="stat-icon-img">
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="recentLogins">156</h3>
+                            <p class="stat-label">Recent Logins</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="user-filters">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <button class="add-user-btn" onclick="openAddUserModal()">
+                                + Add New User
+                            </button>
+                            <label class="filter-label">Filters:</label>
+                            <select class="filter-select" id="statusFilter">
+                                <option value="">Status</option>
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                            <select class="filter-select" id="roleFilter">
+                                <option value="">Role</option>
+                                <option value="client_admin">Administrator</option>
+                                <option value="manager">Manager</option>
+                                <option value="staff">Staff</option>
+                            </select>
+                        </div>
+                        <div class="search-group">
+                            <input type="text" class="search-input" id="searchInput" placeholder="Search users...">
+                            <button class="search-btn" onclick="applyFilters()">
+                                <img src="/icon-search.png" alt="Search" class="search-icon">
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Users Table -->
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Phone</th>
-                                <th>Branch Access</th>
-                                <th>Status</th>
-                                <th>Last Login</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody">
-                            <tr>
-                                <td colspan="8" class="loading">
-                                    <div class="spinner"></div>
-                                    Loading users...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="users-section">
+                    <div class="users-table-container">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Phone</th>
+                                    <th>Branch Access</th>
+                                    <th>Status</th>
+                                    <th>Last Login</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Loading state -->
+                                <tr class="loading-row">
+                                    <td colspan="7">
+                                        <div class="loading-container">
+                                            <div class="spinner"></div>
+                                            <span>Loading users...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <div class="pagination-info">
+                            <span id="paginationInfo">Showing 1 to 10 of 1248 results</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn" id="prevBtn" onclick="previousPage()">&lt;</button>
+                            <button class="pagination-btn active" id="page1" onclick="goToPage(1)">1</button>
+                            <button class="pagination-btn" id="page2" onclick="goToPage(2)">2</button>
+                            <button class="pagination-btn" id="page3" onclick="goToPage(3)">3</button>
+                            <button class="pagination-btn" id="nextBtn" onclick="nextPage()">&gt;</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </main>
         </div>
+    </div>
 
-        <!-- Create User Tab -->
-        <div id="createTab" class="tab-content" style="display: none;">
-            <div class="card">
-                <h3>Add New User</h3>
-                <p style="margin-bottom: 25px; color: #666;">Create a new user account for your organization</p>
-
-                <form id="createUserForm">
-                    <div class="form-row">
+    <!-- User Modal -->
+    <div id="userModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="modalTitle">Add New User</h2>
+                    <p class="modal-subtitle">Create a new user account</p>
+                </div>
+                <button class="modal-close" onclick="closeUserModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="editUserId">
+                    
+                    <div class="form-grid">
                         <div class="form-group">
-                            <label for="userName">Full Name <span class="required">*</span></label>
-                            <input type="text" id="userName" name="user_name" required 
-                                   placeholder="Enter user's full name">
+                            <label class="form-label" for="userNameInput">
+                                Full Name<span class="required">*</span>
+                            </label>
+                            <input type="text" id="userNameInput" class="form-input" required maxlength="255" placeholder="Enter user's full name">
                         </div>
+                        
                         <div class="form-group">
-                            <label for="userEmail">Email Address <span class="required">*</span></label>
-                            <input type="email" id="userEmail" name="email" required 
-                                   placeholder="user@example.com">
+                            <label class="form-label" for="userEmailInput">
+                                Email Address<span class="required">*</span>
+                            </label>
+                            <input type="email" id="userEmailInput" class="form-input" required maxlength="255" placeholder="user@example.com">
                         </div>
-                    </div>
-
-                    <div class="form-row">
+                        
                         <div class="form-group">
-                            <label for="userPassword">Password <span class="required">*</span></label>
-                            <input type="password" id="userPassword" name="password" required 
-                                   placeholder="Minimum 8 characters">
+                            <label class="form-label" for="userPasswordInput">
+                                Password<span class="required">*</span>
+                            </label>
+                            <input type="password" id="userPasswordInput" class="form-input" required minlength="8" placeholder="Minimum 8 characters">
                         </div>
+                        
                         <div class="form-group">
-                            <label for="userPhone">Phone Number</label>
-                            <input type="tel" id="userPhone" name="phone" 
-                                   placeholder="Phone number (optional)">
+                            <label class="form-label" for="userPhoneInput">Phone Number</label>
+                            <input type="tel" id="userPhoneInput" class="form-input" maxlength="20" placeholder="Phone number (optional)">
                         </div>
-                    </div>
-
-                    <div class="form-row">
+                        
                         <div class="form-group">
-                            <label for="userRole">Role <span class="required">*</span></label>
-                            <select id="userRole" name="role" required>
+                            <label class="form-label" for="userRoleInput">
+                                Role<span class="required">*</span>
+                            </label>
+                            <select id="userRoleInput" class="form-select" required>
                                 <option value="">Select Role</option>
                                 <option value="client_admin">Administrator</option>
                                 <option value="manager">Manager</option>
                                 <option value="staff">Staff</option>
                             </select>
                         </div>
+                        
                         <div class="form-group">
-                            <label for="userStatus">Status <span class="required">*</span></label>
-                            <select id="userStatus" name="status" required>
+                            <label class="form-label" for="userStatusInput">
+                                Status<span class="required">*</span>
+                            </label>
+                            <select id="userStatusInput" class="form-select" required>
                                 <option value="true">Active</option>
                                 <option value="false">Inactive</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Branch Access</label>
-                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
-                            Select specific branches for limited access, or leave empty for access to all branches
-                        </p>
-                        <div id="branchCheckboxes" class="branch-checkbox-group">
-                            <div style="text-align: center; color: #666;">Loading branches...</div>
+                        
+                        <div class="form-group branch-access-section">
+                            <div class="branch-access-title">Branch Access</div>
+                            <div class="branch-access-description">
+                                Select specific branches for limited access, or leave empty for access to all branches
+                            </div>
+                            <div id="branchCheckboxes" class="branch-checkbox-grid">
+                                <div style="text-align: center; color: var(--text-secondary);">Loading branches...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <input type="checkbox" id="onlyAssignedTickets" class="branch-checkbox-input">
+                                Only show assigned tickets (limit user to see only tickets assigned to them)
+                            </label>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="onlyAssignedTickets" name="only_assigned_tickets" style="width: auto; margin-right: 8px;">
-                            Only show assigned tickets (limit user to see only tickets assigned to them)
-                        </label>
-                    </div>
-
-                    <div style="display: flex; gap: 15px; margin-top: 30px;">
-                        <button type="submit" class="btn btn-primary" style="flex: 1;">
-                            Create User
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="resetCreateForm()">
-                            Reset Form
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit User Modal -->
-    <div id="editUserModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Edit User</h3>
-                <span class="close" onclick="closeEditModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="editUserForm">
-                    <input type="hidden" id="editUserId">
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="editUserName">Full Name <span class="required">*</span></label>
-                            <input type="text" id="editUserName" name="user_name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editUserEmail">Email Address <span class="required">*</span></label>
-                            <input type="email" id="editUserEmail" name="email" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="editUserRole">Role <span class="required">*</span></label>
-                            <select id="editUserRole" name="role" required>
-                                <option value="client_admin">Administrator</option>
-                                <option value="manager">Manager</option>
-                                <option value="staff">Staff</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="editUserPhone">Phone Number</label>
-                            <input type="tel" id="editUserPhone" name="phone">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Branch Access</label>
-                        <div id="editBranchCheckboxes" class="branch-checkbox-group">
-                            <div style="text-align: center; color: #666;">Loading branches...</div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="editOnlyAssignedTickets" name="only_assigned_tickets" style="width: auto; margin-right: 8px;">
-                            Only show assigned tickets
-                        </label>
-                    </div>
-
-                    <div style="display: flex; gap: 15px; margin-top: 25px;">
-                        <button type="submit" class="btn btn-primary" style="flex: 1;">
-                            Update User
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
-                            Cancel
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span id="submitBtnText">Create User</span>
+                            <span id="submitBtnLoading" class="spinner" style="display: none;"></span>
                         </button>
                     </div>
                 </form>
@@ -854,36 +1020,39 @@
     </div>
 
     <!-- Reset Password Modal -->
-    <div id="resetPasswordModal" class="modal">
+    <div id="resetPasswordModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Reset Password</h3>
-                <span class="close" onclick="closeResetPasswordModal()">&times;</span>
+                <div>
+                    <h2 class="modal-title">Reset Password</h2>
+                    <p class="modal-subtitle" id="resetUserNameDisplay">Reset password for user</p>
+                </div>
+                <button class="modal-close" onclick="closeResetPasswordModal()">×</button>
             </div>
             <div class="modal-body">
-                <p style="margin-bottom: 20px;">Reset password for: <strong id="resetUserName"></strong></p>
-                
                 <form id="resetPasswordForm">
                     <input type="hidden" id="resetUserId">
                     
-                    <div class="form-group">
-                        <label for="newPassword">New Password <span class="required">*</span></label>
-                        <input type="password" id="newPassword" name="password" required 
-                               placeholder="Minimum 8 characters">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="newPassword">
+                                New Password<span class="required">*</span>
+                            </label>
+                            <input type="password" id="newPassword" class="form-input" required minlength="8" placeholder="Minimum 8 characters">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="confirmPassword">
+                                Confirm Password<span class="required">*</span>
+                            </label>
+                            <input type="password" id="confirmPassword" class="form-input" required placeholder="Re-enter the password">
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
-                        <input type="password" id="confirmPassword" required 
-                               placeholder="Re-enter the password">
-                    </div>
-
-                    <div style="display: flex; gap: 15px; margin-top: 25px;">
-                        <button type="submit" class="btn btn-warning" style="flex: 1;">
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeResetPasswordModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
                             Reset Password
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeResetPasswordModal()">
-                            Cancel
                         </button>
                     </div>
                 </form>
@@ -893,27 +1062,56 @@
 
     <script>
         // Global variables
-        let currentTab = 'list';
+        let currentUser = null;
+        let clientToken = null;
         let allUsers = [];
-        let branches = [];
-        let clientToken = localStorage.getItem('clientToken');
-        let currentUser = JSON.parse(localStorage.getItem('clientUser') || '{}');
+        let allBranches = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let filteredUsers = [];
+        let isEditMode = false;
 
-        // Check authentication on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!clientToken) {
-                window.location.href = '/login';
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('User Management initializing...');
+            
+            // Check authentication
+            if (!checkAuth()) {
                 return;
             }
-            
-            verifyToken();
-            loadBranches();
-            loadUsers();
-            loadStatistics();
+
+            // Load user data and users
+            await loadUserData();
+            await loadBranches();
+            await loadUsers();
         });
 
-        // Verify token with server
-        async function verifyToken() {
+        // Check authentication
+        function checkAuth() {
+            clientToken = localStorage.getItem('clientToken');
+            const clientUserData = localStorage.getItem('clientUser');
+
+            if (!clientToken) {
+                console.log('No client token found, redirecting to login');
+                window.location.href = '/login';
+                return false;
+            }
+
+            if (clientUserData) {
+                try {
+                    currentUser = JSON.parse(clientUserData);
+                    console.log('User data loaded:', currentUser);
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                    localStorage.removeItem('clientUser');
+                }
+            }
+
+            return true;
+        }
+
+        // Load user data from server
+        async function loadUserData() {
             try {
                 const response = await fetch('/api/auth/client-verify', {
                     headers: {
@@ -925,24 +1123,27 @@
                     throw new Error('Token verification failed');
                 }
 
-                const result = await response.json();
-                currentUser = result.user;
+                const data = await response.json();
                 
-                // Update header with client info
-                document.getElementById('clientInfo').innerHTML = `
-                    <strong>Client:</strong> ${currentUser.clientName} | 
-                    <strong>User:</strong> ${currentUser.name} (${currentUser.role})
-                `;
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem('clientUser', JSON.stringify(data.user));
+                    updateUserUI();
+                    console.log('User data verified and updated');
+                } else {
+                    throw new Error('Invalid user data received');
+                }
 
             } catch (error) {
-                console.error('Token verification failed:', error);
-                localStorage.removeItem('clientToken');
-                localStorage.removeItem('clientUser');
-                window.location.href = '/login';
+                console.error('Error loading user data:', error);
+                showError('Failed to load user data. Please try logging in again.');
+                setTimeout(() => {
+                    logout();
+                }, 2000);
             }
         }
 
-        // Load branches for dropdown
+        // Load branches
         async function loadBranches() {
             try {
                 const response = await fetch('/api/branches', {
@@ -951,163 +1152,235 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to load branches');
+                if (response.ok) {
+                    const data = await response.json();
+                    allBranches = data.branches || [];
+                    populateBranchCheckboxes();
+                } else {
+                    console.error('Failed to load branches');
                 }
-
-                const result = await response.json();
-                branches = result.branches;
-                
-                // Populate branch checkboxes in create form
-                populateBranchCheckboxes('branchCheckboxes');
                 
             } catch (error) {
-                console.error('Error loading branches:', error);
-                showAlert('error', 'Failed to load branches: ' + error.message);
+                console.error('Failed to load branches:', error);
             }
         }
 
         // Populate branch checkboxes
-        function populateBranchCheckboxes(containerId) {
-            const container = document.getElementById(containerId);
+        function populateBranchCheckboxes() {
+            const container = document.getElementById('branchCheckboxes');
             
-            if (branches.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #666;">No branches available</div>';
+            if (allBranches.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-secondary);">No branches available</div>';
                 return;
             }
 
-            container.innerHTML = branches.map(branch => `
-                <div class="branch-checkbox">
-                    <input type="checkbox" id="${containerId}_${branch.branch_id}" 
-                           name="branch_ids" value="${branch.branch_id}">
-                    <label for="${containerId}_${branch.branch_id}">
-                        ${branch.branch_name} ${branch.branch_code ? '(' + branch.branch_code + ')' : ''}
+            container.innerHTML = allBranches.map(branch => `
+                <div class="branch-checkbox-item">
+                    <input type="checkbox" id="branch_${branch.branch_id}" class="branch-checkbox-input" value="${branch.branch_id}">
+                    <label for="branch_${branch.branch_id}" class="branch-checkbox-label">
+                        ${escapeHtml(branch.branch_name)} ${branch.branch_code ? '(' + escapeHtml(branch.branch_code) + ')' : ''}
                     </label>
                 </div>
             `).join('');
         }
 
-        // Load users from server
+        // Update UI with user information
+        function updateUserUI() {
+            if (!currentUser) return;
+
+            const elements = {
+                userName: document.getElementById('userName'),
+                userRole: document.getElementById('userRole'),
+                userAvatar: document.getElementById('userAvatar'),
+                sidebarClientName: document.getElementById('sidebarClientName')
+            };
+
+            if (elements.userName) elements.userName.textContent = currentUser.user_name || currentUser.name || 'User';
+            if (elements.userRole) elements.userRole.textContent = currentUser.role || 'Client Admin';
+            if (elements.sidebarClientName) elements.sidebarClientName.textContent = currentUser.clientName || currentUser.client_name || 'Company';
+            
+            if (elements.userAvatar) {
+                const name = currentUser.user_name || currentUser.name || 'U';
+                const initials = name.substring(0, 1).toUpperCase();
+                elements.userAvatar.textContent = initials;
+            }
+        }
+
+        // Load users from API
         async function loadUsers() {
             try {
-                const tbody = document.getElementById('usersTableBody');
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="loading">
-                            <div class="spinner"></div>
-                            Loading users...
-                        </td>
-                    </tr>
-                `;
-
                 const response = await fetch('/api/users/management', {
                     headers: {
                         'Authorization': `Bearer ${clientToken}`
                     }
                 });
 
-                if (!response.ok) {
+                if (response.ok) {
+                    const data = await response.json();
+                    allUsers = data.users || [];
+                    filteredUsers = [...allUsers];
+                    
+                    updateStats();
+                    displayUsers();
+                } else {
                     throw new Error('Failed to load users');
                 }
-
-                const result = await response.json();
-                allUsers = result.users;
-                displayUsers(allUsers);
-                updateStatistics();
-
+                
             } catch (error) {
-                console.error('Error loading users:', error);
-                showAlert('error', 'Failed to load users: ' + error.message);
-                document.getElementById('usersTableBody').innerHTML = `
-                    <tr>
-                        <td colspan="8" class="empty-state">
-                            <h3>Error Loading Users</h3>
-                            <p>${error.message}</p>
-                        </td>
-                    </tr>
-                `;
+                console.error('Failed to load users:', error);
+                showError('Failed to load users. Please try again.');
             }
         }
 
-        // Display users in table
-        function displayUsers(users) {
-            const tbody = document.getElementById('usersTableBody');
+        // Update statistics
+        function updateStats() {
+            const stats = {
+                total: allUsers.length,
+                active: allUsers.filter(u => u.status).length,
+                inactive: allUsers.filter(u => !u.status).length,
+                recent: allUsers.filter(u => {
+                    if (!u.last_login) return false;
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                    return new Date(u.last_login) > sevenDaysAgo;
+                }).length
+            };
+
+            // Animate numbers
+            animateNumber(document.getElementById('totalUsers'), 0, stats.total, 1000);
+            animateNumber(document.getElementById('activeUsers'), 0, stats.active, 1200);
+            animateNumber(document.getElementById('inactiveUsers'), 0, stats.inactive, 1400);
+            animateNumber(document.getElementById('recentLogins'), 0, stats.recent, 1600);
+        }
+
+        // Animate number counting
+        function animateNumber(element, start, end, duration) {
+            if (!element) return;
             
-            if (users.length === 0) {
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const current = Math.floor(start + (end - start) * progress);
+                element.textContent = current.toLocaleString();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // Display users in table
+        function displayUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageUsers = filteredUsers.slice(startIndex, endIndex);
+
+            if (pageUsers.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="empty-state">
-                            <h3>No Users Found</h3>
-                            <p>No users match your current filter criteria.</p>
+                        <td colspan="7" class="empty-state">
+                            <div class="empty-container">
+                                <img src="/icon-usermanagement.png" alt="No users" class="empty-icon">
+                                <span>No users found</span>
+                            </div>
                         </td>
                     </tr>
                 `;
                 return;
             }
 
-            tbody.innerHTML = users.map(user => {
-                const branchAccess = getBranchAccessDisplay(user.branch_id);
+            tbody.innerHTML = pageUsers.map(user => {
                 const lastLogin = user.last_login ? 
-                    new Date(user.last_login).toLocaleDateString() : 'Never';
-                
+                    new Date(user.last_login).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    }) : 'Never';
+
+                const branchAccess = getBranchAccessDisplay(user.branch_id);
+
                 return `
-                    <tr data-user-id="${user.user_id}">
+                    <tr class="user-row">
                         <td>
-                            <strong>${user.user_name}</strong>
-                            ${user.only_assigned_tickets ? '<br><small style="color: #856404;">🎯 Assigned Only</small>' : ''}
+                            <div class="user-name-cell">
+                                <div class="user-name">${escapeHtml(user.user_name)}</div>
+                                <div class="user-email">${escapeHtml(user.email)}</div>
+                                ${user.only_assigned_tickets ? '<div class="assigned-only-indicator">🎯 Assigned Only</div>' : ''}
+                            </div>
                         </td>
-                        <td>${user.email}</td>
                         <td>
-                            <span class="role-badge role-${user.role}">
-                                ${formatRole(user.role)}
+                            <div class="role-cell">
+                                <span class="role-badge role-${user.role}">
+                                    ${formatRole(user.role)}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="phone-cell">
+                                ${user.phone ? escapeHtml(user.phone) : '-'}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="branch-access-cell">
+                                ${branchAccess}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge ${user.status ? 'status-active' : 'status-inactive'}">
+                                ${user.status ? 'Active' : 'Inactive'}
                             </span>
                         </td>
-                        <td>${user.phone || '-'}</td>
-                        <td>${branchAccess}</td>
                         <td>
-                            <label class="toggle-switch">
-                                <input type="checkbox" ${user.status ? 'checked' : ''} 
-                                       onchange="toggleUserStatus(${user.user_id}, this.checked)">
-                                <span class="toggle-slider"></span>
-                            </label>
+                            <div class="last-login-cell">${lastLogin}</div>
                         </td>
-                        <td>${lastLogin}</td>
                         <td>
-                            <div class="actions">
-                                <button class="btn btn-primary btn-sm" onclick="editUser(${user.user_id})">
+                            <div class="action-buttons">
+                                <button class="action-btn btn-edit" onclick="editUser(${user.user_id})">
                                     Edit
                                 </button>
-                                <button class="btn btn-warning btn-sm" onclick="resetUserPassword(${user.user_id}, '${user.user_name}')">
-                                    Reset Pwd
+                                <button class="action-btn btn-reset" onclick="resetUserPassword(${user.user_id}, '${escapeHtml(user.user_name)}')">
+                                    Reset
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.user_id}, '${user.user_name}')"
-                                        ${user.user_id === currentUser.user_id ? 'disabled title="Cannot delete yourself"' : ''}>
-                                    Delete
+                                <button class="action-btn btn-toggle ${user.status ? '' : 'activate'}" 
+                                        onclick="toggleUserStatus(${user.user_id}, ${user.status})"
+                                        ${user.user_id === currentUser.user_id ? 'disabled' : ''}>
+                                    ${user.status ? 'Deactivate' : 'Activate'}
                                 </button>
                             </div>
                         </td>
                     </tr>
                 `;
             }).join('');
+
+            updatePagination();
         }
 
         // Helper function to get branch access display
         function getBranchAccessDisplay(branchIds) {
             if (!branchIds || branchIds.length === 0) {
-                return '<span style="color: #28a745; font-weight: 600;">All Branches</span>';
+                return '<span class="branch-tag all-branches-tag">All Branches</span>';
             }
             
             const branchNames = branchIds.map(id => {
-                const branch = branches.find(b => b.branch_id === parseInt(id));
+                const branch = allBranches.find(b => b.branch_id === parseInt(id));
                 return branch ? branch.branch_name : `Branch ${id}`;
             });
             
             if (branchNames.length <= 2) {
-                return branchNames.map(name => 
-                    `<span class="branch-tag">${name}</span>`
-                ).join(' ');
+                return `<div class="branch-tags">${branchNames.map(name => 
+                    `<span class="branch-tag">${escapeHtml(name)}</span>`
+                ).join('')}</div>`;
             } else {
-                return `<span class="branch-tag">${branchNames[0]}</span> <span style="color: #666;">+${branchNames.length - 1} more</span>`;
+                return `<div class="branch-tags">
+                    <span class="branch-tag">${escapeHtml(branchNames[0])}</span>
+                    <span class="branch-tag">+${branchNames.length - 1} more</span>
+                </div>`;
             }
         }
 
@@ -1121,246 +1394,258 @@
             return roleMap[role] || role;
         }
 
-        // Filter users based on search and filter criteria
-        function filterUsers() {
-            const searchTerm = document.getElementById('searchUsers').value.toLowerCase();
-            const roleFilter = document.getElementById('roleFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+        // Update pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, filteredUsers.length);
 
-            const filteredUsers = allUsers.filter(user => {
+            document.getElementById('paginationInfo').textContent = 
+                `Showing ${startItem} to ${endItem} of ${filteredUsers.length} results`;
+
+            // Update page buttons
+            const page1 = document.getElementById('page1');
+            const page2 = document.getElementById('page2');
+            const page3 = document.getElementById('page3');
+
+            [page1, page2, page3].forEach(btn => btn?.classList.remove('active'));
+            
+            if (currentPage <= 3) {
+                page1 && (page1.textContent = '1', page1.onclick = () => goToPage(1));
+                page2 && (page2.textContent = '2', page2.onclick = () => goToPage(2));
+                page3 && (page3.textContent = '3', page3.onclick = () => goToPage(3));
+                document.getElementById(`page${currentPage}`)?.classList.add('active');
+            }
+        }
+
+        // Pagination functions
+        function goToPage(page) {
+            currentPage = page;
+            displayUsers();
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayUsers();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayUsers();
+            }
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const roleFilter = document.getElementById('roleFilter').value;
+
+            filteredUsers = allUsers.filter(user => {
                 const matchesSearch = !searchTerm || 
                     user.user_name.toLowerCase().includes(searchTerm) ||
                     user.email.toLowerCase().includes(searchTerm);
                 
-                const matchesRole = !roleFilter || user.role === roleFilter;
-                
                 const matchesStatus = !statusFilter || user.status.toString() === statusFilter;
+                const matchesRole = !roleFilter || user.role === roleFilter;
 
-                return matchesSearch && matchesRole && matchesStatus;
+                return matchesSearch && matchesStatus && matchesRole;
             });
 
-            displayUsers(filteredUsers);
+            currentPage = 1;
+            displayUsers();
         }
 
-        // Switch between tabs
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
+        // Add filter event listeners
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('roleFilter').addEventListener('change', applyFilters);
+
+        // Open add user modal
+        function openAddUserModal() {
+            isEditMode = false;
+            document.getElementById('modalTitle').textContent = 'Add New User';
+            document.getElementById('submitBtnText').textContent = 'Create User';
+            document.getElementById('userForm').reset();
+            document.getElementById('editUserId').value = '';
+            
+            // Uncheck all branch checkboxes
+            document.querySelectorAll('#branchCheckboxes input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
             });
             
-            // Remove active class from all nav tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabName + 'Tab').style.display = 'block';
-            
-            // Add active class to clicked nav tab
-            event.target.classList.add('active');
-            
-            currentTab = tabName;
-            
-            // Load data if needed
-            if (tabName === 'statistics') {
-                loadStatistics();
-            }
+            document.getElementById('userModal').style.display = 'flex';
         }
-
-        // Create new user
-        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            try {
-                const formData = new FormData(e.target);
-                const userData = Object.fromEntries(formData.entries());
-                
-                // Get selected branch IDs
-                const selectedBranches = Array.from(document.querySelectorAll('#branchCheckboxes input:checked'))
-                    .map(cb => parseInt(cb.value));
-                
-                userData.branch_id = selectedBranches.length > 0 ? selectedBranches : null;
-                userData.only_assigned_tickets = document.getElementById('onlyAssignedTickets').checked;
-                userData.status = userData.status === 'true';
-
-                const response = await fetch('/api/users/management', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${clientToken}`
-                    },
-                    body: JSON.stringify(userData)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showAlert('success', 'User created successfully!');
-                    resetCreateForm();
-                    loadUsers(); // Refresh the user list
-                    switchTab('list'); // Switch to list tab
-                } else {
-                    throw new Error(result.message || 'Failed to create user');
-                }
-
-            } catch (error) {
-                console.error('Error creating user:', error);
-                showAlert('error', 'Failed to create user: ' + error.message);
-            }
-        });
 
         // Edit user
-        async function editUser(userId) {
-            try {
-                // Get user details
-                const response = await fetch(`/api/users/management/${userId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${clientToken}`
-                    }
-                });
+        function editUser(userId) {
+            const user = allUsers.find(u => u.user_id === userId);
+            if (!user) return;
 
-                if (!response.ok) {
-                    throw new Error('Failed to load user details');
-                }
-
-                const result = await response.json();
-                const user = result.user;
-
-                // Populate edit form
-                document.getElementById('editUserId').value = user.user_id;
-                document.getElementById('editUserName').value = user.user_name;
-                document.getElementById('editUserEmail').value = user.email;
-                document.getElementById('editUserRole').value = user.role;
-                document.getElementById('editUserPhone').value = user.phone || '';
-                document.getElementById('editOnlyAssignedTickets').checked = user.only_assigned_tickets;
-
-                // Populate edit branch checkboxes
-                populateBranchCheckboxes('editBranchCheckboxes');
-                
-                // Set selected branches
-                if (user.branch_id && user.branch_id.length > 0) {
-                    user.branch_id.forEach(branchId => {
-                        const checkbox = document.getElementById(`editBranchCheckboxes_${branchId}`);
-                        if (checkbox) checkbox.checked = true;
-                    });
-                }
-
-                // Show modal
-                document.getElementById('editUserModal').style.display = 'block';
-
-            } catch (error) {
-                console.error('Error loading user for edit:', error);
-                showAlert('error', 'Failed to load user details: ' + error.message);
-            }
-        }
-
-        // Update user
-        document.getElementById('editUserForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+            isEditMode = true;
+            document.getElementById('modalTitle').textContent = 'Edit User';
+            document.getElementById('submitBtnText').textContent = 'Update User';
             
-            try {
-                const userId = document.getElementById('editUserId').value;
-                const formData = new FormData(e.target);
-                const userData = Object.fromEntries(formData.entries());
-                
-                // Get selected branch IDs
-                const selectedBranches = Array.from(document.querySelectorAll('#editBranchCheckboxes input:checked'))
-                    .map(cb => parseInt(cb.value));
-                
-                userData.branch_id = selectedBranches.length > 0 ? selectedBranches : null;
-                userData.only_assigned_tickets = document.getElementById('editOnlyAssignedTickets').checked;
-                userData.status = true; // Keep user active during edit
-
-                const response = await fetch(`/api/users/management/${userId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${clientToken}`
-                    },
-                    body: JSON.stringify(userData)
+            // Populate form
+            document.getElementById('editUserId').value = user.user_id;
+            document.getElementById('userNameInput').value = user.user_name;
+            document.getElementById('userEmailInput').value = user.email;
+            document.getElementById('userPhoneInput').value = user.phone || '';
+            document.getElementById('userRoleInput').value = user.role;
+            document.getElementById('userStatusInput').value = user.status.toString();
+            document.getElementById('onlyAssignedTickets').checked = user.only_assigned_tickets || false;
+            
+            // Hide password field during edit
+            const passwordGroup = document.getElementById('userPasswordInput').closest('.form-group');
+            passwordGroup.style.display = 'none';
+            
+            // Set branch checkboxes
+            document.querySelectorAll('#branchCheckboxes input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            
+            if (user.branch_id && user.branch_id.length > 0) {
+                user.branch_id.forEach(branchId => {
+                    const checkbox = document.getElementById(`branch_${branchId}`);
+                    if (checkbox) checkbox.checked = true;
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showAlert('success', 'User updated successfully!');
-                    closeEditModal();
-                    loadUsers(); // Refresh the user list
-                } else {
-                    throw new Error(result.message || 'Failed to update user');
-                }
-
-            } catch (error) {
-                console.error('Error updating user:', error);
-                showAlert('error', 'Failed to update user: ' + error.message);
             }
-        });
-
-        // Toggle user status
-        async function toggleUserStatus(userId, newStatus) {
-            try {
-                const response = await fetch(`/api/users/management/${userId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${clientToken}`
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showAlert('success', `User ${newStatus ? 'activated' : 'deactivated'} successfully!`);
-                    
-                    // Update the user in allUsers array
-                    const userIndex = allUsers.findIndex(u => u.user_id === userId);
-                    if (userIndex !== -1) {
-                        allUsers[userIndex].status = newStatus;
-                    }
-                    
-                    updateStatistics();
-                } else {
-                    throw new Error(result.message || 'Failed to update user status');
-                }
-
-            } catch (error) {
-                console.error('Error updating user status:', error);
-                showAlert('error', 'Failed to update user status: ' + error.message);
-                
-                // Revert the toggle
-                const checkbox = document.querySelector(`tr[data-user-id="${userId}"] input[type="checkbox"]`);
-                if (checkbox) checkbox.checked = !newStatus;
-            }
+            
+            document.getElementById('userModal').style.display = 'flex';
         }
 
         // Reset user password
         function resetUserPassword(userId, userName) {
             document.getElementById('resetUserId').value = userId;
-            document.getElementById('resetUserName').textContent = userName;
-            document.getElementById('resetPasswordModal').style.display = 'block';
+            document.getElementById('resetUserNameDisplay').textContent = `Reset password for ${userName}`;
+            document.getElementById('resetPasswordModal').style.display = 'flex';
         }
+
+        // Close modals
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+            // Show password field again
+            const passwordGroup = document.getElementById('userPasswordInput').closest('.form-group');
+            passwordGroup.style.display = 'flex';
+        }
+
+        function closeResetPasswordModal() {
+            document.getElementById('resetPasswordModal').style.display = 'none';
+            document.getElementById('resetPasswordForm').reset();
+        }
+
+        // Handle user form submission
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userNameValue = document.getElementById('userNameInput').value.trim();
+            const userEmailValue = document.getElementById('userEmailInput').value.trim();
+            const userPasswordValue = document.getElementById('userPasswordInput').value;
+            const userRoleValue = document.getElementById('userRoleInput').value;
+            const userStatusValue = document.getElementById('userStatusInput').value;
+            
+            // Validation
+            if (!userNameValue) {
+                showError('User name is required');
+                return;
+            }
+            
+            if (!userEmailValue) {
+                showError('Email is required');
+                return;
+            }
+            
+            if (!isEditMode && !userPasswordValue) {
+                showError('Password is required');
+                return;
+            }
+            
+            if (!userRoleValue) {
+                showError('Role is required');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtnText');
+            const loading = document.getElementById('submitBtnLoading');
+            
+            submitBtn.style.display = 'none';
+            loading.style.display = 'inline-block';
+            
+            try {
+                // Get selected branch IDs
+                const selectedBranches = Array.from(document.querySelectorAll('#branchCheckboxes input:checked'))
+                    .map(cb => parseInt(cb.value));
+                
+                const formData = {
+                    user_name: userNameValue,
+                    email: userEmailValue,
+                    role: userRoleValue,
+                    status: userStatusValue === 'true',
+                    phone: document.getElementById('userPhoneInput').value.trim() || null,
+                    branch_id: selectedBranches.length > 0 ? selectedBranches : null,
+                    only_assigned_tickets: document.getElementById('onlyAssignedTickets').checked
+                };
+                
+                if (!isEditMode) {
+                    formData.password = userPasswordValue;
+                }
+                
+                const url = isEditMode ? `/api/users/management/${document.getElementById('editUserId').value}` : '/api/users/management';
+                const method = isEditMode ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${clientToken}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeUserModal();
+                    showSuccess(
+                        isEditMode ? 'User updated successfully!' : 'User created successfully!'
+                    );
+                    await loadUsers();
+                } else {
+                    showError('Error: ' + data.message);
+                }
+                
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showError('Network error. Please try again.');
+            } finally {
+                submitBtn.style.display = 'inline-block';
+                loading.style.display = 'none';
+            }
+        });
 
         // Handle password reset form
         document.getElementById('resetPasswordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const userId = document.getElementById('resetUserId').value;
+            
+            if (newPassword !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+            
             try {
-                const userId = document.getElementById('resetUserId').value;
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-
-                if (newPassword !== confirmPassword) {
-                    showAlert('error', 'Passwords do not match!');
-                    return;
-                }
-
-                if (newPassword.length < 8) {
-                    showAlert('error', 'Password must be at least 8 characters long!');
-                    return;
-                }
-
                 const response = await fetch(`/api/users/management/${userId}/password`, {
                     method: 'PATCH',
                     headers: {
@@ -1369,222 +1654,114 @@
                     },
                     body: JSON.stringify({ password: newPassword })
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showAlert('success', 'Password reset successfully!');
+                
+                const data = await response.json();
+                
+                if (data.success) {
                     closeResetPasswordModal();
+                    showSuccess('Password reset successfully!');
                 } else {
-                    throw new Error(result.message || 'Failed to reset password');
+                    showError('Error: ' + data.message);
                 }
-
+                
             } catch (error) {
-                console.error('Error resetting password:', error);
-                showAlert('error', 'Failed to reset password: ' + error.message);
+                console.error('Password reset error:', error);
+                showError('Network error. Please try again.');
             }
         });
 
-        // Delete user
-        async function deleteUser(userId, userName) {
-            if (userId === currentUser.userId) {
-                showAlert('warning', 'You cannot delete your own account!');
+        // Toggle user status
+        async function toggleUserStatus(userId, currentStatus) {
+            if (userId === currentUser.user_id) {
+                showError('You cannot deactivate your own account');
                 return;
             }
 
-            if (!confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+            if (!confirm(`Are you sure you want to ${currentStatus ? 'deactivate' : 'activate'} this user?`)) {
                 return;
             }
-
+            
             try {
-                const response = await fetch(`/api/users/management/${userId}`, {
-                    method: 'DELETE',
+                const response = await fetch(`/api/users/management/${userId}/status`, {
+                    method: 'PATCH',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${clientToken}`
-                    }
+                    },
+                    body: JSON.stringify({ status: !currentStatus })
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showAlert('success', 'User deleted successfully!');
-                    loadUsers(); // Refresh the user list
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(
+                        `User ${!currentStatus ? 'activated' : 'deactivated'} successfully!`
+                    );
+                    await loadUsers();
                 } else {
-                    throw new Error(result.message || 'Failed to delete user');
+                    showError('Error: ' + data.message);
                 }
-
+                
             } catch (error) {
-                console.error('Error deleting user:', error);
-                showAlert('error', 'Failed to delete user: ' + error.message);
+                console.error('Status toggle error:', error);
+                showError('Network error. Please try again.');
             }
         }
 
-        // Load and update statistics
-        function loadStatistics() {
-            updateStatistics();
-        }
-
-        function updateStatistics() {
-            const totalUsers = allUsers.length;
-            const activeUsers = allUsers.filter(u => u.status).length;
-            const adminUsers = allUsers.filter(u => u.role === 'client_admin').length;
+        // Show success message
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
             
-            // Calculate recent logins (last 7 days)
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            const recentLogins = allUsers.filter(u => 
-                u.last_login && new Date(u.last_login) > sevenDaysAgo
-            ).length;
-
-            document.getElementById('totalUsers').textContent = totalUsers;
-            document.getElementById('activeUsers').textContent = activeUsers;
-            document.getElementById('adminUsers').textContent = adminUsers;
-            document.getElementById('recentLogins').textContent = recentLogins;
-        }
-
-        // Modal functions
-        function closeEditModal() {
-            document.getElementById('editUserModal').style.display = 'none';
-            document.getElementById('editUserForm').reset();
-        }
-
-        function closeResetPasswordModal() {
-            document.getElementById('resetPasswordModal').style.display = 'none';
-            document.getElementById('resetPasswordForm').reset();
-        }
-
-        // Reset create form
-        function resetCreateForm() {
-            document.getElementById('createUserForm').reset();
-            // Uncheck all branch checkboxes
-            document.querySelectorAll('#branchCheckboxes input[type="checkbox"]').forEach(cb => {
-                cb.checked = false;
-            });
-        }
-
-        // Alert functions
-        function showAlert(type, message) {
-            hideAllAlerts();
+            document.body.appendChild(successDiv);
             
-            const alertId = type === 'success' ? 'successAlert' : 
-                           type === 'warning' ? 'warningAlert' : 'errorAlert';
-            
-            const alertElement = document.getElementById(alertId);
-            alertElement.innerHTML = message;
-            alertElement.style.display = 'block';
-            
-            // Auto-hide success alerts after 5 seconds
-            if (type === 'success') {
+            setTimeout(() => {
+                if (document.body.contains(successDiv)) {
+                    document.body.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
                 setTimeout(() => {
-                    alertElement.style.display = 'none';
+                    errorElement.style.display = 'none';
                 }, 5000);
+            } else {
+                alert(message);
             }
-            
-            // Scroll to alert
-            alertElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        function hideAllAlerts() {
-            document.getElementById('successAlert').style.display = 'none';
-            document.getElementById('errorAlert').style.display = 'none';
-            document.getElementById('warningAlert').style.display = 'none';
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Logout function
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('client_token');
-                localStorage.removeItem('client_user');
-                window.location.href = '/login';
-            }
+            localStorage.removeItem('clientToken');
+            localStorage.removeItem('clientUser');
+            window.location.href = '/login';
         }
 
         // Close modal when clicking outside
-        window.onclick = function(event) {
-            const editModal = document.getElementById('editUserModal');
-            const resetModal = document.getElementById('resetPasswordModal');
-            
-            if (event.target === editModal) {
-                closeEditModal();
+        document.getElementById('userModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUserModal();
             }
-            if (event.target === resetModal) {
+        });
+
+        document.getElementById('resetPasswordModal').addEventListener('click', function(e) {
+            if (e.target === this) {
                 closeResetPasswordModal();
-            }
-        }
-
-        // Handle escape key to close modals
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeEditModal();
-                closeResetPasswordModal();
-            }
-        });
-
-        // Form validation helpers
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        function validatePassword(password) {
-            return password.length >= 8;
-        }
-
-        // Enhanced form validation for create form
-        document.getElementById('userEmail').addEventListener('blur', function() {
-            if (this.value && !validateEmail(this.value)) {
-                this.style.borderColor = '#dc3545';
-                showAlert('error', 'Please enter a valid email address');
-            } else {
-                this.style.borderColor = '#e1e5e9';
-            }
-        });
-
-        document.getElementById('userPassword').addEventListener('blur', function() {
-            if (this.value && !validatePassword(this.value)) {
-                this.style.borderColor = '#dc3545';
-                showAlert('error', 'Password must be at least 8 characters long');
-            } else {
-                this.style.borderColor = '#e1e5e9';
-            }
-        });
-
-        // Auto-hide alerts when user starts typing
-        document.addEventListener('input', function() {
-            setTimeout(hideAllAlerts, 3000);
-        });
-
-        // Navigation helper (for going back to dashboard)
-        function goToDashboard() {
-            window.location.href = '/dashboard';
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(event) {
-            // Ctrl/Cmd + N for new user
-            if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
-                event.preventDefault();
-                switchTab('create');
-            }
-            
-            // Ctrl/Cmd + R for refresh
-            if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
-                event.preventDefault();
-                loadUsers();
-            }
-        });
-
-        // Auto-refresh users every 30 seconds when on list tab
-        setInterval(() => {
-            if (currentTab === 'list' && document.visibilityState === 'visible') {
-                loadUsers();
-            }
-        }, 30000);
-
-        // Handle page visibility change to refresh data when user returns
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && currentTab === 'list') {
-                loadUsers();
             }
         });
     </script>
