@@ -3734,22 +3734,833 @@ app.get('/api/reports/trends', authenticateClientToken, async (req, res) => {
 // END OF REPORTS AND ANALYTICS ROUTES
 // =============================================================================
 
-// Serve client settings page
+// =============================================================================
+// SETTINGS PAGE ROUTES
+// =============================================================================
+
+// Serve settings page
 app.get('/settings', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'settings.html'));
 });
+
+// Get client settings
+app.get('/api/settings', authenticateClientToken, async (req, res) => {
+    try {
+        const clientId = req.user.clientId;
+        
+        const result = await users.query(`
+            SELECT 
+                client_id,
+                client_name,
+                logo_url,
+                feedback_title,
+                feedback_description,
+                main_color,
+                text_color,
+                button_color,
+                updated_at
+            FROM clients 
+            WHERE client_id = $1
+        `, [clientId]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Client not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            settings: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching settings:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching settings'
+        });
+    }
+});
+
+// Update client settings (with logo upload)
+app.put('/api/settings', upload.single('logo'), authenticateClientToken, async (req, res) => {
+    const client = await users.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const clientId = req.user.clientId;
+        const {
+            client_name,
+            feedback_title,
+            feedback_description,
+            main_color,
+            text_color,
+            button_color
+        } = req.body;
+        
+        // Validation
+        if (!client_name || client_name.trim().length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Client name is required'
+            });
+        }
+
+        if (client_name.trim().length > 255) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Client name is too long (max 255 characters)'
+            });
+        }
+
+        // Validate colors (hex format)
+        const colorRegex = /^#[0-9A-Fa-f]{6}$/;
+        const colors = { main_color, text_color, button_color };
+        
+        for (const [colorName, colorValue] of Object.entries(colors)) {
+            if (colorValue && !colorRegex.test(colorValue)) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    success: false,
+                    message: `Invalid ${colorName.replace('_', ' ')} format. Must be hex color (e.g., #667eea)`
+                });
+            }
+        }
+
+        // Handle logo upload if file is provided
+        let logoUrl = null;
+        if (req.file && cloudinary && process.env.CLOUDINARY_CLOUD_NAME) {
+            try {
+                console.log('📁 Processing logo upload:', req.file.originalname);
+                const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+                logoUrl = uploadResult.secure_url;
+                console.log('✅ Logo uploaded successfully:', logoUrl);
+            } catch (uploadError) {
+                await client.query('ROLLBACK');
+                console.error('❌ Logo upload failed:', uploadError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to upload logo. Please try again.'
+                });
+            }
+        }
+        
+        // Check if client name already exists (excluding current client)
+        const existingClient = await client.query(
+            'SELECT client_id FROM clients WHERE LOWER(client_name) = LOWER($1) AND client_id != $2',
+            [client_name.trim(), clientId]
+        );
+        
+        if (existingClient.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({
+                success: false,
+                message: 'Client name already exists'
+            });
+        }
+        
+        // Build update query dynamically based on provided fields
+        let updateFields = ['updated_at = CURRENT_TIMESTAMP'];
+        let updateValues = [];
+        let valueIndex = 1;
+        
+        // Add fields to update
+        const fieldsToUpdate = {
+            client_name: client_name?.trim(),
+            feedback_title: feedback_title?.trim(),
+            feedback_description: feedback_description?.trim(),
+            main_color: main_color,
+            text_color: text_color,
+            button_color: button_color
+        };
+        
+        if (logoUrl) {
+            fieldsToUpdate.logo_url = logoUrl;
+        }
+        
+        Object.entries(fieldsToUpdate).forEach(([field, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                updateFields.push(`${field} = $${valueIndex}`);
+                updateValues.push(value);
+                valueIndex++;
+            }
+        });
+        
+        // Update client settings
+        const result = await client.query(`
+            UPDATE clients 
+            SET ${updateFields.join(', ')}
+            WHERE client_id = $${valueIndex}
+            RETURNING 
+                client_id,
+                client_name,
+                logo_url,
+                feedback_title,
+                feedback_description,
+                main_color,
+                text_color,
+                button_color,
+                updated_at
+        `, [...updateValues, clientId]);
+        
+        await client.query('COMMIT');
+        
+        const updatedSettings = result.rows[0];
+        
+        console.log(`📝 Client settings updated: ${updatedSettings.client_name} (ID: ${clientId})`);
+        
+        res.json({
+            success: true,
+            message: 'Settings updated successfully',
+            data: updatedSettings
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error updating settings:', error);
+        
+        // Handle specific PostgreSQL errors
+        if (error.code === '23505') {
+            return res.status(409).json({
+                success: false,
+                message: 'Client name already exists'
+            });
+        }
+        
+        if (error.code === '22001') {
+            return res.status(400).json({
+                success: false,
+                message: 'One of the fields is too long. Please check your input.'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating settings'
+        });
+    } finally {
+        client.release();
+    }
+});
+
 // =============================================================================
-// PUBLIC FEEDBACK FORM ROUTES - Add these after the ticket management routes
+// UPDATED FEEDBACK FORM GENERATION WITH CMS SUPPORT
 // =============================================================================
 
-// Dynamic feedback route - serves feedback form for specific client
+// Updated function to generate feedback form HTML with CMS customization
+function generateCustomFeedbackFormHTML(client, branches) {
+    const clientNameForUrl = client.client_name.toLowerCase().replace(/\s+/g, '');
+    
+    // Use custom settings or fallback to defaults
+    const settings = {
+        title: client.feedback_title || 'Share Your Feedback',
+        description: client.feedback_description || `Help us improve our service for ${client.client_name}`,
+        mainColor: client.main_color || '#667eea',
+        textColor: client.text_color || '#333333',
+        buttonColor: client.button_color || '#667eea',
+        logoUrl: client.logo_url
+    };
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${settings.title} - ${client.client_name} | FeedFast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, ${settings.mainColor} 0%, ${adjustColor(settings.mainColor, -20)} 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: ${settings.textColor};
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, ${settings.mainColor} 0%, ${adjustColor(settings.mainColor, -20)} 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 120px;
+            max-height: 80px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .form-container {
+            padding: 40px;
+            color: ${settings.textColor};
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: ${settings.textColor};
+            font-size: 1rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+            color: ${settings.textColor};
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: ${settings.mainColor};
+            box-shadow: 0 0 0 3px ${hexToRgba(settings.mainColor, 0.1)};
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+        
+        .feedback-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .type-option {
+            position: relative;
+        }
+        
+        .type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .type-option label {
+            display: block;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: ${settings.textColor};
+        }
+        
+        .type-option input[type="radio"]:checked + label {
+            background: ${settings.buttonColor};
+            border-color: ${settings.buttonColor};
+            color: white;
+        }
+        
+        .type-option label:hover {
+            border-color: ${settings.mainColor};
+            background: ${hexToRgba(settings.mainColor, 0.05)};
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, ${settings.buttonColor} 0%, ${adjustColor(settings.buttonColor, -20)} 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px ${hexToRgba(settings.buttonColor, 0.4)};
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .powered-by {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .powered-by a {
+            color: ${settings.mainColor};
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .file-upload-area {
+            position: relative;
+            border: 2px dashed #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: ${settings.mainColor};
+            background: ${hexToRgba(settings.mainColor, 0.05)};
+        }
+
+        .file-upload-area.dragover {
+            border-color: ${settings.mainColor};
+            background: ${hexToRgba(settings.mainColor, 0.1)};
+        }
+
+        .file-upload-area input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-placeholder {
+            pointer-events: none;
+        }
+
+        .upload-note {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .file-preview {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-preview img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .remove-file {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="${client.client_name} Logo" class="logo">` : ''}
+            <h1>${settings.title}</h1>
+            <p>${settings.description}</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="success-message" id="successMessage"></div>
+            <div class="error-message" id="errorMessage"></div>
+            
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label>Feedback Type <span class="required">*</span></label>
+                    <div class="feedback-types">
+                        <div class="type-option">
+                            <input type="radio" id="complaint" name="type" value="complaint" required>
+                            <label for="complaint">Complaint</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="suggestion" name="type" value="suggestion" required>
+                            <label for="suggestion">Suggestion</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="compliment" name="type" value="compliment" required>
+                            <label for="compliment">Compliment</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="inquiry" name="type" value="inquiry" required>
+                            <label for="inquiry">Inquiry</label>
+                        </div>
+                    </div>
+                </div>
+                
+                ${branches.length > 0 ? `
+                <div class="form-group">
+                    <label for="branch">Branch/Location</label>
+                    <select name="branch_id" id="branch">
+                        <option value="">Select a branch (optional)</option>
+                        ${branches.map(branch => 
+                          `<option value="${branch.branch_id}">${branch.branch_name} ${branch.branch_code ? '(' + branch.branch_code + ')' : ''}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                ` : ''}
+                
+                <div class="form-group">
+                    <label for="title">Subject <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" required 
+                           placeholder="Brief description of your feedback">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Message <span class="required">*</span></label>
+                    <textarea id="description" name="description" required 
+                              placeholder="Please provide detailed information about your feedback..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Your Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="cust_name" required 
+                               placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="cust_email" 
+                               placeholder="your.email@example.com">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="cust_phone" 
+                           placeholder="Your phone number">
+                </div>
+
+                <div class="form-group">
+                    <label for="attachment">Attach Image (Optional)</label>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <input type="file" id="attachment" name="attachment" accept="image/*">
+                        <div class="upload-placeholder">
+                            <p>📷 Click to upload or drag & drop an image</p>
+                            <p class="upload-note">Max 5MB • JPG, PNG, GIF supported</p>
+                        </div>
+                        <div class="file-preview" id="filePreview" style="display: none;">
+                            <img id="previewImage" src="" alt="Preview">
+                            <button type="button" class="remove-file" id="removeFile">×</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Submit Feedback
+                </button>
+                
+                <div class="loading" id="loading">
+                    Submitting your feedback...
+                </div>
+            </form>
+        </div>
+        
+        <div class="powered-by">
+            Powered by <a href="#" target="_blank">FeedFast</a>
+        </div>
+    </div>
+
+    <script>
+        // Color utility functions
+        function hexToRgba(hex, alpha) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return \`rgba(\${r}, \${g}, \${b}, \${alpha})\`;
+        }
+
+        function adjustColor(hex, amount) {
+            const num = parseInt(hex.slice(1), 16);
+            const amt = Math.round(2.55 * amount);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+
+        // Form handling code (same as before)
+        const form = document.getElementById('feedbackForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const fileInput = document.getElementById('attachment');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const filePreview = document.getElementById('filePreview');
+        const previewImage = document.getElementById('previewImage');
+        const removeFileBtn = document.getElementById('removeFile');
+        const uploadPlaceholder = fileUploadArea.querySelector('.upload-placeholder');
+
+        // File upload handling
+        fileInput.addEventListener('change', handleFileSelect);
+        fileUploadArea.addEventListener('dragover', handleDragOver);
+        fileUploadArea.addEventListener('dragleave', handleDragLeave);
+        fileUploadArea.addEventListener('drop', handleDrop);
+        removeFileBtn.addEventListener('click', removeFile);
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                displayFilePreview(file);
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    fileInput.files = files;
+                    displayFilePreview(file);
+                } else {
+                    showError('Please select an image file only.');
+                }
+            }
+        }
+
+        function displayFilePreview(file) {
+            if (file.size > 5 * 1024 * 1024) {
+                showError('File size must be less than 5MB.');
+                fileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                uploadPlaceholder.style.display = 'none';
+                filePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeFile() {
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            uploadPlaceholder.style.display = 'block';
+        }
+
+        function showError(message) {
+            errorMessage.innerHTML = \`<strong>Error!</strong> \${message}\`;
+            errorMessage.style.display = 'block';
+            errorMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Clear previous messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            loading.style.display = 'block';
+
+            try {
+                const formData = new FormData(form);
+                formData.append('client_name', '${clientNameForUrl}');
+
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    successMessage.innerHTML = \`
+                        <strong>Thank you!</strong> Your feedback has been submitted successfully. 
+                        Ticket ID: #\${result.ticket_id}
+                        \${result.attachment_url ? '<br>📎 Image uploaded successfully!' : ''}
+                    \`;
+                    successMessage.style.display = 'block';
+                    form.reset();
+                    removeFile();
+                    
+                    successMessage.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(result.error || 'Failed to submit feedback');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Failed to submit feedback. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+    `;
+}
+
+// Helper functions for color manipulation
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function adjustColor(hex, amount) {
+    const num = parseInt(hex.slice(1), 16);
+    const amt = Math.round(2.55 * amount);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+}
+
+// =============================================================================
+// UPDATED FEEDBACK ROUTE TO USE CUSTOM SETTINGS
+// =============================================================================
+
+// REPLACE your existing /feedback/:clientname route with this updated version:
 app.get('/feedback/:clientname', async (req, res) => {
   const { clientname } = req.params;
   
   try {
-    // Query to find client by name (case-insensitive)
+    // Updated query to include new CMS fields
     const clientQuery = `
-      SELECT client_id, client_name, status 
+      SELECT 
+        client_id, 
+        client_name, 
+        status,
+        logo_url,
+        feedback_title,
+        feedback_description,
+        main_color,
+        text_color,
+        button_color
       FROM clients 
       WHERE LOWER(REPLACE(client_name, ' ', '')) = LOWER($1) 
       AND status = true
@@ -3790,8 +4601,8 @@ app.get('/feedback/:clientname', async (req, res) => {
     const branchesResult = await users.query(branchesQuery, [client.client_id]);
     const branches = branchesResult.rows;
     
-    // Serve the feedback form HTML
-    res.send(generateFeedbackFormHTML(client, branches));
+    // Use the updated function with CMS customization
+    res.send(generateCustomFeedbackFormHTML(client, branches));
     
   } catch (error) {
     console.error('❌ Error loading feedback form:', error);
@@ -3799,79 +4610,6 @@ app.get('/feedback/:clientname', async (req, res) => {
   }
 });
 
-// API endpoint to submit feedback (PUBLIC - no authentication required)
-app.post('/api/feedback', async (req, res) => {
-  const {
-    client_name,
-    branch_id,
-    cust_name,
-    cust_email,
-    cust_phone,
-    type,
-    title,
-    description,
-    attachment
-  } = req.body;
-
-  try {
-    // Get client_id from client_name
-    const clientQuery = `
-      SELECT client_id FROM clients 
-      WHERE LOWER(REPLACE(client_name, ' ', '')) = LOWER($1) 
-      AND status = true
-    `;
-    
-    const clientResult = await users.query(clientQuery, [client_name.toLowerCase()]);
-    
-    if (clientResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Client not found' });
-    }
-    
-    const client_id = clientResult.rows[0].client_id;
-    
-    // Insert ticket
-    const insertTicketQuery = `
-      INSERT INTO tickets (
-        client_id, branch_id, cust_name, cust_email, cust_phone,
-        type, title, description, attachment, status, submitted_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'open', NOW())
-      RETURNING ticket_id
-    `;
-    
-    const values = [
-      client_id,
-      branch_id || null,
-      cust_name,
-      cust_email || null,
-      cust_phone || null,
-      type,
-      title,
-      description,
-      attachment || null
-    ];
-    
-    const result = await users.query(insertTicketQuery, values);
-    const ticket_id = result.rows[0].ticket_id;
-    
-    // Update client total_tickets count
-    await users.query(
-      'UPDATE clients SET total_tickets = total_tickets + 1 WHERE client_id = $1',
-      [client_id]
-    );
-    
-    console.log(`✅ Public feedback submitted: Ticket #${ticket_id} for client ${client_id}`);
-    
-    res.json({ 
-      success: true, 
-      message: 'Feedback submitted successfully',
-      ticket_id: ticket_id
-    });
-    
-  } catch (error) {
-    console.error('❌ Error submitting feedback:', error);
-    res.status(500).json({ error: 'Failed to submit feedback' });
-  }
-});
 
 app.post('/api/clients', authenticateToken, async (req, res) => {
     const client = await users.connect();
