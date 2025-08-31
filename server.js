@@ -3734,6 +3734,10 @@ app.get('/api/reports/trends', authenticateClientToken, async (req, res) => {
 // END OF REPORTS AND ANALYTICS ROUTES
 // =============================================================================
 
+// Serve client settings page
+app.get('/settings', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'settings.html'));
+});
 // =============================================================================
 // PUBLIC FEEDBACK FORM ROUTES - Add these after the ticket management routes
 // =============================================================================
