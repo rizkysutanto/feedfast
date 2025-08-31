@@ -7,16 +7,12 @@
     <link rel="stylesheet" href="/css/client-dashboard.css">
     <style>
         /* Additional settings-specific styles */
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
+        .settings-content {
+            max-width: 800px;
         }
 
-        @media (min-width: 1024px) {
-            .settings-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+        .settings-section {
+            margin-bottom: 2rem;
         }
 
         .form-group {
@@ -62,19 +58,30 @@
         }
 
         .color-input {
-            width: 60px !important;
-            height: 40px;
+            width: 40px !important;
+            height: 30px;
             padding: 0;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
         }
 
         .color-text {
             flex: 1;
             padding: 0.5rem 0.75rem;
-            font-family: monospace;
+            font-family: inherit;
             font-size: 0.875rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: white;
+        }
+
+        .color-display {
+            width: 100%;
+            height: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-top: 0.5rem;
         }
 
         .logo-upload-area {
@@ -310,87 +317,98 @@
                     Loading settings...
                 </div>
 
-                <!-- Settings Cards -->
-                <div class="settings-grid">
-                    <!-- Company Information Card -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">Company Information</h2>
-                        </div>
-                        <div class="card-body">
-                            <form id="companyForm">
-                                <div class="form-group">
-                                    <label for="clientName">Company Name *</label>
-                                    <input type="text" id="clientName" name="client_name" required placeholder="Enter company name">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="logoUpload">Company Logo *</label>
-                                    <div class="logo-upload-area" id="logoUploadArea">
-                                        <input type="file" id="logoUpload" name="logo" accept="image/*">
-                                        <div id="logoPlaceholder">
-                                            <div class="logo-upload-text">Click to upload or drag your file here</div>
-                                            <div class="logo-upload-subtext">Supported formats: JPG, JPEG or PNG</div>
-                                        </div>
-                                        <div id="logoPreview" style="display: none;">
-                                            <img id="logoImage" class="logo-preview" src="" alt="Logo Preview">
-                                            <div>
-                                                <span id="logoFileName">jobseeker-logo.png</span>
-                                                <button type="button" class="remove-logo" onclick="removeLogo()">Remove</button>
+                <!-- Settings Content -->
+                <div class="settings-content">
+                    <!-- Company Information Section -->
+                    <div class="settings-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Company Information</h2>
+                            </div>
+                            <div class="card-body">
+                                <form id="companyForm">
+                                    <div class="form-group">
+                                        <label for="logoUpload">Logo *</label>
+                                        <div class="logo-upload-area" id="logoUploadArea">
+                                            <input type="file" id="logoUpload" name="logo" accept="image/*">
+                                            <div id="logoPlaceholder">
+                                                <div class="logo-upload-text">Click to upload or drag your file here</div>
+                                                <div class="logo-upload-subtext">Supported formats: JPG, JPEG or PNG</div>
+                                            </div>
+                                            <div id="logoPreview" style="display: none;">
+                                                <img id="logoImage" class="logo-preview" src="" alt="Logo Preview">
+                                                <div>
+                                                    <span id="logoFileName">jobseeker-logo.png</span>
+                                                    <button type="button" class="remove-logo" onclick="removeLogo()">Remove</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <button type="submit" class="btn btn-primary w-full">Save</button>
-                            </form>
+                                    <div class="form-group">
+                                        <label for="clientName">Company Name *</label>
+                                        <input type="text" id="clientName" name="client_name" required placeholder="Enter company name">
+                                    </div>
+
+                                    <div style="text-align: right;">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Feedback Form Customization Card -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">Feedback Form</h2>
-                        </div>
-                        <div class="card-body">
-                            <form id="feedbackForm">
-                                <div class="form-group">
-                                    <label for="feedbackTitle">Title *</label>
-                                    <input type="text" id="feedbackTitle" name="feedback_title" required placeholder="Enter form title">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="feedbackDescription">Description *</label>
-                                    <textarea id="feedbackDescription" name="feedback_description" required 
-                                              placeholder="Enter form description"></textarea>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="mainColor">Background / Main Color *</label>
-                                    <div class="color-input-group">
-                                        <input type="color" id="mainColor" name="main_color" class="color-input" value="#4f46e5">
-                                        <input type="text" id="mainColorText" class="color-text" value="#4f46e5" readonly>
+                    <!-- Feedback Form Section -->
+                    <div class="settings-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Feedback Form</h2>
+                            </div>
+                            <div class="card-body">
+                                <form id="feedbackForm">
+                                    <div class="form-group">
+                                        <label for="feedbackTitle">Title *</label>
+                                        <input type="text" id="feedbackTitle" name="feedback_title" required placeholder="Enter form title">
                                     </div>
-                                </div>
 
-                                <div class="form-group">
-                                    <label for="textColor">Text Color *</label>
-                                    <div class="color-input-group">
-                                        <input type="color" id="textColor" name="text_color" class="color-input" value="#ffffff">
-                                        <input type="text" id="textColorText" class="color-text" value="#ffffff" readonly>
+                                    <div class="form-group">
+                                        <label for="feedbackDescription">Description *</label>
+                                        <textarea id="feedbackDescription" name="feedback_description" required 
+                                                  placeholder="Enter form description"></textarea>
                                     </div>
-                                </div>
 
-                                <div class="form-group">
-                                    <label for="buttonColor">Button Text Color *</label>
-                                    <div class="color-input-group">
-                                        <input type="color" id="buttonColor" name="button_color" class="color-input" value="#ffffff">
-                                        <input type="text" id="buttonColorText" class="color-text" value="#ffffff" readonly>
+                                    <div class="form-group">
+                                        <label for="mainColor">Background / Main Color *</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="mainColor" name="main_color" class="color-input" value="#4f46e5">
+                                            <input type="text" id="mainColorText" class="color-text" value="#667eea">
+                                        </div>
+                                        <div class="color-display" id="mainColorDisplay" style="background-color: #667eea;"></div>
                                     </div>
-                                </div>
 
-                                <button type="submit" class="btn btn-primary w-full">Save</button>
-                            </form>
+                                    <div class="form-group">
+                                        <label for="textColor">Text Color *</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="textColor" name="text_color" class="color-input" value="#333333">
+                                            <input type="text" id="textColorText" class="color-text" value="#333333">
+                                        </div>
+                                        <div class="color-display" id="textColorDisplay" style="background-color: #333333;"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="buttonColor">Button Text Color *</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="buttonColor" name="button_color" class="color-input" value="#ffffff">
+                                            <input type="text" id="buttonColorText" class="color-text" value="#ffffff">
+                                        </div>
+                                        <div class="color-display" id="buttonColorDisplay" style="background-color: #ffffff;"></div>
+                                    </div>
+
+                                    <div style="text-align: right;">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -556,23 +574,26 @@
         // Color input synchronization
         function setupColorSync() {
             const colorPairs = [
-                ['mainColor', 'mainColorText'],
-                ['textColor', 'textColorText'],
-                ['buttonColor', 'buttonColorText']
+                ['mainColor', 'mainColorText', 'mainColorDisplay'],
+                ['textColor', 'textColorText', 'textColorDisplay'],
+                ['buttonColor', 'buttonColorText', 'buttonColorDisplay']
             ];
 
-            colorPairs.forEach(([colorId, textId]) => {
+            colorPairs.forEach(([colorId, textId, displayId]) => {
                 const colorInput = document.getElementById(colorId);
                 const textInput = document.getElementById(textId);
+                const displayDiv = document.getElementById(displayId);
 
                 colorInput.addEventListener('input', function() {
                     textInput.value = this.value;
+                    if (displayDiv) displayDiv.style.backgroundColor = this.value;
                     updatePreview();
                 });
 
                 textInput.addEventListener('input', function() {
                     if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
                         colorInput.value = this.value;
+                        if (displayDiv) displayDiv.style.backgroundColor = this.value;
                         updatePreview();
                     }
                 });
