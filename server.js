@@ -2204,19 +2204,43 @@ app.get('/api/branches', authenticateClientToken, async (req, res) => {
     }
 });
 
-// SOLUTION: Fixed API endpoint with proper type conversion
+// FIXED API endpoint with proper debugging
 app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) => {
     try {
-        const ticketId = parseInt(req.params.id); // Convert to integer
+        const ticketId = parseInt(req.params.id);
         const { pic_ticket } = req.body;
-        const clientId = parseInt(req.user.client_id); // Ensure client_id is also integer
         
-        console.log('=== Ticket Assignment Debug ===');
-        console.log('Ticket ID (converted):', ticketId, '(type:', typeof ticketId, ')');
-        console.log('Client ID (converted):', clientId, '(type:', typeof clientId, ')');
-        console.log('PIC Ticket:', pic_ticket, '(type:', typeof pic_ticket, ')');
+        // Debug the req.user object completely
+        console.log('=== COMPLETE DEBUG INFO ===');
+        console.log('Full req.user object:', JSON.stringify(req.user, null, 2));
+        console.log('req.user.client_id:', req.user.client_id, '(type:', typeof req.user.client_id, ')');
+        console.log('All req.user properties:', Object.keys(req.user));
         
-        // Validate that we have valid integers
+        // Try different possible client_id field names
+        const possibleClientId = req.user.client_id || req.user.clientId || req.user.client_id || req.user.id;
+        console.log('Possible client ID:', possibleClientId);
+        
+        // Don't convert to parseInt until we know it exists and is valid
+        let clientId;
+        if (possibleClientId && !isNaN(possibleClientId)) {
+            clientId = parseInt(possibleClientId);
+        } else {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid or missing client ID in token',
+                details: { 
+                    received_user: req.user,
+                    client_id_value: req.user.client_id,
+                    all_user_keys: Object.keys(req.user)
+                }
+            });
+        }
+        
+        console.log('Final client ID:', clientId);
+        console.log('Ticket ID:', ticketId);
+        console.log('PIC Ticket:', pic_ticket);
+        
+        // Validate ticket ID
         if (isNaN(ticketId)) {
             return res.status(400).json({ 
                 success: false, 
@@ -2225,13 +2249,8 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
             });
         }
         
-        if (isNaN(clientId)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Invalid client ID',
-                details: { received: req.user.client_id }
-            });
-        }
+        // Convert pic_ticket to proper type
+        const picTicketValue = pic_ticket && pic_ticket !== '' && pic_ticket !== 'null' ? parseInt(pic_ticket) : null;
         
         // First check if ticket exists and belongs to client
         const checkResult = await users.query(
@@ -2239,22 +2258,9 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
             [ticketId]
         );
         
-        console.log('Ticket exists:', checkResult.rows.length > 0);
-        if (checkResult.rows.length > 0) {
-            console.log('Found ticket data:', checkResult.rows[0]);
-            
-            // Check if ticket belongs to this client
-            if (checkResult.rows[0].client_id !== clientId) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Ticket belongs to different client',
-                    details: {
-                        ticket_client_id: checkResult.rows[0].client_id,
-                        your_client_id: clientId
-                    }
-                });
-            }
-        } else {
+        console.log('Ticket query result:', checkResult.rows);
+        
+        if (checkResult.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Ticket not found',
@@ -2262,15 +2268,31 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
             });
         }
         
-        // Convert pic_ticket to proper type (integer or null)
-        const picTicketValue = pic_ticket && pic_ticket !== '' ? parseInt(pic_ticket) : null;
+        // Check client ownership
+        const ticket = checkResult.rows[0];
+        console.log('Ticket client_id:', ticket.client_id, '(type:', typeof ticket.client_id, ')');
+        console.log('User client_id:', clientId, '(type:', typeof clientId, ')');
         
-        // Validate the user exists if assigning
+        if (parseInt(ticket.client_id) !== parseInt(clientId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Ticket belongs to different client',
+                details: {
+                    ticket_client_id: ticket.client_id,
+                    your_client_id: clientId,
+                    ticket_data: ticket
+                }
+            });
+        }
+        
+        // Validate PIC user if assigning
         if (picTicketValue) {
             const userCheck = await users.query(
-                'SELECT user_id FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
+                'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
                 [picTicketValue, clientId]
             );
+            
+            console.log('PIC user check:', userCheck.rows);
             
             if (userCheck.rows.length === 0) {
                 return res.status(400).json({
@@ -2281,18 +2303,18 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
             }
         }
         
-        // Perform the update with proper integer types
+        // Perform the update
         const result = await users.query(
             'UPDATE tickets SET pic_ticket = $1, updated_at = CURRENT_TIMESTAMP WHERE ticket_id = $2 AND client_id = $3 RETURNING *',
             [picTicketValue, ticketId, clientId]
         );
         
-        console.log('Update successful:', result.rows.length > 0);
+        console.log('Update result:', result.rows.length > 0 ? 'SUCCESS' : 'FAILED');
         
         if (result.rows.length === 0) {
             return res.status(500).json({ 
                 success: false, 
-                message: 'Update failed unexpectedly' 
+                message: 'Update failed - ticket ownership changed during operation' 
             });
         }
         
