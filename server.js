@@ -103,101 +103,128 @@ const uploadToCloudinary = (buffer, originalName) => {
 };
 
 // ✅ Enhanced feedback endpoint with better error handling
-app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
-  try {
-    console.log('📝 Feedback submission received');
-    const { client_name, branch_id, cust_name, cust_email, cust_phone, type, title, description } = req.body;
+app.post('/api/feedback', async (req, res) => {
+    const client = await users.connect();
     
-    // Validation - make sure these fields are required
-    if (!client_name || !cust_name || !type || !title || !description) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Missing required fields' 
-      });
+    try {
+        await client.query('BEGIN');
+        
+        const { 
+            client_id, 
+            branch_id, 
+            cust_name, 
+            cust_email, 
+            cust_phone, 
+            type, 
+            title, 
+            description, 
+            attachment 
+        } = req.body;
+
+        // Get branch information including PIC user_id for auto-assignment
+        const branchQuery = `
+            SELECT 
+                b.branch_id,
+                b.branch_name,
+                b.user_id,
+                u.user_name as pic_name,
+                u.email as pic_email
+            FROM branches b
+            LEFT JOIN users u ON b.user_id = u.user_id AND u.status = true
+            WHERE b.branch_id = $1 AND b.client_id = $2 AND b.status = true
+        `;
+        
+        const branchResult = await client.query(branchQuery, [branch_id, client_id]);
+        
+        if (branchResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid or inactive branch' 
+            });
+        }
+
+        const branch = branchResult.rows[0];
+        let pic_ticket = null;
+        let assignmentMessage = '';
+        
+        // Auto-assign to branch PIC if available
+        if (branch.user_id) {
+            pic_ticket = branch.user_id;  // CHANGED: Using user_id
+            assignmentMessage = ` and assigned to ${branch.pic_name}`;
+            console.log(`🎯 Auto-assigning ticket to branch PIC: ${branch.pic_name} (User ID: ${pic_ticket}) for branch: ${branch.branch_name}`);
+        } else {
+            console.log(`📝 Ticket created without assignment - no PIC set for branch: ${branch.branch_name}`);
+        }
+
+        // Insert ticket with potential auto-assignment
+        const ticketQuery = `
+            INSERT INTO tickets (
+                client_id, 
+                branch_id, 
+                cust_name, 
+                cust_email, 
+                cust_phone, 
+                type, 
+                title, 
+                description, 
+                attachment, 
+                pic_ticket, 
+                status, 
+                submitted_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'open', NOW())
+            RETURNING ticket_id
+        `;
+        
+        const ticketResult = await client.query(ticketQuery, [
+            client_id, 
+            branch_id, 
+            cust_name, 
+            cust_email || null, 
+            cust_phone || null,
+            type, 
+            title, 
+            description, 
+            attachment || null, 
+            pic_ticket  // CHANGED: This now uses user_id from branch
+        ]);
+
+        const ticket_id = ticketResult.rows[0].ticket_id;
+
+        // Update client's total ticket count
+        await client.query(
+            'UPDATE clients SET total_tickets = total_tickets + 1, updated_at = CURRENT_TIMESTAMP WHERE client_id = $1',
+            [client_id]
+        );
+
+        await client.query('COMMIT');
+
+        console.log(`✅ Feedback submitted: Ticket #${ticket_id} for ${cust_name} at ${branch.branch_name}${assignmentMessage}`);
+
+        res.json({ 
+            success: true, 
+            ticket_id: ticket_id,
+            message: pic_ticket 
+                ? `Thank you for your feedback! Your ticket #${ticket_id} has been submitted${assignmentMessage}. You will be contacted soon.`
+                : `Thank you for your feedback! Your ticket #${ticket_id} has been submitted and will be reviewed by our team shortly.`,
+            data: {
+                ticket_id,
+                branch_name: branch.branch_name,
+                assigned_to: branch.pic_name || null,
+                status: 'open'
+            }
+        });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Error submitting feedback:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to submit feedback. Please try again later.' 
+        });
+    } finally {
+        client.release();
     }
-
-    // Find client by name
-    const clientQuery = `
-      SELECT client_id, client_name, status 
-      FROM clients 
-      WHERE LOWER(REPLACE(client_name, ' ', '')) = LOWER(REPLACE($1, ' ', '')) 
-      AND status = true
-    `;
-    const clientResult = await users.query(clientQuery, [client_name]);
-    
-    if (clientResult.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Client not found or inactive' 
-      });
-    }
-
-    const client = clientResult.rows[0];
-    let attachmentUrl = null;
-
-    // Handle file upload if attachment exists and Cloudinary is configured
-    if (req.file && cloudinary && process.env.CLOUDINARY_CLOUD_NAME) {
-      try {
-        console.log('🔄 Processing file upload:', req.file.originalname);
-        const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname);
-        attachmentUrl = uploadResult.secure_url;
-        console.log('✅ File uploaded successfully:', attachmentUrl);
-      } catch (uploadError) {
-        console.error('❌ File upload failed:', uploadError);
-        // Continue without attachment rather than failing completely
-        console.log('⚠️ Continuing without file attachment...');
-      }
-    } else if (req.file && !cloudinary) {
-      console.log('⚠️ File uploaded but Cloudinary not configured - skipping file storage');
-    }
-
-    // Create ticket
-    const ticketQuery = `
-      INSERT INTO tickets (
-        client_id, branch_id, cust_name, cust_email, cust_phone, 
-        type, title, description, attachment, status, submitted_at
-      ) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'open', NOW())
-      RETURNING ticket_id
-    `;
-
-    const ticketValues = [
-      client.client_id,
-      branch_id || null,
-      cust_name,
-      cust_email || null,
-      cust_phone || null,
-      type,
-      title,
-      description,
-      attachmentUrl
-    ];
-
-    const ticketResult = await users.query(ticketQuery, ticketValues);
-    const ticketId = ticketResult.rows[0].ticket_id;
-
-    // Update client's total_tickets counter
-    await users.query(
-      'UPDATE clients SET total_tickets = total_tickets + 1, updated_at = NOW() WHERE client_id = $1',
-      [client.client_id]
-    );
-
-    console.log(`✅ Ticket created successfully: #${ticketId}`);
-
-    res.json({
-      success: true,
-      message: 'Feedback submitted successfully!',
-      ticket_id: ticketId,
-      attachment_url: attachmentUrl
-    });
-
-  } catch (error) {
-    console.error('❌ Feedback submission error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to submit feedback' 
-    });
-  }
 });
 
 
