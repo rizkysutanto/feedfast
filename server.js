@@ -2204,28 +2204,114 @@ app.get('/api/branches', authenticateClientToken, async (req, res) => {
     }
 });
 
-// PATCH /api/tickets/:id/assign
+// SOLUTION: Fixed API endpoint with proper type conversion
 app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) => {
     try {
-        const { id } = req.params;
+        const ticketId = parseInt(req.params.id); // Convert to integer
         const { pic_ticket } = req.body;
-        const clientId = req.user.client_id;
+        const clientId = parseInt(req.user.client_id); // Ensure client_id is also integer
         
-        const result = await users.query(
-            'UPDATE tickets SET pic_ticket = $1 WHERE ticket_id = $2 AND client_id = $3 RETURNING *',
-            [pic_ticket, id, clientId]
-        );
+        console.log('=== Ticket Assignment Debug ===');
+        console.log('Ticket ID (converted):', ticketId, '(type:', typeof ticketId, ')');
+        console.log('Client ID (converted):', clientId, '(type:', typeof clientId, ')');
+        console.log('PIC Ticket:', pic_ticket, '(type:', typeof pic_ticket, ')');
         
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Ticket not found' });
+        // Validate that we have valid integers
+        if (isNaN(ticketId)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid ticket ID',
+                details: { received: req.params.id }
+            });
         }
         
-        res.json({ success: true, ticket: result.rows[0] });
+        if (isNaN(clientId)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid client ID',
+                details: { received: req.user.client_id }
+            });
+        }
+        
+        // First check if ticket exists and belongs to client
+        const checkResult = await users.query(
+            'SELECT ticket_id, client_id, pic_ticket FROM tickets WHERE ticket_id = $1',
+            [ticketId]
+        );
+        
+        console.log('Ticket exists:', checkResult.rows.length > 0);
+        if (checkResult.rows.length > 0) {
+            console.log('Found ticket data:', checkResult.rows[0]);
+            
+            // Check if ticket belongs to this client
+            if (checkResult.rows[0].client_id !== clientId) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Ticket belongs to different client',
+                    details: {
+                        ticket_client_id: checkResult.rows[0].client_id,
+                        your_client_id: clientId
+                    }
+                });
+            }
+        } else {
+            return res.status(404).json({
+                success: false,
+                message: 'Ticket not found',
+                details: { ticket_id: ticketId }
+            });
+        }
+        
+        // Convert pic_ticket to proper type (integer or null)
+        const picTicketValue = pic_ticket && pic_ticket !== '' ? parseInt(pic_ticket) : null;
+        
+        // Validate the user exists if assigning
+        if (picTicketValue) {
+            const userCheck = await users.query(
+                'SELECT user_id FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
+                [picTicketValue, clientId]
+            );
+            
+            if (userCheck.rows.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid user for assignment',
+                    details: { user_id: picTicketValue, client_id: clientId }
+                });
+            }
+        }
+        
+        // Perform the update with proper integer types
+        const result = await users.query(
+            'UPDATE tickets SET pic_ticket = $1, updated_at = CURRENT_TIMESTAMP WHERE ticket_id = $2 AND client_id = $3 RETURNING *',
+            [picTicketValue, ticketId, clientId]
+        );
+        
+        console.log('Update successful:', result.rows.length > 0);
+        
+        if (result.rows.length === 0) {
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Update failed unexpectedly' 
+            });
+        }
+        
+        res.json({ 
+            success: true, 
+            ticket: result.rows[0],
+            message: picTicketValue ? 'Ticket assigned successfully' : 'Ticket unassigned successfully'
+        });
+        
     } catch (error) {
         console.error('Error assigning ticket:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error',
+            error: error.message 
+        });
     }
 });
+
 
 // Create new branch
 app.post('/api/branches', authenticateClientToken, async (req, res) => {
