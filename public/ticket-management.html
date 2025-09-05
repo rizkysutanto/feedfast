@@ -1365,52 +1365,80 @@
             modal.style.display = 'none';
         }
 
-        // Update ticket (status and PIC)
-        async function updateTicket(ticketId) {
-            const newStatus = document.getElementById('modalStatusSelect').value;
-            const newPIC = document.getElementById('modalPICSelect').value;
-            
-            try {
-                // Update status
-                const statusResponse = await fetch(`/api/tickets/${ticketId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${clientToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
+        // Fixed updateTicket function
+async function updateTicket(ticketId) {
+    const newStatus = document.getElementById('modalStatusSelect').value;
+    const newPIC = document.getElementById('modalPICSelect').value;
+    
+    console.log('=== Updating Ticket ===');
+    console.log('Ticket ID:', ticketId);
+    console.log('New Status:', newStatus);
+    console.log('New PIC:', newPIC);
+    console.log('Client Token:', clientToken ? 'Present' : 'Missing');
+    
+    try {
+        // Update status
+        console.log('Updating status...');
+        const statusResponse = await fetch(`/api/tickets/${ticketId}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${clientToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
 
-                if (!statusResponse.ok) {
-                    throw new Error('Failed to update ticket status');
-                }
-
-                // Update PIC assignment
-                if (newPIC) {
-                    const picResponse = await fetch(`/api/tickets/${ticketId}/assign`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${clientToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ pic_ticket: newPIC })
-                    });
-
-                    if (!picResponse.ok) {
-                        throw new Error('Failed to assign PIC');
-                    }
-                }
-
-                // Reload tickets and close modal
-                await loadTickets();
-                closeTicketModal();
-                showSuccess('Ticket updated successfully');
-                
-            } catch (error) {
-                console.error('Failed to update ticket:', error);
-                showError('Failed to update ticket');
-            }
+        if (!statusResponse.ok) {
+            const statusError = await statusResponse.json();
+            console.error('Status update error:', statusError);
+            throw new Error(`Failed to update ticket status: ${statusError.message || 'Unknown error'}`);
         }
+
+        const statusResult = await statusResponse.json();
+        console.log('Status update successful:', statusResult);
+
+        // ALWAYS update PIC assignment (even if empty - for unassignment)
+        console.log('Updating PIC assignment...');
+        const picResponse = await fetch(`/api/tickets/${ticketId}/assign`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${clientToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                pic_ticket: newPIC || null  // Explicitly send null for empty values
+            })
+        });
+
+        if (!picResponse.ok) {
+            const picError = await picResponse.json();
+            console.error('PIC assignment error:', picError);
+            
+            // If it's a 404, show more specific error
+            if (picResponse.status === 404) {
+                console.error('Ticket not found for PIC assignment. Ticket details:', {
+                    ticketId: ticketId,
+                    ticketIdType: typeof ticketId,
+                    currentUser: currentUser
+                });
+            }
+            
+            throw new Error(`Failed to assign PIC: ${picError.message || 'Unknown error'}`);
+        }
+
+        const picResult = await picResponse.json();
+        console.log('PIC assignment successful:', picResult);
+
+        // Reload tickets and close modal
+        await loadTickets();
+        closeTicketModal();
+        showSuccess('Ticket updated successfully');
+        
+    } catch (error) {
+        console.error('Failed to update ticket:', error);
+        showError(`Failed to update ticket: ${error.message}`);
+    }
+}
 
         // Show success message
         function showSuccess(message) {
