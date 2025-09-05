@@ -2881,39 +2881,97 @@ app.get('/ticket', (req, res) => {
 app.get('/api/tickets', authenticateClientToken, async (req, res) => {
     try {
         const clientId = req.user.clientId;
+        const userId = req.user.userId; // Make sure this is available in your token
         
-        const result = await users.query(`
-            SELECT 
-                t.ticket_id,
-                t.client_id,
-                t.branch_id,
-                t.cust_name,
-                t.cust_email,
-                t.cust_phone,
-                t.type,
-                t.title,
-                t.description,
-                t.attachment,
-                t.pic_ticket,
-                t.status,
-                t.submitted_at,
-                t.responded_at,
-                t.resolved_at,
-                b.branch_name,
-                u.user_name as pic_name
-            FROM tickets t
-            LEFT JOIN branches b ON t.branch_id = b.branch_id
-            LEFT JOIN users u ON t.pic_ticket = u.user_id
-            WHERE t.client_id = $1
-            ORDER BY t.submitted_at DESC
-        `, [clientId]);
+        // First, get the user's permission settings
+        const userResult = await users.query(`
+            SELECT only_assigned_tickets 
+            FROM users 
+            WHERE user_id = $1 AND client_id = $2
+        `, [userId, clientId]);
         
-        console.log(`🎫 Fetched ${result.rows.length} tickets for client ${clientId}`);
+        if (userResult.rows.length === 0) {
+            return res.status(403).json({
+                success: false,
+                message: 'User not found or access denied'
+            });
+        }
+        
+        const onlyAssignedTickets = userResult.rows[0].only_assigned_tickets;
+        
+        // Build the query based on user permissions
+        let ticketQuery;
+        let queryParams;
+        
+        if (onlyAssignedTickets) {
+            // User can only see tickets assigned to them
+            ticketQuery = `
+                SELECT 
+                    t.ticket_id,
+                    t.client_id,
+                    t.branch_id,
+                    t.cust_name,
+                    t.cust_email,
+                    t.cust_phone,
+                    t.type,
+                    t.title,
+                    t.description,
+                    t.attachment,
+                    t.pic_ticket,
+                    t.status,
+                    t.submitted_at,
+                    t.responded_at,
+                    t.resolved_at,
+                    b.branch_name,
+                    u.user_name as pic_name
+                FROM tickets t
+                LEFT JOIN branches b ON t.branch_id = b.branch_id
+                LEFT JOIN users u ON t.pic_ticket = u.user_id
+                WHERE t.client_id = $1 AND t.pic_ticket = $2
+                ORDER BY t.submitted_at DESC
+            `;
+            queryParams = [clientId, userId];
+            console.log(`🎫 Fetching assigned tickets only for user ${userId} in client ${clientId}`);
+        } else {
+            // User can see all client tickets
+            ticketQuery = `
+                SELECT 
+                    t.ticket_id,
+                    t.client_id,
+                    t.branch_id,
+                    t.cust_name,
+                    t.cust_email,
+                    t.cust_phone,
+                    t.type,
+                    t.title,
+                    t.description,
+                    t.attachment,
+                    t.pic_ticket,
+                    t.status,
+                    t.submitted_at,
+                    t.responded_at,
+                    t.resolved_at,
+                    b.branch_name,
+                    u.user_name as pic_name
+                FROM tickets t
+                LEFT JOIN branches b ON t.branch_id = b.branch_id
+                LEFT JOIN users u ON t.pic_ticket = u.user_id
+                WHERE t.client_id = $1
+                ORDER BY t.submitted_at DESC
+            `;
+            queryParams = [clientId];
+            console.log(`🎫 Fetching all tickets for client ${clientId}`);
+        }
+        
+        const result = await users.query(ticketQuery, queryParams);
+        
+        console.log(`🎫 Fetched ${result.rows.length} tickets (only_assigned: ${onlyAssignedTickets})`);
         
         res.json({
             success: true,
             tickets: result.rows,
-            count: result.rows.length
+            count: result.rows.length,
+            only_assigned_tickets: onlyAssignedTickets // Send this info to frontend
         });
         
     } catch (error) {
@@ -2925,37 +2983,92 @@ app.get('/api/tickets', authenticateClientToken, async (req, res) => {
     }
 });
 
-// Get single ticket details
+// Also update the single ticket endpoint to respect permissions
 app.get('/api/tickets/:ticketId', authenticateClientToken, async (req, res) => {
     try {
         const { ticketId } = req.params;
         const clientId = req.user.clientId;
+        const userId = req.user.userId;
         
-        const result = await users.query(`
-            SELECT 
-                t.ticket_id,
-                t.client_id,
-                t.branch_id,
-                t.cust_name,
-                t.cust_email,
-                t.cust_phone,
-                t.type,
-                t.title,
-                t.description,
-                t.attachment,
-                t.pic_ticket,
-                t.status,
-                t.submitted_at,
-                t.responded_at,
-                t.resolved_at,
-                b.branch_name,
-                b.branch_code,
-                u.user_name as pic_name
-            FROM tickets t
-            LEFT JOIN branches b ON t.branch_id = b.branch_id
-            LEFT JOIN users u ON t.pic_ticket = u.user_id
-            WHERE t.ticket_id = $1 AND t.client_id = $2
-        `, [ticketId, clientId]);
+        // First, get the user's permission settings
+        const userResult = await users.query(`
+            SELECT only_assigned_tickets 
+            FROM users 
+            WHERE user_id = $1 AND client_id = $2
+        `, [userId, clientId]);
+        
+        if (userResult.rows.length === 0) {
+            return res.status(403).json({
+                success: false,
+                message: 'User not found or access denied'
+            });
+        }
+        
+        const onlyAssignedTickets = userResult.rows[0].only_assigned_tickets;
+        
+        // Build the query based on user permissions
+        let ticketQuery;
+        let queryParams;
+        
+        if (onlyAssignedTickets) {
+            // User can only see tickets assigned to them
+            ticketQuery = `
+                SELECT 
+                    t.ticket_id,
+                    t.client_id,
+                    t.branch_id,
+                    t.cust_name,
+                    t.cust_email,
+                    t.cust_phone,
+                    t.type,
+                    t.title,
+                    t.description,
+                    t.attachment,
+                    t.pic_ticket,
+                    t.status,
+                    t.submitted_at,
+                    t.responded_at,
+                    t.resolved_at,
+                    b.branch_name,
+                    b.branch_code,
+                    u.user_name as pic_name
+                FROM tickets t
+                LEFT JOIN branches b ON t.branch_id = b.branch_id
+                LEFT JOIN users u ON t.pic_ticket = u.user_id
+                WHERE t.ticket_id = $1 AND t.client_id = $2 AND t.pic_ticket = $3
+            `;
+            queryParams = [ticketId, clientId, userId];
+        } else {
+            // User can see all client tickets
+            ticketQuery = `
+                SELECT 
+                    t.ticket_id,
+                    t.client_id,
+                    t.branch_id,
+                    t.cust_name,
+                    t.cust_email,
+                    t.cust_phone,
+                    t.type,
+                    t.title,
+                    t.description,
+                    t.attachment,
+                    t.pic_ticket,
+                    t.status,
+                    t.submitted_at,
+                    t.responded_at,
+                    t.resolved_at,
+                    b.branch_name,
+                    b.branch_code,
+                    u.user_name as pic_name
+                FROM tickets t
+                LEFT JOIN branches b ON t.branch_id = b.branch_id
+                LEFT JOIN users u ON t.pic_ticket = u.user_id
+                WHERE t.ticket_id = $1 AND t.client_id = $2
+            `;
+            queryParams = [ticketId, clientId];
+        }
+        
+        const result = await users.query(ticketQuery, queryParams);
         
         if (result.rows.length === 0) {
             return res.status(404).json({
