@@ -2211,7 +2211,7 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
         const { pic_ticket } = req.body;
         const clientId = req.user.client_id;
         
-        const result = await adminDb.query(
+        const result = await users.query(
             'UPDATE tickets SET pic_ticket = $1 WHERE ticket_id = $2 AND client_id = $3 RETURNING *',
             [pic_ticket, id, clientId]
         );
