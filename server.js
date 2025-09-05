@@ -2353,8 +2353,10 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
             pic_name,
             pic_phone,
             pic_email,
-            pic_id  // NEW: PIC user ID
+            user_id  // CHANGED: Using user_id instead of pic_id
         } = req.body;
+        
+        console.log('📝 Branch creation request:', { branch_name, user_id }); // Debug log
         
         // Validation
         if (!branch_name || branch_name.trim().length === 0) {
@@ -2391,14 +2393,15 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
             });
         }
 
-        // NEW: Validate PIC user if pic_id is provided
-        if (pic_id) {
-            const picValidation = await client.query(
-                'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
-                [pic_id, clientId]
+        // Validate PIC user if user_id is provided
+        let selectedUser = null;
+        if (user_id) {
+            const userValidation = await client.query(
+                'SELECT user_id, user_name, email FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
+                [user_id, clientId]
             );
             
-            if (picValidation.rows.length === 0) {
+            if (userValidation.rows.length === 0) {
                 await client.query('ROLLBACK');
                 return res.status(400).json({
                     success: false,
@@ -2406,9 +2409,15 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
                 });
             }
 
-            // Optional: Auto-populate pic_name from selected user if not provided
+            selectedUser = userValidation.rows[0];
+            console.log('✅ PIC validated:', selectedUser.user_name);
+
+            // Auto-populate pic_name and pic_email from selected user if not provided
             if (!pic_name || pic_name.trim().length === 0) {
-                req.body.pic_name = picValidation.rows[0].user_name;
+                req.body.pic_name = selectedUser.user_name;
+            }
+            if (!pic_email || pic_email.trim().length === 0) {
+                req.body.pic_email = selectedUser.email;
             }
         }
         
@@ -2442,7 +2451,7 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
             }
         }
         
-        // Create branch record (UPDATED with pic_id)
+        // Create branch record with user_id
         const result = await client.query(`
             INSERT INTO branches (
                 client_id,
@@ -2454,7 +2463,7 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
                 pic_name,
                 pic_phone,
                 pic_email,
-                pic_id,
+                user_id,
                 status,
                 created_by
             )
@@ -2470,7 +2479,7 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
                 pic_name,
                 pic_phone,
                 pic_email,
-                pic_id,
+                user_id,
                 status,
                 created_at,
                 updated_at,
@@ -2482,10 +2491,10 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
             address?.trim() || null,
             phone?.trim() || null,
             email?.trim() || null,
-            req.body.pic_name?.trim() || null,  // Use potentially updated pic_name
+            req.body.pic_name?.trim() || null,
             pic_phone?.trim() || null,
-            pic_email?.trim() || null,
-            pic_id || null,  // NEW: PIC user ID
+            req.body.pic_email?.trim() || null,
+            user_id || null,  // CHANGED: Using user_id
             true, // status - default active
             createdBy
         ]);
@@ -2500,7 +2509,7 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
         
         await client.query('COMMIT');
         
-        console.log(`✅ New branch created: ${newBranch.branch_name} (ID: ${newBranch.branch_id}) for client ${clientId}${newBranch.pic_id ? ` with PIC: ${newBranch.pic_name} (ID: ${newBranch.pic_id})` : ''}`);
+        console.log(`✅ New branch created: ${newBranch.branch_name} (ID: ${newBranch.branch_id}) for client ${clientId}${newBranch.user_id ? ` with PIC: ${newBranch.pic_name} (User ID: ${newBranch.user_id})` : ''}`);
         
         res.status(201).json({
             success: true,
@@ -2530,7 +2539,7 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
         if (error.code === '23503') { // Foreign key constraint violation
             return res.status(400).json({
                 success: false,
-                message: 'Invalid reference. Please check PIC selection or client information.'
+                message: 'Invalid user reference. Please check PIC selection.'
             });
         }
         
@@ -2543,7 +2552,7 @@ app.post('/api/branches', authenticateClientToken, async (req, res) => {
     }
 });
 
-// Update branch (UPDATED with pic_id support)
+// Update branch (FIXED with user_id)
 app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => {
     const client = await users.connect();
     
@@ -2562,8 +2571,10 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
             pic_name,
             pic_phone,
             pic_email,
-            pic_id  // NEW: PIC user ID
+            user_id  // CHANGED: Using user_id instead of pic_id
         } = req.body;
+        
+        console.log('🔄 Branch update request:', { branch_name, user_id }); // Debug log
         
         // Validation
         if (!branch_name || branch_name.trim().length === 0) {
@@ -2600,14 +2611,15 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
             });
         }
 
-        // NEW: Validate PIC user if pic_id is provided
-        if (pic_id) {
-            const picValidation = await client.query(
-                'SELECT user_id, user_name FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
-                [pic_id, clientId]
+        // Validate PIC user if user_id is provided
+        let selectedUser = null;
+        if (user_id) {
+            const userValidation = await client.query(
+                'SELECT user_id, user_name, email FROM users WHERE user_id = $1 AND client_id = $2 AND status = true',
+                [user_id, clientId]
             );
             
-            if (picValidation.rows.length === 0) {
+            if (userValidation.rows.length === 0) {
                 await client.query('ROLLBACK');
                 return res.status(400).json({
                     success: false,
@@ -2615,9 +2627,15 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
                 });
             }
 
-            // Optional: Auto-populate pic_name from selected user if not provided
+            selectedUser = userValidation.rows[0];
+            console.log('✅ PIC validated for update:', selectedUser.user_name);
+
+            // Auto-populate pic_name and pic_email from selected user if not provided
             if (!pic_name || pic_name.trim().length === 0) {
-                req.body.pic_name = picValidation.rows[0].user_name;
+                req.body.pic_name = selectedUser.user_name;
+            }
+            if (!pic_email || pic_email.trim().length === 0) {
+                req.body.pic_email = selectedUser.email;
             }
         }
 
@@ -2665,7 +2683,7 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
             }
         }
         
-        // Update branch record (UPDATED with pic_id)
+        // Update branch record with user_id
         const result = await client.query(`
             UPDATE branches SET
                 branch_name = $1,
@@ -2676,7 +2694,7 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
                 pic_name = $6,
                 pic_phone = $7,
                 pic_email = $8,
-                pic_id = $9,
+                user_id = $9,
                 updated_at = CURRENT_TIMESTAMP
             WHERE branch_id = $10 AND client_id = $11
             RETURNING 
@@ -2690,7 +2708,7 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
                 pic_name,
                 pic_phone,
                 pic_email,
-                pic_id,
+                user_id,
                 status,
                 created_at,
                 updated_at,
@@ -2701,10 +2719,10 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
             address?.trim() || null,
             phone?.trim() || null,
             email?.trim() || null,
-            req.body.pic_name?.trim() || null,  // Use potentially updated pic_name
+            req.body.pic_name?.trim() || null,
             pic_phone?.trim() || null,
-            pic_email?.trim() || null,
-            pic_id || null,  // NEW: PIC user ID
+            req.body.pic_email?.trim() || null,
+            user_id || null,  // CHANGED: Using user_id
             branchId,
             clientId
         ]);
@@ -2713,7 +2731,7 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
         
         const updatedBranch = result.rows[0];
         
-        console.log(`🔄 Branch updated: ${updatedBranch.branch_name} (ID: ${branchId}) for client ${clientId}${updatedBranch.pic_id ? ` with PIC: ${updatedBranch.pic_name} (ID: ${updatedBranch.pic_id})` : ''}`);
+        console.log(`🔄 Branch updated: ${updatedBranch.branch_name} (ID: ${branchId}) for client ${clientId}${updatedBranch.user_id ? ` with PIC: ${updatedBranch.pic_name} (User ID: ${updatedBranch.user_id})` : ''}`);
         
         res.json({
             success: true,
@@ -2743,7 +2761,7 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
         if (error.code === '23503') { // Foreign key constraint violation
             return res.status(400).json({
                 success: false,
-                message: 'Invalid reference. Please check PIC selection.'
+                message: 'Invalid user reference. Please check PIC selection.'
             });
         }
         
@@ -2756,7 +2774,7 @@ app.put('/api/branches/:branchId', authenticateClientToken, async (req, res) => 
     }
 });
 
-// NEW: Get users for PIC selection dropdown
+// Get users for PIC selection dropdown
 app.get('/api/users/for-pic', authenticateClientToken, async (req, res) => {
     const client = await users.connect();
     
@@ -2768,12 +2786,13 @@ app.get('/api/users/for-pic', authenticateClientToken, async (req, res) => {
                 user_id,
                 user_name,
                 email,
-                role,
-                last_login
+                role
             FROM users 
             WHERE client_id = $1 AND status = true 
             ORDER BY user_name ASC
         `, [clientId]);
+
+        console.log(`📋 Found ${result.rows.length} users for PIC selection for client ${clientId}`);
 
         res.json({ 
             success: true, 
@@ -2792,7 +2811,7 @@ app.get('/api/users/for-pic', authenticateClientToken, async (req, res) => {
     }
 });
 
-// UPDATED: Get branches with PIC information
+// Updated: Get branches with user information
 app.get('/api/branches', authenticateClientToken, async (req, res) => {
     const client = await users.connect();
     
@@ -2818,7 +2837,7 @@ app.get('/api/branches', authenticateClientToken, async (req, res) => {
                     WHERE t.branch_id = b.branch_id
                 ) as total_tickets
             FROM branches b
-            LEFT JOIN users u ON b.pic_id = u.user_id
+            LEFT JOIN users u ON b.user_id = u.user_id
             WHERE b.client_id = $1
         `;
         
