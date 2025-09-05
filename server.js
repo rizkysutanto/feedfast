@@ -270,7 +270,7 @@ function isValidEmail(email) {
 // JWT Middleware for protecting backoffice routes
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
-     = authHeader && authHeader.split(' ')[1];
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
         return res.status(401).json({
