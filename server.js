@@ -488,7 +488,6 @@ app.post('/api/auth/login', async (req, res) => {
             {
                 userId: user.user_id,
                 email: user.email,
-                client_id: user.client_id,
                 name: user.name
             },
             process.env.JWT_SECRET,
