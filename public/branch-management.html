@@ -1422,7 +1422,8 @@
                     email: document.getElementById('email').value.trim() || null,
                     pic_name: selectedUser ? selectedUser.user_name : null,
                     pic_phone: document.getElementById('picPhone').value.trim() || null,
-                    pic_email: document.getElementById('picEmail').value.trim() || null
+                    pic_email: document.getElementById('picEmail').value.trim() || null,
+                    user_id: defaultPicValue ? parseInt(defaultPicValue) : null
                 };
                 
                 const url = isEditMode ? `/api/branches/${editBranchId}` : '/api/branches';
