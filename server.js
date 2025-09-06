@@ -125,14 +125,28 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
 
         // Handle file attachment - Upload to Cloudinary if file exists
         let attachment = null;
-        if (req.file && cloudinary && process.env.CLOUDINARY_CLOUD_NAME) {
+        if (req.file) {
             try {
-                console.log('📎 Processing attachment upload:', req.file.originalname);
-                const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname);
-                attachment = uploadResult.secure_url;
-                console.log('✅ Attachment uploaded successfully:', attachment);
-            } catch (uploadError) {
-                console.error('❌ Attachment upload failed:', uploadError);
+                console.log('📎 Uploading file to Cloudinary:', req.file.filename);
+                
+                // Upload to Cloudinary
+                const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+                    folder: 'feedfast/attachments',
+                    resource_type: 'auto'
+                });
+                
+                attachment = cloudinaryResult.secure_url;
+                console.log('✅ File uploaded to Cloudinary:', attachment);
+                
+                // Clean up local file
+                try {
+                    await fs.unlink(req.file.path);
+                } catch (unlinkError) {
+                    console.warn('⚠️ Could not delete local file:', unlinkError.message);
+                }
+                
+            } catch (cloudinaryError) {
+                console.error('❌ Cloudinary upload failed:', cloudinaryError);
                 // Continue without attachment rather than failing completely
                 attachment = null;
             }
