@@ -103,6 +103,7 @@ const uploadToCloudinary = (buffer, originalName) => {
 };
 
 // Update your feedback endpoint to handle multipart data
+// Updated feedback endpoint with proper branch handling and Cloudinary upload
 app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     const client = await users.connect();
     
@@ -122,10 +123,33 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             description
         } = req.body;
 
-        // Handle file attachment
+        // Handle file attachment - Upload to Cloudinary if file exists
         let attachment = null;
         if (req.file) {
-            attachment = req.file.filename; // or cloudinary URL
+            try {
+                console.log('📎 Uploading file to Cloudinary:', req.file.filename);
+                
+                // Upload to Cloudinary
+                const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+                    folder: 'feedfast/attachments',
+                    resource_type: 'auto'
+                });
+                
+                attachment = cloudinaryResult.secure_url;
+                console.log('✅ File uploaded to Cloudinary:', attachment);
+                
+                // Clean up local file
+                try {
+                    await fs.unlink(req.file.path);
+                } catch (unlinkError) {
+                    console.warn('⚠️ Could not delete local file:', unlinkError.message);
+                }
+                
+            } catch (cloudinaryError) {
+                console.error('❌ Cloudinary upload failed:', cloudinaryError);
+                // Continue without attachment rather than failing completely
+                attachment = null;
+            }
         }
 
         console.log('DEBUG - Raw req.body:', req.body);
@@ -133,7 +157,8 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
 
         // Convert string numbers to integers
         if (client_id) client_id = parseInt(client_id);
-        if (branch_id) branch_id = parseInt(branch_id);
+        if (branch_id && branch_id !== '') branch_id = parseInt(branch_id);
+        else branch_id = null; // Explicitly set to null if empty
 
         // If client_name is provided instead of client_id, look it up
         if (!client_id && client_name) {
@@ -164,12 +189,15 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             branch_id_type: typeof branch_id
         });
 
-        // FIXED: Get branch information with proper PIC lookup
-        let branchQuery, branchParams;
+        // FIXED: Separate logic for branch vs no-branch scenarios
+        let branchData = null;
+        let pic_ticket = null;
+        let assignmentMessage = '';
+        let assignedToName = null;
         
-        if (branch_id && branch_id !== '') {
-            // Specific branch selected - try to find PIC
-            branchQuery = `
+        if (branch_id) {
+            // Branch selected - validate and get branch info
+            const branchQuery = `
                 SELECT 
                     b.branch_id,
                     b.branch_name,
@@ -192,50 +220,50 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
                 ORDER BY u.user_id ASC
                 LIMIT 1
             `;
-            branchParams = [branch_id, client_id];
+            
+            const branchResult = await client.query(branchQuery, [branch_id, client_id]);
+            
+            if (branchResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Invalid or inactive branch',
+                    debug: {
+                        client_id: client_id,
+                        branch_id: branch_id
+                    }
+                });
+            }
+            
+            branchData = branchResult.rows[0];
+            
+            // Auto-assign logic for branch tickets
+            if (branchData.pic_user_id) {
+                pic_ticket = branchData.pic_user_id;
+                assignedToName = branchData.pic_user_name || branchData.pic_name;
+                assignmentMessage = ` and assigned to ${assignedToName}`;
+                console.log(`🎯 Auto-assigning ticket to branch PIC: ${assignedToName} (User ID: ${pic_ticket}) for branch: ${branchData.branch_name}`);
+            } else if (branchData.pic_name) {
+                console.log(`📝 Branch has PIC (${branchData.pic_name}) but no matching user account found`);
+                assignedToName = branchData.pic_name;
+            } else {
+                console.log(`📝 Ticket created for branch: ${branchData.branch_name} - no PIC information available`);
+            }
         } else {
-            // No branch selected - create ticket without branch assignment
-            branchQuery = `SELECT client_name FROM clients WHERE client_id = $1 AND status = true`;
-            branchParams = [client_id];
-        }
-        
-        const branchResult = await client.query(branchQuery, branchParams);
-        
-        if (branchResult.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ 
-                success: false, 
-                message: branch_id ? 'Invalid or inactive branch' : 'Invalid client',
-                debug: {
-                    client_id: client_id,
-                    branch_id: branch_id,
-                    branch_id_type: typeof branch_id
-                }
-            });
-        }
-
-        const branchData = branchResult.rows[0];
-        let pic_ticket = null;
-        let assignmentMessage = '';
-        let assignedToName = null;
-        
-        // FIXED: Auto-assign logic based on available PIC data
-        if (branch_id && branchData.pic_user_id) {
-            // Found a user account that matches the branch PIC
-            pic_ticket = branchData.pic_user_id;
-            assignedToName = branchData.pic_user_name || branchData.pic_name;
-            assignmentMessage = ` and assigned to ${assignedToName}`;
-            console.log(`🎯 Auto-assigning ticket to branch PIC: ${assignedToName} (User ID: ${pic_ticket}) for branch: ${branchData.branch_name}`);
-        } else if (branch_id && branchData.pic_name) {
-            // Branch has PIC info but no matching user account
-            console.log(`📝 Branch has PIC (${branchData.pic_name}) but no matching user account found`);
-            assignedToName = branchData.pic_name;
-        } else if (branch_id) {
-            // Branch selected but no PIC information
-            console.log(`📝 Ticket created for branch: ${branchData.branch_name} - no PIC information available`);
-        } else {
-            // No branch selected
-            console.log(`📝 Ticket created without branch assignment`);
+            // No branch selected - just validate client exists
+            const clientValidationQuery = `SELECT client_name FROM clients WHERE client_id = $1 AND status = true`;
+            const clientResult = await client.query(clientValidationQuery, [client_id]);
+            
+            if (clientResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Invalid client',
+                    debug: { client_id: client_id }
+                });
+            }
+            
+            console.log(`📝 Ticket created without branch assignment for client: ${clientResult.rows[0].client_name}`);
         }
 
         // Insert ticket with potential auto-assignment
@@ -259,14 +287,14 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
         
         const ticketResult = await client.query(ticketQuery, [
             client_id, 
-            branch_id || null, 
+            branch_id, // Will be null if no branch selected
             cust_name, 
             cust_email || null, 
             cust_phone || null,
             type, 
             title, 
             description, 
-            attachment || null, 
+            attachment, // Will be Cloudinary URL or null
             pic_ticket  // Will be null if no matching user found
         ]);
 
@@ -280,7 +308,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
 
         await client.query('COMMIT');
 
-        const branchInfo = branch_id ? ` at ${branchData.branch_name}` : '';
+        const branchInfo = branchData ? ` at ${branchData.branch_name}` : '';
         console.log(`✅ Feedback submitted: Ticket #${ticket_id} for ${cust_name}${branchInfo}${assignmentMessage}`);
 
         res.json({ 
@@ -291,10 +319,11 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
                 : `Thank you for your feedback! Your ticket #${ticket_id} has been submitted and will be reviewed by our team shortly.`,
             data: {
                 ticket_id,
-                branch_name: branchData.branch_name || null,
+                branch_name: branchData?.branch_name || null,
                 assigned_to: assignedToName,
                 pic_user_id: pic_ticket,
-                status: 'open'
+                status: 'open',
+                attachment_uploaded: !!attachment
             }
         });
 
@@ -310,7 +339,6 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
         client.release();
     }
 });
-
 
 // Add error handling middleware for multer errors
 app.use((error, req, res, next) => {
