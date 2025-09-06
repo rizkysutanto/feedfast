@@ -2361,7 +2361,7 @@ app.patch('/api/tickets/:id/assign', authenticateClientToken, async (req, res) =
     }
 });
 
-// Create new branch (UPDATED with pic_id support)
+
 app.post('/api/branches', authenticateClientToken, async (req, res) => {
     const client = await users.connect();
     
@@ -2849,6 +2849,7 @@ app.get('/api/branches', authenticateClientToken, async (req, res) => {
         let query = `
             SELECT 
                 b.*,
+                b.user_id,
                 u.user_name as pic_user_name,
                 u.email as pic_user_email,
                 u.role as pic_user_role,
