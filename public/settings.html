@@ -101,14 +101,6 @@
             color: var(--text-primary);
         }
 
-        .color-display {
-            width: 100%;
-            height: 40px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            margin-top: 0.5rem;
-        }
-
         /* Logo Upload Styling */
         .logo-upload-area {
             border: 2px dashed var(--border-color);
@@ -191,114 +183,6 @@
             background: #dc2626;
         }
 
-        /* Preview Section */
-        .preview-section {
-            margin-top: 3rem;
-        }
-
-        .preview-container {
-            display: flex;
-            justify-content: center;
-            padding: 2rem;
-            background: var(--bg-light);
-            border-radius: var(--border-radius-lg);
-            border: 1px solid var(--border-color);
-        }
-
-        .preview-content {
-            max-width: 400px;
-            width: 100%;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
-            transform: scale(0.85);
-            box-shadow: var(--shadow-card);
-            background: white;
-        }
-
-        .preview-header {
-            padding: 1.5rem;
-            text-align: center;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .preview-logo {
-            max-width: 80px;
-            max-height: 50px;
-            margin-bottom: 0.75rem;
-            border-radius: var(--border-radius);
-        }
-
-        .preview-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .preview-description {
-            font-size: var(--font-size-sm);
-            opacity: 0.9;
-        }
-
-        .preview-body {
-            padding: 1.5rem;
-            background: white;
-        }
-
-        .preview-form-group {
-            margin-bottom: 1rem;
-        }
-
-        .preview-label {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            display: block;
-            font-size: var(--font-size-sm);
-            color: var(--text-primary);
-        }
-
-        .preview-input-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem;
-        }
-
-        .preview-option {
-            padding: 0.5rem;
-            border: 2px solid #e5e7eb;
-            border-radius: var(--border-radius);
-            text-align: center;
-            font-size: var(--font-size-sm);
-            background: #f9fafb;
-            color: var(--text-secondary);
-        }
-
-        .preview-input {
-            padding: 0.5rem;
-            border: 2px solid #e5e7eb;
-            border-radius: var(--border-radius);
-            background: #f9fafb;
-            font-size: var(--font-size-sm);
-            color: var(--text-light);
-        }
-
-        .preview-button {
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            font-size: var(--font-size-sm);
-            transition: var(--transition);
-        }
-
-        .preview-button:hover {
-            opacity: 0.9;
-        }
-
         /* Action Buttons */
         .form-actions {
             display: flex;
@@ -343,6 +227,85 @@
             cursor: not-allowed;
         }
 
+        /* Feedback Link Section */
+        .feedback-link-section {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .feedback-link-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .feedback-link-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: white;
+            font-family: monospace;
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            user-select: all;
+        }
+
+        .copy-btn {
+            background: var(--primary-purple);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #7c3aed;
+        }
+
+        .copy-btn.copied {
+            background: #16a34a;
+        }
+
+        .qr-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .qr-download-btn {
+            background: var(--primary-purple);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .qr-download-btn:hover {
+            background: #7c3aed;
+        }
+
+        .qr-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
         /* Alert Messages */
         .alert {
             padding: 1rem 1.5rem;
@@ -385,15 +348,6 @@
                 max-width: 100%;
             }
 
-            .preview-content {
-                transform: scale(1);
-                max-width: 100%;
-            }
-
-            .preview-container {
-                padding: 1rem;
-            }
-
             .form-actions {
                 flex-direction: column;
                 gap: 0.75rem;
@@ -416,6 +370,18 @@
 
             .color-text {
                 text-align: center;
+            }
+
+            .feedback-link-container {
+                flex-direction: column;
+            }
+
+            .feedback-link-input {
+                text-align: center;
+            }
+
+            .qr-actions {
+                justify-content: center;
             }
         }
     </style>
@@ -611,10 +577,38 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Feedback Link Section (Full Width) -->
+                    <div class="settings-section settings-full-width">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Customer Feedback Link</h2>
+                                <p class="text-secondary">Share this link with your customers to collect feedback</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="feedback-link-section">
+                                    <div class="feedback-link-container">
+                                        <input type="text" id="feedbackLink" class="feedback-link-input" readonly placeholder="Loading...">
+                                        <button id="copyBtn" class="copy-btn" onclick="copyFeedbackLink()">Copy Link</button>
+                                    </div>
+                                    <div class="qr-actions">
+                                        <button id="downloadQRBtn" class="qr-download-btn" onclick="downloadQRCode()">
+                                            <svg class="qr-icon" viewBox="0 0 24 24">
+                                                <path d="M3 11V3h8v8H3zm2-2h4V5H5v4zm8-8h8v8h-8V1zm2 2v4h4V3h-4zM3 21v-8h8v8H3zm2-2h4v-4H5v4zm16 2v-4h-2v-2h2v-2h-2v-2h2v-2h2v2h-2v2h2v2h-2v2h2v4h-2zm-2-8v2h-2v-2h2zm2-4v2h-2V9h2z"/>
+                                            </svg>
+                                            Download QR Code
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
     <script>
         let currentSettings = {};
         let currentUser = null;
@@ -703,6 +697,17 @@
                 const initials = name.substring(0, 1).toUpperCase();
                 elements.userAvatar.textContent = initials;
             }
+
+            // Update feedback link
+            updateFeedbackLink();
+        }
+
+        function updateFeedbackLink() {
+            const clientName = currentUser?.clientName || currentUser?.client_name || '';
+            if (clientName) {
+                const feedbackUrl = `${window.location.origin}/feedback/${encodeURIComponent(clientName)}`;
+                document.getElementById('feedbackLink').value = feedbackUrl;
+            }
         }
 
         async function loadSettings() {
@@ -725,7 +730,6 @@
                 
                 // Populate form fields
                 populateSettings(currentSettings);
-                updatePreview();
 
             } catch (error) {
                 console.error('Error loading settings:', error);
@@ -760,62 +764,28 @@
             }
         }
 
-        function updatePreview() {
-            const title = document.getElementById('feedbackTitle').value || 'Share Your Feedback';
-            const description = document.getElementById('feedbackDescription').value || 'Help us improve our service';
-            const mainColor = document.getElementById('mainColor').value || '#4f46e5';
-            const textColor = document.getElementById('textColor').value || '#ffffff';
-            const buttonColor = document.getElementById('buttonColor').value || '#ffffff';
-
-            // Update preview elements
-            document.getElementById('previewTitle').textContent = title;
-            document.getElementById('previewDescription').textContent = description;
-            document.getElementById('previewHeader').style.background = `linear-gradient(135deg, ${mainColor} 0%, ${adjustColor(mainColor, -20)} 100%)`;
-            document.getElementById('previewHeader').style.color = textColor;
-            document.getElementById('previewButton').style.background = mainColor;
-            document.getElementById('previewButton').style.color = buttonColor;
-
-            // Update logo in preview
-            const logoImg = document.getElementById('previewHeaderLogo');
-            if (currentSettings.logo_url) {
-                logoImg.src = currentSettings.logo_url;
-                logoImg.style.display = 'block';
-            } else {
-                logoImg.style.display = 'none';
-            }
-        }
-
         // Color input synchronization
         function setupColorSync() {
             const colorPairs = [
-                ['mainColor', 'mainColorText', 'mainColorDisplay'],
-                ['textColor', 'textColorText', 'textColorDisplay'],
-                ['buttonColor', 'buttonColorText', 'buttonColorDisplay']
+                ['mainColor', 'mainColorText'],
+                ['textColor', 'textColorText'],
+                ['buttonColor', 'buttonColorText']
             ];
 
-            colorPairs.forEach(([colorId, textId, displayId]) => {
+            colorPairs.forEach(([colorId, textId]) => {
                 const colorInput = document.getElementById(colorId);
                 const textInput = document.getElementById(textId);
-                const displayDiv = document.getElementById(displayId);
 
                 colorInput.addEventListener('input', function() {
                     textInput.value = this.value;
-                    if (displayDiv) displayDiv.style.backgroundColor = this.value;
-                    updatePreview();
                 });
 
                 textInput.addEventListener('input', function() {
                     if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
                         colorInput.value = this.value;
-                        if (displayDiv) displayDiv.style.backgroundColor = this.value;
-                        updatePreview();
                     }
                 });
             });
-
-            // Update preview when title/description changes
-            document.getElementById('feedbackTitle').addEventListener('input', updatePreview);
-            document.getElementById('feedbackDescription').addEventListener('input', updatePreview);
         }
 
         // Logo upload handling
@@ -874,9 +844,7 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 showLogoPreview(e.target.result);
-                // Temporarily update current settings for preview
                 currentSettings.logo_url = e.target.result;
-                updatePreview();
             };
             reader.readAsDataURL(file);
         }
@@ -896,7 +864,6 @@
             document.getElementById('logoPreview').style.display = 'none';
             document.getElementById('logoPlaceholder').style.display = 'block';
             currentSettings.logo_url = null;
-            updatePreview();
         }
 
         // Form submissions
@@ -965,8 +932,6 @@
                     
                     // Clear file input after successful upload
                     document.getElementById('logoUpload').value = '';
-                    
-                    updatePreview();
                 } else {
                     throw new Error(result.message || 'Failed to save settings');
                 }
@@ -981,18 +946,89 @@
             }
         }
 
-        // Utility functions
-        function adjustColor(hex, amount) {
-            const num = parseInt(hex.slice(1), 16);
-            const amt = Math.round(2.55 * amount);
-            const R = (num >> 16) + amt;
-            const G = (num >> 8 & 0x00FF) + amt;
-            const B = (num & 0x0000FF) + amt;
-            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        // Feedback link functions
+        async function copyFeedbackLink() {
+            const linkInput = document.getElementById('feedbackLink');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            try {
+                await navigator.clipboard.writeText(linkInput.value);
+                
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Failed to copy link:', error);
+                // Fallback for older browsers
+                linkInput.select();
+                linkInput.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                
+                showSuccess('Feedback link copied to clipboard!');
+            }
         }
 
+        async function downloadQRCode() {
+            const feedbackUrl = document.getElementById('feedbackLink').value;
+            const clientName = currentUser?.clientName || currentUser?.client_name || 'feedback';
+            
+            if (!feedbackUrl) {
+                showError('No feedback link available to generate QR code.');
+                return;
+            }
+
+            try {
+                const downloadBtn = document.getElementById('downloadQRBtn');
+                const originalText = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = '<svg class="qr-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Generating...';
+                downloadBtn.disabled = true;
+
+                // Create canvas for QR code
+                const canvas = document.createElement('canvas');
+                
+                // Generate QR code
+                await QRCode.toCanvas(canvas, feedbackUrl, {
+                    width: 512,
+                    height: 512,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    },
+                    margin: 2,
+                    errorCorrectionLevel: 'M'
+                });
+
+                // Convert canvas to blob and download
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${clientName}-feedback-qr.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    showSuccess('QR code downloaded successfully!');
+                }, 'image/png');
+
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                showError('Failed to generate QR code. Please try again.');
+            } finally {
+                const downloadBtn = document.getElementById('downloadQRBtn');
+                downloadBtn.innerHTML = '<svg class="qr-icon" viewBox="0 0 24 24"><path d="M3 11V3h8v8H3zm2-2h4V5H5v4zm8-8h8v8h-8V1zm2 2v4h4V3h-4zM3 21v-8h8v8H3zm2-2h4v-4H5v4zm16 2v-4h-2v-2h2v-2h-2v-2h2v-2h2v2h-2v2h2v2h-2v2h2v4h-2zm-2-8v2h-2v-2h2zm2-4v2h-2V9h2z"/></svg>Download QR Code';
+                downloadBtn.disabled = false;
+            }
+        }
+
+        // Utility functions
         function showSuccess(message) {
             const successMsg = document.getElementById('successMessage');
             successMsg.innerHTML = `<strong>Success!</strong> ${message}`;
@@ -1024,7 +1060,6 @@
             setupColorSync();
             setupLogoUpload();
             setupForms();
-            updatePreview();
         }
     </script>
 </body>
