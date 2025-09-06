@@ -144,6 +144,18 @@ app.post('/api/feedback', async (req, res) => {
             client_id = clientResult.rows[0].client_id;
             console.log(`🔍 Client lookup: "${client_name}" -> ID: ${client_id}`);
         }
+// Convert branch_id to integer if it's a string
+        if (branch_id) {
+            branch_id = parseInt(branch_id);
+        }
+
+        // DEBUG: Log the values being used
+        console.log('🔍 DEBUG - Final values:', {
+            client_id: client_id,
+            branch_id: branch_id,
+            client_id_type: typeof client_id,
+            branch_id_type: typeof branch_id
+        });
       
         // Get branch information including PIC user_id for auto-assignment
         const branchQuery = `
