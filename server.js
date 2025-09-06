@@ -1367,7 +1367,7 @@ function generateFeedbackFormHTML(client, branches) {
         errorMessage.scrollIntoView({ behavior: 'smooth' });
     }
 
-    form.addEventListener('submit', async (e) => {
+    ('submit', async (e) => {
         e.preventDefault();
         
         // Clear previous messages
@@ -4956,6 +4956,11 @@ function generateCustomFeedbackFormHTML(client, branches) {
             try {
                 const formData = new FormData(form);
                 formData.append('client_id', ${client.client_id});
+
+                const branchSelect = document.getElementById('branch');
+        if (branchSelect && branchSelect.value) {
+            formData.set('branch_id', parseInt(branchSelect.value));
+        }
 
                 const response = await fetch('/api/feedback', {
                     method: 'POST',
