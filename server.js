@@ -102,15 +102,28 @@ const uploadToCloudinary = (buffer, originalName) => {
   });
 };
 
-// ✅ Enhanced feedback endpoint with better error handling
-app.post('/api/feedback', async (req, res) => {
+const multer = require('multer');
+const upload = multer({ 
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed!'), false);
+        }
+    }
+});
+
+// Update your feedback endpoint to handle multipart data
+app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     const client = await users.connect();
     
     try {
         await client.query('BEGIN');
         
-        const { 
-            client_id,
+        // Extract data from req.body (multipart form data)
+        let { 
+            client_id, 
             client_name,
             branch_id, 
             cust_name, 
@@ -118,11 +131,24 @@ app.post('/api/feedback', async (req, res) => {
             cust_phone, 
             type, 
             title, 
-            description, 
-            attachment 
+            description
         } = req.body;
 
-      // If client_name is provided instead of client_id, look it up
+        // Handle file attachment
+        let attachment = null;
+        if (req.file) {
+            // You can upload to cloudinary or save locally
+            attachment = req.file.filename; // or cloudinary URL
+        }
+
+        console.log('DEBUG - Raw req.body:', req.body);
+        console.log('DEBUG - File:', req.file);
+
+        // Convert string numbers to integers
+        if (client_id) client_id = parseInt(client_id);
+        if (branch_id) branch_id = parseInt(branch_id);
+
+        // If client_name is provided instead of client_id, look it up
         if (!client_id && client_name) {
             const clientNameForUrl = client_name.toLowerCase().replace(/\s+/g, '');
             const clientLookupQuery = `
@@ -142,17 +168,11 @@ app.post('/api/feedback', async (req, res) => {
             }
             
             client_id = clientResult.rows[0].client_id;
-            console.log(`🔍 Client lookup: "${client_name}" -> ID: ${client_id}`);
-        }
-// Convert branch_id to integer if it's a string
-        if (branch_id) {
-            branch_id = parseInt(branch_id);
         }
 
-        // DEBUG: Log the values being used
-        console.log('🔍 DEBUG - Final values:', {
-            client_id: client_id,
-            branch_id: branch_id,
+        console.log('DEBUG - Final values:', {
+            client_id,
+            branch_id,
             client_id_type: typeof client_id,
             branch_id_type: typeof branch_id
         });
