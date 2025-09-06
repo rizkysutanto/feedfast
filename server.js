@@ -1278,9 +1278,9 @@ function generateFeedbackFormHTML(client, branches) {
                 
                 ${branches.length > 0 ? `
                 <div class="form-group">
-                    <label for="branch">Branch/Location</label>
+                    <label for="branch">Branch/Location<span class="required">*</span></label>
                     <select name="branch_id" id="branch">
-                        <option value="">Select a branch (optional)</option>
+                        <option value="">Select a branch</option>
                         ${branches.map(branch => 
                           `<option value="${branch.branch_id}">${branch.branch_name} ${branch.branch_code ? '(' + branch.branch_code + ')' : ''}</option>`
                         ).join('')}
