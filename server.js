@@ -176,7 +176,12 @@ app.post('/api/feedback', async (req, res) => {
             await client.query('ROLLBACK');
             return res.status(400).json({ 
                 success: false, 
-                message: 'Invalid or inactive branch' 
+                message: 'Invalid or inactive branch',
+                debug: {
+                    client_id: client_id,
+                    branch_id: branch_id,
+                    branch_id_type: typeof branch_id
+                }
             });
         }
 
