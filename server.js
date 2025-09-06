@@ -125,7 +125,6 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
         // Handle file attachment
         let attachment = null;
         if (req.file) {
-            // You can upload to cloudinary or save locally
             attachment = req.file.filename; // or cloudinary URL
         }
 
@@ -164,27 +163,49 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             client_id_type: typeof client_id,
             branch_id_type: typeof branch_id
         });
-      
-        // Get branch information including PIC user_id for auto-assignment
-        const branchQuery = `
-            SELECT 
-                b.branch_id,
-                b.branch_name,
-                b.user_id,
-                u.user_name as pic_name,
-                u.email as pic_email
-            FROM branches b
-            LEFT JOIN users u ON b.user_id = u.user_id AND u.status = true
-            WHERE b.branch_id = $1 AND b.client_id = $2 AND b.status = true
-        `;
+
+        // FIXED: Get branch information with proper PIC lookup
+        let branchQuery, branchParams;
         
-        const branchResult = await client.query(branchQuery, [branch_id, client_id]);
+        if (branch_id && branch_id !== '') {
+            // Specific branch selected - try to find PIC
+            branchQuery = `
+                SELECT 
+                    b.branch_id,
+                    b.branch_name,
+                    b.pic_name,
+                    b.pic_email,
+                    b.pic_phone,
+                    u.user_id as pic_user_id,
+                    u.user_name as pic_user_name
+                FROM branches b
+                LEFT JOIN users u ON (
+                    u.client_id = b.client_id 
+                    AND u.status = true 
+                    AND (
+                        u.email = b.pic_email 
+                        OR u.user_name = b.pic_name
+                        OR b.branch_id = ANY(u.branch_id)
+                    )
+                )
+                WHERE b.branch_id = $1 AND b.client_id = $2 AND b.status = true
+                ORDER BY u.user_id ASC
+                LIMIT 1
+            `;
+            branchParams = [branch_id, client_id];
+        } else {
+            // No branch selected - create ticket without branch assignment
+            branchQuery = `SELECT client_name FROM clients WHERE client_id = $1 AND status = true`;
+            branchParams = [client_id];
+        }
+        
+        const branchResult = await client.query(branchQuery, branchParams);
         
         if (branchResult.rows.length === 0) {
             await client.query('ROLLBACK');
             return res.status(400).json({ 
                 success: false, 
-                message: 'Invalid or inactive branch',
+                message: branch_id ? 'Invalid or inactive branch' : 'Invalid client',
                 debug: {
                     client_id: client_id,
                     branch_id: branch_id,
@@ -193,17 +214,28 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             });
         }
 
-        const branch = branchResult.rows[0];
+        const branchData = branchResult.rows[0];
         let pic_ticket = null;
         let assignmentMessage = '';
+        let assignedToName = null;
         
-        // Auto-assign to branch PIC if available
-        if (branch.user_id) {
-            pic_ticket = branch.user_id;  // CHANGED: Using user_id
-            assignmentMessage = ` and assigned to ${branch.pic_name}`;
-            console.log(`🎯 Auto-assigning ticket to branch PIC: ${branch.pic_name} (User ID: ${pic_ticket}) for branch: ${branch.branch_name}`);
+        // FIXED: Auto-assign logic based on available PIC data
+        if (branch_id && branchData.pic_user_id) {
+            // Found a user account that matches the branch PIC
+            pic_ticket = branchData.pic_user_id;
+            assignedToName = branchData.pic_user_name || branchData.pic_name;
+            assignmentMessage = ` and assigned to ${assignedToName}`;
+            console.log(`🎯 Auto-assigning ticket to branch PIC: ${assignedToName} (User ID: ${pic_ticket}) for branch: ${branchData.branch_name}`);
+        } else if (branch_id && branchData.pic_name) {
+            // Branch has PIC info but no matching user account
+            console.log(`📝 Branch has PIC (${branchData.pic_name}) but no matching user account found`);
+            assignedToName = branchData.pic_name;
+        } else if (branch_id) {
+            // Branch selected but no PIC information
+            console.log(`📝 Ticket created for branch: ${branchData.branch_name} - no PIC information available`);
         } else {
-            console.log(`📝 Ticket created without assignment - no PIC set for branch: ${branch.branch_name}`);
+            // No branch selected
+            console.log(`📝 Ticket created without branch assignment`);
         }
 
         // Insert ticket with potential auto-assignment
@@ -227,7 +259,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
         
         const ticketResult = await client.query(ticketQuery, [
             client_id, 
-            branch_id, 
+            branch_id || null, 
             cust_name, 
             cust_email || null, 
             cust_phone || null,
@@ -235,7 +267,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             title, 
             description, 
             attachment || null, 
-            pic_ticket  // CHANGED: This now uses user_id from branch
+            pic_ticket  // Will be null if no matching user found
         ]);
 
         const ticket_id = ticketResult.rows[0].ticket_id;
@@ -248,7 +280,8 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
 
         await client.query('COMMIT');
 
-        console.log(`✅ Feedback submitted: Ticket #${ticket_id} for ${cust_name} at ${branch.branch_name}${assignmentMessage}`);
+        const branchInfo = branch_id ? ` at ${branchData.branch_name}` : '';
+        console.log(`✅ Feedback submitted: Ticket #${ticket_id} for ${cust_name}${branchInfo}${assignmentMessage}`);
 
         res.json({ 
             success: true, 
@@ -258,8 +291,9 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
                 : `Thank you for your feedback! Your ticket #${ticket_id} has been submitted and will be reviewed by our team shortly.`,
             data: {
                 ticket_id,
-                branch_name: branch.branch_name,
-                assigned_to: branch.pic_name || null,
+                branch_name: branchData.branch_name || null,
+                assigned_to: assignedToName,
+                pic_user_id: pic_ticket,
                 status: 'open'
             }
         });
@@ -269,7 +303,8 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
         console.error('❌ Error submitting feedback:', error);
         res.status(500).json({ 
             success: false, 
-            message: 'Failed to submit feedback. Please try again later.' 
+            message: 'Failed to submit feedback. Please try again later.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     } finally {
         client.release();
@@ -4226,6 +4261,8 @@ function generateCustomFeedbackFormHTML(client, branches) {
             <div class="error-message" id="errorMessage"></div>
             
             <form id="feedbackForm">
+                <input type="hidden" name="client_id" value="${client.client_id}">
+                
                 <div class="form-group">
                     <label>Feedback Type <span class="required">*</span></label>
                     <div class="feedback-types">
@@ -4297,7 +4334,7 @@ function generateCustomFeedbackFormHTML(client, branches) {
                     <div class="file-upload-area" id="fileUploadArea">
                         <input type="file" id="attachment" name="attachment" accept="image/*">
                         <div class="upload-placeholder">
-                            <p>📷 Click to upload or drag & drop an image</p>
+                            <p>Click to upload or drag & drop an image</p>
                             <p class="upload-note">Max 5MB • JPG, PNG, GIF supported</p>
                         </div>
                         <div class="file-preview" id="filePreview" style="display: none;">
@@ -4342,7 +4379,7 @@ function generateCustomFeedbackFormHTML(client, branches) {
                 (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
         }
 
-        // Form handling code (same as before)
+        // Form handling variables
         const form = document.getElementById('feedbackForm');
         const submitBtn = document.getElementById('submitBtn');
         const loading = document.getElementById('loading');
@@ -4355,7 +4392,7 @@ function generateCustomFeedbackFormHTML(client, branches) {
         const removeFileBtn = document.getElementById('removeFile');
         const uploadPlaceholder = fileUploadArea.querySelector('.upload-placeholder');
 
-        // File upload handling
+        // File upload event listeners
         fileInput.addEventListener('change', handleFileSelect);
         fileUploadArea.addEventListener('dragover', handleDragOver);
         fileUploadArea.addEventListener('dragleave', handleDragLeave);
@@ -4423,8 +4460,17 @@ function generateCustomFeedbackFormHTML(client, branches) {
             errorMessage.scrollIntoView({ behavior: 'smooth' });
         }
 
+        function showSuccess(message) {
+            successMessage.innerHTML = message;
+            successMessage.style.display = 'block';
+            successMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Form submission handler
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            console.log('Form submission started...');
             
             // Clear previous messages
             successMessage.style.display = 'none';
@@ -4437,39 +4483,42 @@ function generateCustomFeedbackFormHTML(client, branches) {
 
             try {
                 const formData = new FormData(form);
-                formData.append('client_id', ${client.client_id});
-
-                const branchSelect = document.getElementById('branch');
-        if (branchSelect && branchSelect.value) {
-            formData.set('branch_id', parseInt(branchSelect.value));
-        }
+                
+                // Debug: Log all form data
+                console.log('Form data being submitted:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(\`\${key}: \${value}\`);
+                }
 
                 const response = await fetch('/api/feedback', {
                     method: 'POST',
                     body: formData
                 });
 
+                console.log('Response status:', response.status);
+                
                 const result = await response.json();
+                console.log('Server response:', result);
 
                 if (result.success) {
-                    successMessage.innerHTML = \`
+                    const message = \`
                         <strong>Thank you!</strong> Your feedback has been submitted successfully. 
-                        Ticket ID: #\${result.ticket_id}
-                        \${result.attachment_url ? '<br>📎 Image uploaded successfully!' : ''}
+                        <br>Ticket ID: #\${result.ticket_id}
+                        \${result.data.assigned_to ? \`<br>Assigned to: \${result.data.assigned_to}\` : ''}
+                        \${result.data.branch_name ? \`<br>Branch: \${result.data.branch_name}\` : ''}
                     \`;
-                    successMessage.style.display = 'block';
+                    showSuccess(message);
                     form.reset();
                     removeFile();
-                    
-                    successMessage.scrollIntoView({ behavior: 'smooth' });
                 } else {
-                    throw new Error(result.error || 'Failed to submit feedback');
+                    throw new Error(result.message || result.error || 'Failed to submit feedback');
                 }
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error submitting feedback:', error);
                 showError(error.message || 'Failed to submit feedback. Please try again.');
             } finally {
+                // Reset button state
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit Feedback';
                 loading.style.display = 'none';
@@ -4481,7 +4530,7 @@ function generateCustomFeedbackFormHTML(client, branches) {
     `;
 }
 
-// Helper functions for color manipulation
+// Helper functions for color manipulation (server-side)
 function hexToRgba(hex, alpha) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
