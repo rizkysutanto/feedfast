@@ -1381,7 +1381,7 @@ function generateFeedbackFormHTML(client, branches) {
 
         try {
             const formData = new FormData(form);
-            formData.append('client_name', '${clientNameForUrl}');
+            formData.append('client_id', ${client.client_id});
 
             const response = await fetch('/api/feedback', {
                 method: 'POST',
@@ -4955,7 +4955,7 @@ function generateCustomFeedbackFormHTML(client, branches) {
 
             try {
                 const formData = new FormData(form);
-                formData.append('client_name', '${clientNameForUrl}');
+                formData.append('client_id', ${client.client_id});
 
                 const response = await fetch('/api/feedback', {
                     method: 'POST',
