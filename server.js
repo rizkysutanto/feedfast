@@ -102,18 +102,6 @@ const uploadToCloudinary = (buffer, originalName) => {
   });
 };
 
-const multer = require('multer');
-const upload = multer({ 
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only image files are allowed!'), false);
-        }
-    }
-});
-
 // Update your feedback endpoint to handle multipart data
 app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     const client = await users.connect();
@@ -5101,6 +5089,12 @@ app.get('/feedback/:clientname', async (req, res) => {
     
     // Use the updated function with CMS customization
     res.send(generateCustomFeedbackFormHTML(client, branches));
+
+    console.log('DEBUG - Client object:', client);
+        console.log('DEBUG - Branches:', branches);
+        
+        const html = generateFeedbackFormHTML(client, branches);
+        res.send(html);
     
   } catch (error) {
     console.error('❌ Error loading feedback form:', error);
