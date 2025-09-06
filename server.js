@@ -110,7 +110,8 @@ app.post('/api/feedback', async (req, res) => {
         await client.query('BEGIN');
         
         const { 
-            client_id, 
+            client_id,
+            client_name,
             branch_id, 
             cust_name, 
             cust_email, 
@@ -121,6 +122,29 @@ app.post('/api/feedback', async (req, res) => {
             attachment 
         } = req.body;
 
+      // If client_name is provided instead of client_id, look it up
+        if (!client_id && client_name) {
+            const clientNameForUrl = client_name.toLowerCase().replace(/\s+/g, '');
+            const clientLookupQuery = `
+                SELECT client_id, client_name 
+                FROM clients 
+                WHERE LOWER(REPLACE(client_name, ' ', '')) = $1 AND status = true
+            `;
+            const clientResult = await client.query(clientLookupQuery, [clientNameForUrl]);
+            
+            if (clientResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Client not found or inactive',
+                    debug: { received_client_name: client_name, converted: clientNameForUrl }
+                });
+            }
+            
+            client_id = clientResult.rows[0].client_id;
+            console.log(`🔍 Client lookup: "${client_name}" -> ID: ${client_id}`);
+        }
+      
         // Get branch information including PIC user_id for auto-assignment
         const branchQuery = `
             SELECT 
