@@ -5075,6 +5075,7 @@ app.get('/feedback/:clientname', async (req, res) => {
     }
 
     const client = clientResult.rows[0];
+    console.log('DEBUG - Client object:', client); // Should now include client_id
     
     // Get client's branches for dropdown
     const branchesQuery = `
