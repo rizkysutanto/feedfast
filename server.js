@@ -103,6 +103,7 @@ const uploadToCloudinary = (buffer, originalName) => {
 };
 
 // Update your feedback endpoint to handle multipart data
+// Updated feedback endpoint to handle Cloudinary attachment uploads
 app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     const client = await users.connect();
     
@@ -122,14 +123,27 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             description
         } = req.body;
 
-        // Handle file attachment
+        // Handle file attachment upload to Cloudinary
         let attachment = null;
-        if (req.file) {
-            attachment = req.file.filename; // or cloudinary URL
+        if (req.file && cloudinary && process.env.CLOUDINARY_CLOUD_NAME) {
+            try {
+                console.log('📁 Processing attachment upload:', req.file.originalname);
+                const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+                attachment = uploadResult.secure_url;
+                console.log('✅ Attachment uploaded successfully:', attachment);
+            } catch (uploadError) {
+                await client.query('ROLLBACK');
+                console.error('❌ Attachment upload failed:', uploadError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to upload attachment. Please try again.'
+                });
+            }
         }
 
         console.log('DEBUG - Raw req.body:', req.body);
         console.log('DEBUG - File:', req.file);
+        console.log('DEBUG - Attachment URL:', attachment);
 
         // Convert string numbers to integers
         if (client_id) client_id = parseInt(client_id);
@@ -161,10 +175,11 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             client_id,
             branch_id,
             client_id_type: typeof client_id,
-            branch_id_type: typeof branch_id
+            branch_id_type: typeof branch_id,
+            has_attachment: !!attachment
         });
 
-        // FIXED: Get branch information with proper PIC lookup
+        // Get branch information with proper PIC lookup
         let branchQuery, branchParams;
         
         if (branch_id && branch_id !== '') {
@@ -219,7 +234,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
         let assignmentMessage = '';
         let assignedToName = null;
         
-        // FIXED: Auto-assign logic based on available PIC data
+        // Auto-assign logic based on available PIC data
         if (branch_id && branchData.pic_user_id) {
             // Found a user account that matches the branch PIC
             pic_ticket = branchData.pic_user_id;
@@ -238,7 +253,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             console.log(`📝 Ticket created without branch assignment`);
         }
 
-        // Insert ticket with potential auto-assignment
+        // Insert ticket with Cloudinary attachment URL
         const ticketQuery = `
             INSERT INTO tickets (
                 client_id, 
@@ -266,7 +281,7 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
             type, 
             title, 
             description, 
-            attachment || null, 
+            attachment || null, // Cloudinary URL or null
             pic_ticket  // Will be null if no matching user found
         ]);
 
@@ -281,7 +296,8 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
         await client.query('COMMIT');
 
         const branchInfo = branch_id ? ` at ${branchData.branch_name}` : '';
-        console.log(`✅ Feedback submitted: Ticket #${ticket_id} for ${cust_name}${branchInfo}${assignmentMessage}`);
+        const attachmentInfo = attachment ? ' with attachment' : '';
+        console.log(`✅ Feedback submitted: Ticket #${ticket_id} for ${cust_name}${branchInfo}${assignmentMessage}${attachmentInfo}`);
 
         res.json({ 
             success: true, 
@@ -294,7 +310,8 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
                 branch_name: branchData.branch_name || null,
                 assigned_to: assignedToName,
                 pic_user_id: pic_ticket,
-                status: 'open'
+                status: 'open',
+                attachment_url: attachment // Include the Cloudinary URL in response
             }
         });
 
@@ -311,23 +328,27 @@ app.post('/api/feedback', upload.single('attachment'), async (req, res) => {
     }
 });
 
-
-// Add error handling middleware for multer errors
+// Updated error handling middleware for multer and Cloudinary errors
 app.use((error, req, res, next) => {
-  if (error instanceof multer.MulterError) {
-    if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({
-        success: false,
-        error: 'File too large. Maximum size is 5MB.'
-      });
+    if (error instanceof multer.MulterError) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+                success: false,
+                error: 'File too large. Maximum size is 5MB.'
+            });
+        }
+    } else if (error.message === 'Only image files are allowed!') {
+        return res.status(400).json({
+            success: false,
+            error: 'Only image files are allowed.'
+        });
+    } else if (error.message && error.message.includes('cloudinary')) {
+        return res.status(500).json({
+            success: false,
+            error: 'File upload service temporarily unavailable. Please try again later.'
+        });
     }
-  } else if (error.message === 'Only image files are allowed!') {
-    return res.status(400).json({
-      success: false,
-      error: 'Only image files are allowed.'
-    });
-  }
-  next(error);
+    next(error);
 });
 
 // Admin database (new)
