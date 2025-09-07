@@ -179,44 +179,44 @@
                         </div>
                     </div>
 
-                    <!-- KPI Stats Row 2 -->
-                    <div class="kpi-stats-row">
-                        <div class="kpi-card kpi-card-gray">
-                            <div class="kpi-content">
-                                <div class="kpi-number" id="ticketResolved">0</div>
-                                <div class="kpi-label">Ticket Resolved</div>
-                            </div>
-                        </div>
+                    <!-- Replace the KPI Stats Row 2 section in your HTML with this: -->
+<div class="kpi-stats-row">
+    <div class="kpi-card kpi-card-gray">
+        <div class="kpi-content">
+            <div class="kpi-number" id="ticketResolved">0</div>
+            <div class="kpi-label">Ticket Resolved</div>
+        </div>
+    </div>
 
-                        <div class="kpi-card kpi-card-gray">
-                            <div class="kpi-content">
-                                <div class="kpi-number" id="ticketUnresolved">0</div>
-                                <div class="kpi-label">Ticket Unresolved</div>
-                            </div>
-                        </div>
+    <div class="kpi-card kpi-card-gray">
+        <div class="kpi-content">
+            <div class="kpi-number" id="ticketUnresolved">0</div>
+            <div class="kpi-label">Ticket Unresolved</div>
+        </div>
+    </div>
 
-                        <div class="kpi-card kpi-card-gray">
-                            <div class="kpi-content">
-                                <div class="kpi-time" id="avgResponseTime1">1d 2h 30m</div>
-                                <div class="kpi-label">Avg Response Time</div>
-                            </div>
-                        </div>
+    <div class="kpi-card kpi-card-gray">
+        <div class="kpi-content">
+            <div class="kpi-time" id="avgResponseTime1">N/A</div>
+            <div class="kpi-label">Avg Response Time</div>
+        </div>
+    </div>
 
-                        <div class="kpi-card kpi-card-gray">
-                            <div class="kpi-content">
-                                <div class="kpi-time" id="avgResponseTime2">1d 2h 30m</div>
-                                <div class="kpi-label">Avg Response Time</div>
-                            </div>
-                        </div>
+    <div class="kpi-card kpi-card-gray">
+        <div class="kpi-content">
+            <div class="kpi-time" id="avgResponseTime2">N/A</div>
+            <div class="kpi-label">Avg Resolved Time</div>
+        </div>
+    </div>
 
-                        <div class="kpi-card kpi-card-gray">
-                            <div class="kpi-content">
-                                <div class="kpi-time" id="avgResponseTime3">1d 2h 30m</div>
-                                <div class="kpi-label">Avg Response Time</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Third card will be hidden by JavaScript -->
+    <div class="kpi-card kpi-card-gray" style="display: none;">
+        <div class="kpi-content">
+            <div class="kpi-time" id="avgResponseTime3">N/A</div>
+            <div class="kpi-label">Unused</div>
+        </div>
+    </div>
+</div>
 
                 <!-- Feedback Volume Chart -->
                 <div class="chart-section">
@@ -861,6 +861,68 @@
             }
         }
 
+        // Helper function to format time duration
+        function formatDuration(milliseconds) {
+            if (!milliseconds || milliseconds <= 0) return 'N/A';
+            
+            const seconds = Math.floor(milliseconds / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            const remainingHours = hours % 24;
+            const remainingMinutes = minutes % 60;
+            
+            let result = [];
+            
+            if (days > 0) {
+                result.push(`${days}d`);
+            }
+            if (remainingHours > 0) {
+                result.push(`${remainingHours}h`);
+            }
+            if (remainingMinutes > 0) {
+                result.push(`${remainingMinutes}m`);
+            }
+            
+            // If no time components, show less than 1 minute
+            if (result.length === 0) {
+                return '<1m';
+            }
+            
+            return result.join(' ');
+        }
+
+        // Calculate average response time (submitted_at to responded_at)
+        function calculateAvgResponseTime(tickets) {
+            const ticketsWithResponse = tickets.filter(t => t.responded_at && t.submitted_at);
+            
+            if (ticketsWithResponse.length === 0) return null;
+            
+            const totalResponseTime = ticketsWithResponse.reduce((total, ticket) => {
+                const submitted = new Date(ticket.submitted_at);
+                const responded = new Date(ticket.responded_at);
+                return total + (responded - submitted);
+            }, 0);
+            
+            return totalResponseTime / ticketsWithResponse.length;
+        }
+
+        // Calculate average resolved time (submitted_at to resolved_at)
+        function calculateAvgResolvedTime(tickets) {
+            const resolvedTickets = tickets.filter(t => t.resolved_at && t.submitted_at);
+            
+            if (resolvedTickets.length === 0) return null;
+            
+            const totalResolvedTime = resolvedTickets.reduce((total, ticket) => {
+                const submitted = new Date(ticket.submitted_at);
+                const resolved = new Date(ticket.resolved_at);
+                return total + (resolved - submitted);
+            }, 0);
+            
+            return totalResolvedTime / resolvedTickets.length;
+        }
+
         // Fixed updateKPICards function
         function updateKPICards(tickets) {
             const filteredTickets = processTicketData(tickets); // Now properly filters by branch too
@@ -876,6 +938,13 @@
                 unresolved: filteredTickets.filter(t => t.status === 'open' || t.status === 'in_progress').length
             };
             
+            // Calculate average times
+            const avgResponseTime = calculateAvgResponseTime(filteredTickets);
+            const avgResolvedTime = calculateAvgResolvedTime(filteredTickets);
+            
+            console.log('Avg response time (ms):', avgResponseTime);
+            console.log('Avg resolved time (ms):', avgResolvedTime);
+            
             // Update DOM elements
             document.getElementById('totalTickets').textContent = stats.total;
             document.getElementById('complaintTickets').textContent = stats.complaint;
@@ -884,6 +953,16 @@
             document.getElementById('complimentTickets').textContent = stats.compliment;
             document.getElementById('ticketResolved').textContent = stats.resolved;
             document.getElementById('ticketUnresolved').textContent = stats.unresolved;
+            
+            // Update the first two time cards with real data
+            document.getElementById('avgResponseTime1').textContent = formatDuration(avgResponseTime);
+            document.getElementById('avgResponseTime2').textContent = formatDuration(avgResolvedTime);
+            
+            // Hide the third time card since we only need 2
+            const thirdTimeCard = document.getElementById('avgResponseTime3');
+            if (thirdTimeCard && thirdTimeCard.parentElement) {
+                thirdTimeCard.parentElement.style.display = 'none';
+            }
         }
 
         // Fixed updateChart function - FIX FOR ISSUE 2 & 3
