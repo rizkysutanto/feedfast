@@ -2122,7 +2122,7 @@ app.delete('/api/users/management/:userId', authenticateClientToken, async (req,
             UPDATE users 
             SET status = false, 
                 updated_at = CURRENT_TIMESTAMP,
-                email = email || '_deleted_' || EXTRACT(EPOCH FROM NOW())
+                email = email
             WHERE user_id = $1
         `, [userId]);
 
