@@ -58,6 +58,54 @@
             box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
 
+        /* Date range filter styles */
+        .date-range-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background-color: var(--bg-card);
+            min-width: 130px;
+            transition: var(--transition);
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
+        }
+
+        .date-separator {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .clear-dates-btn {
+            padding: 0.5rem 0.75rem;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .clear-dates-btn:hover {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+
         .search-group {
             display: flex;
             align-items: center;
@@ -542,6 +590,12 @@
                 align-items: stretch;
             }
 
+            .date-range-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
             .search-group {
                 flex-direction: row;
                 align-items: center;
@@ -602,6 +656,14 @@
             }
 
             .status-select {
+                min-width: auto;
+            }
+
+            .date-range-group {
+                flex-direction: column;
+            }
+
+            .date-input {
                 min-width: auto;
             }
         }
@@ -745,13 +807,12 @@
                     <div class="filter-row">
                         <div class="filter-group">
                             <label class="filter-label">Filters:</label>
-                            <select class="filter-select" id="dateRangeFilter">
-                                <option value="">Date Range</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                                <option value="quarter">This Quarter</option>
-                            </select>
+                            <div class="date-range-group">
+                                <input type="date" class="date-input" id="startDateFilter" title="Start Date">
+                                <span class="date-separator">to</span>
+                                <input type="date" class="date-input" id="endDateFilter" title="End Date">
+                                <button class="clear-dates-btn" onclick="clearDateFilters()" title="Clear Date Range">Clear</button>
+                            </div>
                             <select class="filter-select" id="typeFilter">
                                 <option value="">Type</option>
                                 <option value="complaint">Complaint</option>
@@ -1209,14 +1270,39 @@
             }
         }
 
+        // Clear date filters
+        function clearDateFilters() {
+            document.getElementById('startDateFilter').value = '';
+            document.getElementById('endDateFilter').value = '';
+            applyFilters();
+        }
+
+        // Check if date is within range
+        function isDateInRange(dateString, startDate, endDate) {
+            if (!startDate && !endDate) return true;
+            
+            const ticketDate = new Date(dateString);
+            
+            if (startDate && !endDate) {
+                return ticketDate >= new Date(startDate);
+            }
+            
+            if (!startDate && endDate) {
+                return ticketDate <= new Date(endDate + 'T23:59:59');
+            }
+            
+            return ticketDate >= new Date(startDate) && ticketDate <= new Date(endDate + 'T23:59:59');
+        }
+
         // Apply filters
         function applyFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const typeFilter = document.getElementById('typeFilter').value;
             const branchFilter = document.getElementById('branchFilter').value;
-            const dateRangeFilter = document.getElementById('dateRangeFilter').value;
             const picFilter = document.getElementById('picFilter').value;
+            const startDate = document.getElementById('startDateFilter').value;
+            const endDate = document.getElementById('endDateFilter').value;
 
             filteredTickets = allTickets.filter(ticket => {
                 const matchesSearch = !searchTerm || 
@@ -1228,8 +1314,9 @@
                 const matchesType = !typeFilter || ticket.type === typeFilter;
                 const matchesBranch = !branchFilter || ticket.branch_id == branchFilter;
                 const matchesPIC = !picFilter || ticket.pic_ticket == picFilter;
+                const matchesDateRange = isDateInRange(ticket.submitted_at, startDate, endDate);
 
-                return matchesSearch && matchesStatus && matchesType && matchesBranch && matchesPIC;
+                return matchesSearch && matchesStatus && matchesType && matchesBranch && matchesPIC && matchesDateRange;
             });
 
             currentPage = 1;
@@ -1241,8 +1328,9 @@
         document.getElementById('statusFilter').addEventListener('change', applyFilters);
         document.getElementById('typeFilter').addEventListener('change', applyFilters);
         document.getElementById('branchFilter').addEventListener('change', applyFilters);
-        document.getElementById('dateRangeFilter').addEventListener('change', applyFilters);
         document.getElementById('picFilter').addEventListener('change', applyFilters);
+        document.getElementById('startDateFilter').addEventListener('change', applyFilters);
+        document.getElementById('endDateFilter').addEventListener('change', applyFilters);
 
         // Get available status options based on current status (irreversible logic)
         function getAvailableStatuses(currentStatus) {
@@ -1314,11 +1402,11 @@
                             </div>
                             <div class="detail-row">
                                 <label>Responded:</label>
-                                <span>${new Date(ticket.responded_at).toLocaleString()}</span>
+                                <span>${ticket.responded_at ? new Date(ticket.responded_at).toLocaleString() : 'Not responded'}</span>
                             </div>
                             <div class="detail-row">
                                 <label>Resolved:</label>
-                                <span>${new Date(ticket.resolved_at).toLocaleString()}</span>
+                                <span>${ticket.resolved_at ? new Date(ticket.resolved_at).toLocaleString() : 'Not resolved'}</span>
                             </div>
                         </div>
                     </div>
@@ -1373,80 +1461,80 @@
             modal.style.display = 'none';
         }
 
-        // Fixed updateTicket function
-async function updateTicket(ticketId) {
-    const newStatus = document.getElementById('modalStatusSelect').value;
-    const newPIC = document.getElementById('modalPICSelect').value;
-    
-    console.log('=== Updating Ticket ===');
-    console.log('Ticket ID:', ticketId);
-    console.log('New Status:', newStatus);
-    console.log('New PIC:', newPIC);
-    console.log('Client Token:', clientToken ? 'Present' : 'Missing');
-    
-    try {
-        // Update status
-        console.log('Updating status...');
-        const statusResponse = await fetch(`/api/tickets/${ticketId}/status`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${clientToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: newStatus })
-        });
-
-        if (!statusResponse.ok) {
-            const statusError = await statusResponse.json();
-            console.error('Status update error:', statusError);
-            throw new Error(`Failed to update ticket status: ${statusError.message || 'Unknown error'}`);
-        }
-
-        const statusResult = await statusResponse.json();
-        console.log('Status update successful:', statusResult);
-
-        // ALWAYS update PIC assignment (even if empty - for unassignment)
-        console.log('Updating PIC assignment...');
-        const picResponse = await fetch(`/api/tickets/${ticketId}/assign`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${clientToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                pic_ticket: newPIC || null  // Explicitly send null for empty values
-            })
-        });
-
-        if (!picResponse.ok) {
-            const picError = await picResponse.json();
-            console.error('PIC assignment error:', picError);
+        // Update ticket function
+        async function updateTicket(ticketId) {
+            const newStatus = document.getElementById('modalStatusSelect').value;
+            const newPIC = document.getElementById('modalPICSelect').value;
             
-            // If it's a 404, show more specific error
-            if (picResponse.status === 404) {
-                console.error('Ticket not found for PIC assignment. Ticket details:', {
-                    ticketId: ticketId,
-                    ticketIdType: typeof ticketId,
-                    currentUser: currentUser
+            console.log('=== Updating Ticket ===');
+            console.log('Ticket ID:', ticketId);
+            console.log('New Status:', newStatus);
+            console.log('New PIC:', newPIC);
+            console.log('Client Token:', clientToken ? 'Present' : 'Missing');
+            
+            try {
+                // Update status
+                console.log('Updating status...');
+                const statusResponse = await fetch(`/api/tickets/${ticketId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
                 });
+
+                if (!statusResponse.ok) {
+                    const statusError = await statusResponse.json();
+                    console.error('Status update error:', statusError);
+                    throw new Error(`Failed to update ticket status: ${statusError.message || 'Unknown error'}`);
+                }
+
+                const statusResult = await statusResponse.json();
+                console.log('Status update successful:', statusResult);
+
+                // ALWAYS update PIC assignment (even if empty - for unassignment)
+                console.log('Updating PIC assignment...');
+                const picResponse = await fetch(`/api/tickets/${ticketId}/assign`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        pic_ticket: newPIC || null  // Explicitly send null for empty values
+                    })
+                });
+
+                if (!picResponse.ok) {
+                    const picError = await picResponse.json();
+                    console.error('PIC assignment error:', picError);
+                    
+                    // If it's a 404, show more specific error
+                    if (picResponse.status === 404) {
+                        console.error('Ticket not found for PIC assignment. Ticket details:', {
+                            ticketId: ticketId,
+                            ticketIdType: typeof ticketId,
+                            currentUser: currentUser
+                        });
+                    }
+                    
+                    throw new Error(`Failed to assign PIC: ${picError.message || 'Unknown error'}`);
+                }
+
+                const picResult = await picResponse.json();
+                console.log('PIC assignment successful:', picResult);
+
+                // Reload tickets and close modal
+                await loadTickets();
+                closeTicketModal();
+                showSuccess('Ticket updated successfully');
+                
+            } catch (error) {
+                console.error('Failed to update ticket:', error);
+                showError(`Failed to update ticket: ${error.message}`);
             }
-            
-            throw new Error(`Failed to assign PIC: ${picError.message || 'Unknown error'}`);
         }
-
-        const picResult = await picResponse.json();
-        console.log('PIC assignment successful:', picResult);
-
-        // Reload tickets and close modal
-        await loadTickets();
-        closeTicketModal();
-        showSuccess('Ticket updated successfully');
-        
-    } catch (error) {
-        console.error('Failed to update ticket:', error);
-        showError(`Failed to update ticket: ${error.message}`);
-    }
-}
 
         // Show success message
         function showSuccess(message) {
