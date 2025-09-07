@@ -1320,6 +1320,7 @@
             });
 
             currentPage = 1;
+            updateStats(); // Update stats with filtered data
             displayTickets();
         }
 
@@ -1329,8 +1330,19 @@
         document.getElementById('typeFilter').addEventListener('change', applyFilters);
         document.getElementById('branchFilter').addEventListener('change', applyFilters);
         document.getElementById('picFilter').addEventListener('change', applyFilters);
-        document.getElementById('startDateFilter').addEventListener('change', applyFilters);
-        document.getElementById('endDateFilter').addEventListener('change', applyFilters);
+        
+        // Add date validation and filtering
+        document.getElementById('startDateFilter').addEventListener('change', function() {
+            if (validateDateRange()) {
+                applyFilters();
+            }
+        });
+        
+        document.getElementById('endDateFilter').addEventListener('change', function() {
+            if (validateDateRange()) {
+                applyFilters();
+            }
+        });
 
         // Get available status options based on current status (irreversible logic)
         function getAvailableStatuses(currentStatus) {
