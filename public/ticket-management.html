@@ -82,6 +82,11 @@
             box-shadow: 0 0 0 3px rgba(133, 39, 240, 0.1);
         }
 
+        .date-input.error {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
         .date-separator {
             color: var(--text-secondary);
             font-size: var(--font-size-sm);
@@ -150,6 +155,14 @@
             width: 16px;
             height: 16px;
             filter: brightness(0) invert(1);
+        }
+
+        /* Date error message */
+        .date-error {
+            color: #dc2626;
+            font-size: var(--font-size-xs);
+            margin-top: 0.25rem;
+            display: none;
         }
 
         /* Tickets Table Section */
@@ -813,6 +826,7 @@
                                 <input type="date" class="date-input" id="endDateFilter" title="End Date">
                                 <button class="clear-dates-btn" onclick="clearDateFilters()" title="Clear Date Range">Clear</button>
                             </div>
+                            <div class="date-error" id="dateError">End date must be after start date</div>
                             <select class="filter-select" id="typeFilter">
                                 <option value="">Type</option>
                                 <option value="complaint">Complaint</option>
@@ -1094,13 +1108,13 @@
             }
         }
 
-        // Update statistics
+        // Update statistics based on filtered data
         function updateStats() {
             const stats = {
-                total: allTickets.length,
-                complaints: allTickets.filter(t => t.type === 'complaint').length,
-                suggestions: allTickets.filter(t => t.type === 'suggestion').length,
-                compliments: allTickets.filter(t => t.type === 'compliment').length
+                total: filteredTickets.length,
+                complaints: filteredTickets.filter(t => t.type === 'complaint').length,
+                suggestions: filteredTickets.filter(t => t.type === 'suggestion').length,
+                compliments: filteredTickets.filter(t => t.type === 'compliment').length
             };
 
             // Animate numbers
@@ -1129,6 +1143,30 @@
             }
             
             requestAnimationFrame(update);
+        }
+
+        // Validate date range
+        function validateDateRange() {
+            const startDate = document.getElementById('startDateFilter').value;
+            const endDate = document.getElementById('endDateFilter').value;
+            const dateError = document.getElementById('dateError');
+            const startInput = document.getElementById('startDateFilter');
+            const endInput = document.getElementById('endDateFilter');
+            
+            // Clear previous error states
+            startInput.classList.remove('error');
+            endInput.classList.remove('error');
+            dateError.style.display = 'none';
+            
+            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                // Show error
+                startInput.classList.add('error');
+                endInput.classList.add('error');
+                dateError.style.display = 'block';
+                return false;
+            }
+            
+            return true;
         }
 
         // Get status display text and color
@@ -1274,6 +1312,12 @@
         function clearDateFilters() {
             document.getElementById('startDateFilter').value = '';
             document.getElementById('endDateFilter').value = '';
+            
+            // Clear error states
+            document.getElementById('startDateFilter').classList.remove('error');
+            document.getElementById('endDateFilter').classList.remove('error');
+            document.getElementById('dateError').style.display = 'none';
+            
             applyFilters();
         }
 
@@ -1296,6 +1340,11 @@
 
         // Apply filters
         function applyFilters() {
+            // Validate date range first
+            if (!validateDateRange()) {
+                return; // Don't apply filters if date range is invalid
+            }
+            
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const typeFilter = document.getElementById('typeFilter').value;
