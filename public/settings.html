@@ -608,7 +608,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
         let currentSettings = {};
         let currentUser = null;
@@ -975,58 +975,64 @@
         }
 
         async function downloadQRCode() {
-            const feedbackUrl = document.getElementById('feedbackLink').value;
-            const clientName = currentUser?.clientName || currentUser?.client_name || 'feedback';
+    const feedbackUrl = document.getElementById('feedbackLink').value;
+    const clientName = currentUser?.clientName || currentUser?.client_name || 'feedback';
+    
+    if (!feedbackUrl) {
+        showError('No feedback link available to generate QR code.');
+        return;
+    }
+
+    // Check if QRCode library is available
+    if (typeof QRCode === 'undefined') {
+        showError('QR Code library is not loaded. Please refresh the page and try again.');
+        return;
+    }
+
+    try {
+        const downloadBtn = document.getElementById('downloadQRBtn');
+        const originalText = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<svg class="qr-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Generating...';
+        downloadBtn.disabled = true;
+
+        // Create canvas for QR code
+        const canvas = document.createElement('canvas');
+        
+        // Generate QR code
+        await QRCode.toCanvas(canvas, feedbackUrl, {
+            width: 512,
+            height: 512,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            },
+            margin: 2,
+            errorCorrectionLevel: 'M'
+        });
+
+        // Convert canvas to blob and download
+        canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${clientName}-feedback-qr.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
             
-            if (!feedbackUrl) {
-                showError('No feedback link available to generate QR code.');
-                return;
-            }
+            showSuccess('QR code downloaded successfully!');
+        }, 'image/png');
 
-            try {
-                const downloadBtn = document.getElementById('downloadQRBtn');
-                const originalText = downloadBtn.innerHTML;
-                downloadBtn.innerHTML = '<svg class="qr-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Generating...';
-                downloadBtn.disabled = true;
-
-                // Create canvas for QR code
-                const canvas = document.createElement('canvas');
-                
-                // Generate QR code
-                await QRCode.toCanvas(canvas, feedbackUrl, {
-                    width: 512,
-                    height: 512,
-                    color: {
-                        dark: '#000000',
-                        light: '#FFFFFF'
-                    },
-                    margin: 2,
-                    errorCorrectionLevel: 'M'
-                });
-
-                // Convert canvas to blob and download
-                canvas.toBlob(function(blob) {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${clientName}-feedback-qr.png`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    
-                    showSuccess('QR code downloaded successfully!');
-                }, 'image/png');
-
-            } catch (error) {
-                console.error('Error generating QR code:', error);
-                showError('Failed to generate QR code. Please try again.');
-            } finally {
-                const downloadBtn = document.getElementById('downloadQRBtn');
-                downloadBtn.innerHTML = '<svg class="qr-icon" viewBox="0 0 24 24"><path d="M3 11V3h8v8H3zm2-2h4V5H5v4zm8-8h8v8h-8V1zm2 2v4h4V3h-4zM3 21v-8h8v8H3zm2-2h4v-4H5v4zm16 2v-4h-2v-2h2v-2h-2v-2h2v-2h2v2h-2v2h2v2h-2v2h2v4h-2zm-2-8v2h-2v-2h2zm2-4v2h-2V9h2z"/></svg>Download QR Code';
-                downloadBtn.disabled = false;
-            }
-        }
+    } catch (error) {
+        console.error('Error generating QR code:', error);
+        showError('Failed to generate QR code. Please try again.');
+    } finally {
+        const downloadBtn = document.getElementById('downloadQRBtn');
+        downloadBtn.innerHTML = '<svg class="qr-icon" viewBox="0 0 24 24"><path d="M3 11V3h8v8H3zm2-2h4V5H5v4zm8-8h8v8h-8V1zm2 2v4h4V3h-4zM3 21v-8h8v8H3zm2-2h4v-4H5v4zm16 2v-4h-2v-2h2v-2h-2v-2h2v-2h2v2h-2v2h2v2h-2v2h2v4h-2zm-2-8v2h-2v-2h2zm2-4v2h-2V9h2z"/></svg>Download QR Code';
+        downloadBtn.disabled = false;
+    }
+}
 
         // Utility functions
         function showSuccess(message) {
