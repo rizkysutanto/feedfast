@@ -950,11 +950,11 @@
                             <input type="email" id="userEmailInput" class="form-input" required maxlength="255" placeholder="user@example.com">
                         </div>
                         
-                        <div class="form-group">
+                        <div class="form-group" id="passwordGroup">
                             <label class="form-label" for="userPasswordInput">
                                 Password<span class="required">*</span>
                             </label>
-                            <input type="password" id="userPasswordInput" class="form-input" required minlength="8" placeholder="Minimum 8 characters">
+                            <input type="password" id="userPasswordInput" class="form-input" minlength="8" placeholder="Minimum 8 characters">
                         </div>
                         
                         <div class="form-group">
@@ -1468,6 +1468,12 @@
             document.getElementById('userForm').reset();
             document.getElementById('editUserId').value = '';
             
+            // Show password field and make it required for new users
+            const passwordGroup = document.getElementById('passwordGroup');
+            const passwordInput = document.getElementById('userPasswordInput');
+            passwordGroup.style.display = 'flex';
+            passwordInput.required = true;
+            
             // Uncheck all branch checkboxes
             document.querySelectorAll('#branchCheckboxes input[type="checkbox"]').forEach(cb => {
                 cb.checked = false;
@@ -1476,7 +1482,7 @@
             document.getElementById('userModal').style.display = 'flex';
         }
 
-        // Edit user
+        // Edit user - FIXED VERSION
         function editUser(userId) {
             const user = allUsers.find(u => u.user_id === userId);
             if (!user) return;
@@ -1494,9 +1500,12 @@
             document.getElementById('userStatusInput').value = user.status.toString();
             document.getElementById('onlyAssignedTickets').checked = user.only_assigned_tickets || false;
             
-            // Hide password field during edit
-            const passwordGroup = document.getElementById('userPasswordInput').closest('.form-group');
+            // FIXED: Hide password field AND remove required attribute during edit
+            const passwordGroup = document.getElementById('passwordGroup');
+            const passwordInput = document.getElementById('userPasswordInput');
             passwordGroup.style.display = 'none';
+            passwordInput.required = false;
+            passwordInput.value = ''; // Clear any existing value
             
             // Set branch checkboxes
             document.querySelectorAll('#branchCheckboxes input[type="checkbox"]').forEach(cb => {
@@ -1520,12 +1529,15 @@
             document.getElementById('resetPasswordModal').style.display = 'flex';
         }
 
-        // Close modals
+        // Close modals - FIXED VERSION
         function closeUserModal() {
             document.getElementById('userModal').style.display = 'none';
-            // Show password field again
-            const passwordGroup = document.getElementById('userPasswordInput').closest('.form-group');
+            // Reset password field state when closing
+            const passwordGroup = document.getElementById('passwordGroup');
+            const passwordInput = document.getElementById('userPasswordInput');
             passwordGroup.style.display = 'flex';
+            passwordInput.required = true; // Default back to required for next time
+            passwordInput.value = '';
         }
 
         function closeResetPasswordModal() {
@@ -1533,9 +1545,11 @@
             document.getElementById('resetPasswordForm').reset();
         }
 
-        // Handle user form submission
+        // Handle user form submission - IMPROVED VERSION
         document.getElementById('userForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            console.log('Form submitted, isEditMode:', isEditMode); // Debug log
             
             const userNameValue = document.getElementById('userNameInput').value.trim();
             const userEmailValue = document.getElementById('userEmailInput').value.trim();
@@ -1554,8 +1568,9 @@
                 return;
             }
             
+            // Only require password for new users
             if (!isEditMode && !userPasswordValue) {
-                showError('Password is required');
+                showError('Password is required for new users');
                 return;
             }
             
@@ -1585,12 +1600,15 @@
                     only_assigned_tickets: document.getElementById('onlyAssignedTickets').checked
                 };
                 
-                if (!isEditMode) {
+                // Only include password for new users
+                if (!isEditMode && userPasswordValue) {
                     formData.password = userPasswordValue;
                 }
                 
                 const url = isEditMode ? `/api/users/management/${document.getElementById('editUserId').value}` : '/api/users/management';
                 const method = isEditMode ? 'PUT' : 'POST';
+                
+                console.log('Sending request:', { url, method, formData }); // Debug log
                 
                 const response = await fetch(url, {
                     method: method,
@@ -1602,6 +1620,7 @@
                 });
                 
                 const data = await response.json();
+                console.log('Server response:', data); // Debug log
                 
                 if (data.success) {
                     closeUserModal();
