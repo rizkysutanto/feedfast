@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const QRCode = require('qrcode');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 let cloudinary, multer, upload;
 try {
@@ -5175,7 +5176,229 @@ app.get('/feedback/:clientname', async (req, res) => {
 });
 
 //===================================================
+// GEMINI endpoint
+//===================================================
+
+// Initialize Gemini AI (add after other initializations)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// Add this endpoint to your routes
+app.post('/api/ai-insight', authenticateClientToken, async (req, res) => {
+    try {
+        console.log('AI Insight request received from client:', req.user.client_id);
+        
+        const { dateRange, tickets, branches, summary } = req.body;
+        
+        // Validate request data
+        if (!tickets || !Array.isArray(tickets)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid ticket data provided'
+            });
+        }
+        
+        // Rate limiting check (basic implementation)
+        const clientId = req.user.client_id;
+        const rateLimitKey = `ai_insight_${clientId}`;
+        
+        // Simple in-memory rate limiting (you might want to use Redis in production)
+        if (!global.aiInsightRateLimit) {
+            global.aiInsightRateLimit = new Map();
+        }
+        
+        const now = Date.now();
+        const lastRequest = global.aiInsightRateLimit.get(rateLimitKey);
+        const cooldownPeriod = 60000; // 1 minute cooldown
+        
+        if (lastRequest && (now - lastRequest) < cooldownPeriod) {
+            return res.status(429).json({
+                success: false,
+                message: 'Please wait before requesting another AI insight'
+            });
+        }
+        
+        global.aiInsightRateLimit.set(rateLimitKey, now);
+        
+        // Prepare analysis prompt
+        const analysisPrompt = createAnalysisPrompt(dateRange, tickets, branches, summary);
+        
+        console.log('Sending request to Gemini API...');
+        
+        // Call Gemini API
+        const result = await model.generateContent(analysisPrompt);
+        const response = await result.response;
+        const generatedText = response.text();
+        
+        console.log('Received response from Gemini API');
+        
+        // Parse the AI response
+        const parsedInsight = parseAIResponse(generatedText);
+        
+        res.json({
+            success: true,
+            insight: parsedInsight,
+            metadata: {
+                dateRange: dateRange.displayText,
+                ticketCount: tickets.length,
+                generatedAt: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('AI Insight error:', error);
+        
+        // Handle specific API errors
+        if (error.message && error.message.includes('API key')) {
+            return res.status(500).json({
+                success: false,
+                message: 'AI service configuration error'
+            });
+        }
+        
+        if (error.message && error.message.includes('quota')) {
+            return res.status(503).json({
+                success: false,
+                message: 'AI service temporarily unavailable due to quota limits'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Failed to generate AI insight'
+        });
+    }
+});
+
+// Helper function to create analysis prompt
+function createAnalysisPrompt(dateRange, tickets, branches, summary) {
+    const branchNames = Object.values(branches).join(', ');
+    const ticketSamples = tickets.slice(0, 50); // Limit to first 50 tickets to manage prompt size
+    
+    const ticketsByType = {
+        complaint: tickets.filter(t => t.type === 'complaint'),
+        suggestion: tickets.filter(t => t.type === 'suggestion'),
+        inquiry: tickets.filter(t => t.type === 'inquiry'),
+        compliment: tickets.filter(t => t.type === 'compliment')
+    };
+    
+    const ticketsByBranch = {};
+    tickets.forEach(ticket => {
+        const branchId = ticket.branch_id || 'unknown';
+        const branchName = branches[branchId] || 'Unknown Branch';
+        if (!ticketsByBranch[branchName]) {
+            ticketsByBranch[branchName] = [];
+        }
+        ticketsByBranch[branchName].push(ticket);
+    });
+    
+    return `As a customer feedback analysis expert, analyze this FeedFast company data and provide structured insights.
+
+ANALYSIS PERIOD: ${dateRange.displayText}
+TOTAL TICKETS: ${summary.total}
+
+TICKET BREAKDOWN:
+- Complaints: ${summary.byType.complaint}
+- Suggestions: ${summary.byType.suggestion}
+- Inquiries: ${summary.byType.inquiry}
+- Compliments: ${summary.byType.compliment}
+- Resolved: ${summary.byStatus.resolved}
+- Unresolved: ${summary.byStatus.unresolved}
+
+BRANCHES: ${branchNames}
+
+SAMPLE TICKET DATA (first 50 tickets):
+${ticketSamples.map(ticket => `
+Type: ${ticket.type}
+Title: ${ticket.title}
+Description: ${ticket.description}
+Branch: ${branches[ticket.branch_id] || 'Unknown'}
+Status: ${ticket.status}
+Submitted: ${new Date(ticket.submitted_at).toLocaleDateString()}
+`).join('\n---\n')}
+
+Please provide your analysis in this EXACT JSON format:
+{
+  "summary": "A 2-3 sentence executive summary of the overall feedback situation",
+  "details": {
+    "main_issues": ["List of 3-5 main problems identified from complaints"],
+    "positive_trends": ["List of 2-4 positive aspects from compliments and general feedback"],
+    "branch_insights": ["Branch-specific observations if multiple branches involved"],
+    "response_efficiency": ["Observations about ticket resolution patterns"]
+  },
+  "recommendations": [
+    "Specific actionable recommendation 1",
+    "Specific actionable recommendation 2",
+    "Specific actionable recommendation 3",
+    "Specific actionable recommendation 4"
+  ]
+}
+
+Focus on:
+1. Identifying recurring themes in complaints
+2. Highlighting successful areas from compliments
+3. Spotting branch-specific patterns
+4. Suggesting concrete improvements
+5. Noting any urgent issues requiring immediate attention
+
+Provide practical, actionable insights that a business manager can implement.`;
+}
+
+// Helper function to parse AI response
+function parseAIResponse(generatedText) {
+    try {
+        // Try to extract JSON from the response
+        const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            const jsonStr = jsonMatch[0];
+            const parsed = JSON.parse(jsonStr);
+            
+            // Validate the structure
+            if (parsed.summary && parsed.details && parsed.recommendations) {
+                return parsed;
+            }
+        }
+        
+        // Fallback parsing if JSON extraction fails
+        return {
+            summary: "Analysis completed successfully. Please review the detailed insights below.",
+            details: {
+                main_issues: ["Unable to parse specific issues from AI response"],
+                positive_trends: ["Analysis completed but formatting needs adjustment"],
+                branch_insights: ["Please review raw response for detailed insights"],
+                response_efficiency: ["Analysis available in raw format"]
+            },
+            recommendations: [
+                "Review the complete AI analysis output",
+                "Consider reprocessing the request for better formatting",
+                "Contact support if issues persist"
+            ]
+        };
+        
+    } catch (error) {
+        console.error('Error parsing AI response:', error);
+        
+        // Return a fallback structure
+        return {
+            summary: "AI analysis was generated but encountered formatting issues during processing.",
+            details: {
+                main_issues: ["Response parsing error - please try again"],
+                positive_trends: ["AI generated insights but format needs adjustment"],
+                branch_insights: ["Analysis completed with technical difficulties"],
+                response_efficiency: ["Please retry request for properly formatted results"]
+            },
+            recommendations: [
+                "Retry the AI insight request",
+                "Check if the issue persists across multiple requests",
+                "Contact technical support if problems continue"
+            ]
+        };
+    }
+}
+
+//===================================================
 // QR Code generation endpoint
+//===================================================
 app.post('/api/generate-qr', authenticateClientToken, async (req, res) => {
     try {
         const { url, filename } = req.body;
