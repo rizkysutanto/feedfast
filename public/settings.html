@@ -983,159 +983,55 @@
         return;
     }
 
-    // Check if QRCode library is available
-    if (typeof QRCode === 'undefined') {
-        showError('QR Code library is not loaded. Please refresh the page and try again.');
-        return;
-    }
-
     try {
         const downloadBtn = document.getElementById('downloadQRBtn');
         const originalText = downloadBtn.innerHTML;
         downloadBtn.innerHTML = '<svg class="qr-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Generating...';
         downloadBtn.disabled = true;
 
-        // Create canvas for QR code
-        const canvas = document.createElement('canvas');
-        
-        // Generate QR code with better error handling
-        await new Promise((resolve, reject) => {
-            QRCode.toCanvas(canvas, feedbackUrl, {
-                width: 512,
-                height: 512,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                },
-                margin: 2,
-                errorCorrectionLevel: 'M'
-            }, (error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve();
-                }
-            });
+        // Request QR code from server
+        const response = await fetch('/api/generate-qr', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${clientToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                url: feedbackUrl,
+                filename: `${clientName.replace(/[^a-zA-Z0-9]/g, '_')}-feedback-qr`
+            })
         });
 
-        // Convert canvas to data URL instead of blob for better compatibility
-        const dataURL = canvas.toDataURL('image/png');
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        // Get the blob from response
+        const blob = await response.blob();
         
-        // Create download link with proper security attributes
+        // Create download URL
+        const downloadUrl = window.URL.createObjectURL(blob);
+        
+        // Create and trigger download
         const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
         downloadLink.download = `${clientName.replace(/[^a-zA-Z0-9]/g, '_')}-feedback-qr.png`;
-        downloadLink.href = dataURL;
+        downloadLink.style.display = 'none';
         
-        // Add security attributes to prevent injection
-        downloadLink.rel = 'noopener noreferrer';
-        downloadLink.target = '_self';
-        
-        // Add to document temporarily (required for some browsers)
         document.body.appendChild(downloadLink);
-        
-        // Trigger download with user gesture context
         downloadLink.click();
+        document.body.removeChild(downloadLink);
         
-        // Clean up immediately
+        // Clean up the blob URL
         setTimeout(() => {
-            if (downloadLink.parentNode) {
-                document.body.removeChild(downloadLink);
-            }
+            window.URL.revokeObjectURL(downloadUrl);
         }, 100);
         
         showSuccess('QR code downloaded successfully!');
 
     } catch (error) {
         console.error('Error generating QR code:', error);
-        
-        // Fallback method - open in new tab if direct download fails
-        try {
-            const canvas = document.createElement('canvas');
-            await new Promise((resolve, reject) => {
-                QRCode.toCanvas(canvas, feedbackUrl, {
-                    width: 512,
-                    height: 512,
-                    color: {
-                        dark: '#000000',
-                        light: '#FFFFFF'
-                    },
-                    margin: 2,
-                    errorCorrectionLevel: 'M'
-                }, (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
-            
-            // Open in new tab as fallback
-            const dataURL = canvas.toDataURL('image/png');
-            const newTab = window.open();
-            newTab.document.write(`
-                <html>
-                    <head>
-                        <title>QR Code - ${clientName}</title>
-                        <style>
-                            body { 
-                                margin: 0; 
-                                padding: 20px; 
-                                display: flex; 
-                                flex-direction: column; 
-                                align-items: center; 
-                                font-family: Arial, sans-serif; 
-                                background: #f5f5f5;
-                            }
-                            .container {
-                                background: white;
-                                padding: 20px;
-                                border-radius: 8px;
-                                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                                text-align: center;
-                            }
-                            img { 
-                                max-width: 100%; 
-                                height: auto; 
-                                border: 1px solid #ddd;
-                                border-radius: 4px;
-                            }
-                            .download-btn {
-                                margin-top: 20px;
-                                padding: 10px 20px;
-                                background: #4f46e5;
-                                color: white;
-                                text-decoration: none;
-                                border-radius: 4px;
-                                display: inline-block;
-                                font-weight: bold;
-                            }
-                            .download-btn:hover {
-                                background: #7c3aed;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <h2>Feedback QR Code</h2>
-                            <p>Right-click the image below and select "Save image as..." to download</p>
-                            <img src="${dataURL}" alt="Feedback QR Code" />
-                            <br>
-                            <a href="${dataURL}" download="${clientName.replace(/[^a-zA-Z0-9]/g, '_')}-feedback-qr.png" class="download-btn">
-                                Download QR Code
-                            </a>
-                        </div>
-                    </body>
-                </html>
-            `);
-            newTab.document.close();
-            
-            showSuccess('QR code opened in new tab. Right-click the image to save it.');
-            
-        } catch (fallbackError) {
-            console.error('Fallback method also failed:', fallbackError);
-            showError('Failed to generate QR code. Please try refreshing the page and try again.');
-        }
+        showError('Failed to generate QR code. Please try again or contact support.');
         
     } finally {
         const downloadBtn = document.getElementById('downloadQRBtn');
