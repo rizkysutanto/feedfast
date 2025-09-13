@@ -4537,7 +4537,7 @@ function generateCustomFeedbackFormHTML(client, branches) {
         
         .header {
             background: linear-gradient(135deg, ${settings.mainColor} 0%, ${adjustColor(settings.mainColor, -20)} 100%);
-            color: white;
+            color: ${settings.textColor};
             padding: 30px;
             text-align: center;
         }
