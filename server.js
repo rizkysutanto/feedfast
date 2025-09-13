@@ -4718,12 +4718,12 @@ function generateCustomFeedbackFormHTML(client, branches) {
             text-align: center;
             padding: 20px;
             background: #f8f9fa;
-            color: #666;
+            color: ${settings.textColor};
             font-size: 0.9rem;
         }
         
         .powered-by a {
-            color: ${settings.mainColor};
+            color: ${settings.textColor};
             text-decoration: none;
             font-weight: 600;
         }
