@@ -101,7 +101,7 @@
                                 <span>📄</span>
                             </button>
                             <button class="btn-icon-only" onclick="closeInsight()" title="Close Insight">
-                                <span>✕</span>
+                                <span>X</span>
                             </button>
                         </div>
                     </div>
@@ -324,7 +324,7 @@
 
         /* AI Insight Button */
         .ai-insight-btn {
-            background-color: #10B981;
+            background-color: #8527F0;
             color: var(--text-white);
             border: none;
             padding: 0.5rem 1rem;
@@ -419,7 +419,7 @@
             width: 40px;
             height: 40px;
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #10B981;
+            border-top: 4px solid #8527F0;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
@@ -510,7 +510,7 @@
 
         .insight-recommendations {
             background-color: #F0FDF4;
-            border: 1px solid #10B981;
+            border: 1px solid #8527F0;
             border-radius: 8px;
             padding: 1rem;
         }
@@ -1315,7 +1315,7 @@
                 feedbackChart.destroy();
             }
             
-            const colors = ['#8527F0', '#C084FC', '#F59E0B', '#10B981', '#EF4444', '#6366F1', '#EC4899'];
+            const colors = ['#8527F0', '#C084FC', '#F59E0B', '#8527F0', '#EF4444', '#6366F1', '#EC4899'];
             const datasets = branchesWithData.map((branch, index) => ({
                 label: branch.name,
                 data: chartData[branch.id] || [],
