@@ -83,7 +83,46 @@
                         <h1 class="report-title">Report</h1>
                         <p class="report-subtitle">Analyze your company feedback</p>
                     </div>
-                    <button class="btn btn-primary export-btn" onclick="exportCSV()">Export CSV</button>
+                    <div class="report-actions">
+                        <button class="btn btn-secondary ai-insight-btn" onclick="requestAIInsight()" id="aiInsightBtn">
+                            <span class="btn-icon">🤖</span>
+                            Request AI Insight
+                        </button>
+                        <button class="btn btn-primary export-btn" onclick="exportCSV()">Export CSV</button>
+                    </div>
+                </div>
+
+                <!-- AI Insight Section -->
+                <div class="ai-insight-section" id="aiInsightSection" style="display: none;">
+                    <div class="insight-header">
+                        <h3 class="insight-title">AI Insight Analysis</h3>
+                        <div class="insight-actions">
+                            <button class="btn-icon-only" onclick="exportInsight()" title="Export Insight">
+                                <span>📄</span>
+                            </button>
+                            <button class="btn-icon-only" onclick="closeInsight()" title="Close Insight">
+                                <span>✕</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-loading" id="insightLoading" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p>Analyzing your feedback data with AI...</p>
+                        <small>This may take a few moments</small>
+                    </div>
+                    
+                    <div class="insight-content" id="insightContent" style="display: none;">
+                        <div class="insight-summary" id="insightSummary"></div>
+                        <div class="insight-details" id="insightDetails"></div>
+                        <div class="insight-recommendations" id="insightRecommendations"></div>
+                    </div>
+                    
+                    <div class="insight-error" id="insightError" style="display: none;">
+                        <div class="error-icon">⚠️</div>
+                        <p class="error-text">Failed to generate AI insight. Please try again.</p>
+                        <button class="btn btn-secondary" onclick="requestAIInsight()">Retry</button>
+                    </div>
                 </div>
 
                 <!-- Key Performance Indicator Section -->
@@ -260,6 +299,11 @@
             margin: 0;
         }
 
+        .report-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
         .export-btn {
             background-color: var(--primary-purple);
             color: var(--text-white);
@@ -276,6 +320,246 @@
         .export-btn:hover {
             background-color: #7c3aed;
             transform: translateY(-1px);
+        }
+
+        /* AI Insight Button */
+        .ai-insight-btn {
+            background-color: #10B981;
+            color: var(--text-white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-insight-btn:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+        }
+
+        .ai-insight-btn:disabled {
+            background-color: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-icon {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        /* AI Insight Section */
+        .ai-insight-section {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .insight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .insight-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-title::before {
+            content: "🤖";
+            font-size: 1.25rem;
+        }
+
+        .insight-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon-only {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .btn-icon-only:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* Loading State */
+        .insight-loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #10B981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .insight-loading p {
+            color: var(--text-primary);
+            font-weight: 500;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .insight-loading small {
+            color: var(--text-secondary);
+        }
+
+        /* Insight Content */
+        .insight-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .insight-summary {
+            background-color: #F0F9FF;
+            border: 1px solid #0EA5E9;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .insight-summary h4 {
+            color: #0369A1;
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .insight-summary p {
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .insight-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .insight-card {
+            background-color: #FAFAFA;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .insight-card h5 {
+            color: var(--text-primary);
+            margin: 0 0 0.75rem 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .insight-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .insight-card li {
+            padding: 0.25rem 0;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .insight-card li::before {
+            content: "•";
+            color: var(--primary-purple);
+            margin-right: 0.5rem;
+        }
+
+        .insight-recommendations {
+            background-color: #F0FDF4;
+            border: 1px solid #10B981;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .insight-recommendations h4 {
+            color: #059669;
+            margin: 0 0 0.75rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .insight-recommendations ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .insight-recommendations li {
+            padding: 0.5rem 0;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            border-bottom: 1px solid #D1FAE5;
+        }
+
+        .insight-recommendations li:last-child {
+            border-bottom: none;
+        }
+
+        .insight-recommendations li::before {
+            content: "💡";
+            margin-right: 0.5rem;
+        }
+
+        /* Error State */
+        .insight-error {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .error-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-text {
+            color: var(--danger-red);
+            margin: 0 0 1rem 0;
+            font-weight: 500;
         }
 
         /* KPI Section */
@@ -473,6 +757,10 @@
             .filter-group {
                 min-width: auto;
             }
+
+            .insight-details {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 768px) {
@@ -480,6 +768,11 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 1rem;
+            }
+
+            .report-actions {
+                flex-direction: column;
+                width: 100%;
             }
 
             .kpi-header {
@@ -505,6 +798,12 @@
             .chart-container {
                 height: 250px;
             }
+
+            .insight-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
         }
 
         @media (max-width: 480px) {
@@ -525,6 +824,7 @@
             range: new Date().getFullYear().toString(),
             branch: 'all'
         };
+        let currentTickets = []; // Store current filtered tickets for AI analysis
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async () => {
@@ -754,87 +1054,6 @@
             try {
                 console.log('Loading report data with filters:', currentFilters);
                 
-                // Build query parameters
-                const params = new URLSearchParams();
-                params.append('period', currentFilters.period);
-                params.append('range', currentFilters.range);
-                if (currentFilters.branch !== 'all') {
-                    params.append('branchId', currentFilters.branch);
-                }
-
-                const response = await fetch(`/api/tickets?${params.toString()}`, {
-                    headers: {
-                        'Authorization': `Bearer ${clientToken}`
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const tickets = data.tickets || [];
-                    
-                    // Process and display data
-                    processTicketData(tickets);
-                    updateKPICards(tickets);
-                    updateChart(tickets);
-                } else {
-                    console.error('Failed to load tickets');
-                    // Set default values
-                    setDefaultValues();
-                }
-                
-            } catch (error) {
-                console.error('Error loading report data:', error);
-                setDefaultValues();
-            }
-        }
-
-        // Fixed processTicketData function - SIMPLIFIED for client-side filtering
-        function processTicketData(tickets) {
-            let filteredTickets = [...tickets]; // Create a copy
-            
-            console.log('Processing tickets:', filteredTickets.length, 'with filters:', currentFilters);
-            
-            // Filter by date range based on period
-            if (currentFilters.period === 'annually') {
-                const year = parseInt(currentFilters.range);
-                filteredTickets = filteredTickets.filter(ticket => {
-                    const ticketDate = new Date(ticket.submitted_at);
-                    const ticketYear = ticketDate.getFullYear();
-                    console.log('Checking ticket year:', ticketYear, 'against filter year:', year);
-                    return ticketYear === year;
-                });
-            } else if (currentFilters.period === 'monthly') {
-                const [year, month] = currentFilters.range.split('-');
-                filteredTickets = filteredTickets.filter(ticket => {
-                    const ticketDate = new Date(ticket.submitted_at);
-                    const ticketYear = ticketDate.getFullYear();
-                    const ticketMonth = ticketDate.getMonth() + 1; // getMonth() returns 0-11
-                    return ticketYear === parseInt(year) && ticketMonth === parseInt(month);
-                });
-            }
-            
-            // Filter by branch - FIX FOR ISSUE 1
-            if (currentFilters.branch !== 'all') {
-                const branchIdToFilter = parseInt(currentFilters.branch);
-                filteredTickets = filteredTickets.filter(ticket => {
-                    // Handle case where branch_id might be null or undefined
-                    const ticketBranchId = ticket.branch_id ? parseInt(ticket.branch_id) : null;
-                    return ticketBranchId === branchIdToFilter;
-                });
-                console.log('Filtered by branch', branchIdToFilter, 'resulting in', filteredTickets.length, 'tickets');
-            }
-            
-            console.log('Final filtered tickets:', filteredTickets.length);
-            return filteredTickets;
-        }
-
-        // Modified loadReportData function - remove query parameters since server doesn't use them yet
-        async function loadReportData() {
-            try {
-                console.log('Loading report data with filters:', currentFilters);
-                
-                // For now, get all tickets and filter client-side
-                // Later you can implement the server-side filtering using the provided server code
                 const response = await fetch('/api/tickets', {
                     headers: {
                         'Authorization': `Bearer ${clientToken}`
@@ -844,12 +1063,13 @@
                 if (response.ok) {
                     const data = await response.json();
                     const tickets = data.tickets || [];
+                    currentTickets = tickets; // Store for AI analysis
                     console.log('Raw tickets received:', tickets.length);
                     
                     // Process and display data
                     const filteredTickets = processTicketData(tickets);
-                    updateKPICards(tickets); // Pass original tickets, filtering happens inside
-                    updateChart(tickets); // Pass original tickets, filtering happens inside
+                    updateKPICards(tickets);
+                    updateChart(tickets);
                 } else {
                     console.error('Failed to load tickets');
                     setDefaultValues();
@@ -859,6 +1079,43 @@
                 console.error('Error loading report data:', error);
                 setDefaultValues();
             }
+        }
+
+        // Process ticket data with current filters
+        function processTicketData(tickets) {
+            let filteredTickets = [...tickets];
+            
+            console.log('Processing tickets:', filteredTickets.length, 'with filters:', currentFilters);
+            
+            // Filter by date range based on period
+            if (currentFilters.period === 'annually') {
+                const year = parseInt(currentFilters.range);
+                filteredTickets = filteredTickets.filter(ticket => {
+                    const ticketDate = new Date(ticket.submitted_at);
+                    const ticketYear = ticketDate.getFullYear();
+                    return ticketYear === year;
+                });
+            } else if (currentFilters.period === 'monthly') {
+                const [year, month] = currentFilters.range.split('-');
+                filteredTickets = filteredTickets.filter(ticket => {
+                    const ticketDate = new Date(ticket.submitted_at);
+                    const ticketYear = ticketDate.getFullYear();
+                    const ticketMonth = ticketDate.getMonth() + 1;
+                    return ticketYear === parseInt(year) && ticketMonth === parseInt(month);
+                });
+            }
+            
+            // Filter by branch
+            if (currentFilters.branch !== 'all') {
+                const branchIdToFilter = parseInt(currentFilters.branch);
+                filteredTickets = filteredTickets.filter(ticket => {
+                    const ticketBranchId = ticket.branch_id ? parseInt(ticket.branch_id) : null;
+                    return ticketBranchId === branchIdToFilter;
+                });
+            }
+            
+            console.log('Final filtered tickets:', filteredTickets.length);
+            return filteredTickets;
         }
 
         // Helper function to format time duration
@@ -885,7 +1142,6 @@
                 result.push(`${remainingMinutes}m`);
             }
             
-            // If no time components, show less than 1 minute
             if (result.length === 0) {
                 return '<1m';
             }
@@ -893,7 +1149,7 @@
             return result.join(' ');
         }
 
-        // Calculate average response time (submitted_at to responded_at)
+        // Calculate average response time
         function calculateAvgResponseTime(tickets) {
             const ticketsWithResponse = tickets.filter(t => t.responded_at && t.submitted_at);
             
@@ -908,7 +1164,7 @@
             return totalResponseTime / ticketsWithResponse.length;
         }
 
-        // Calculate average resolved time (submitted_at to resolved_at)
+        // Calculate average resolved time
         function calculateAvgResolvedTime(tickets) {
             const resolvedTickets = tickets.filter(t => t.resolved_at && t.submitted_at);
             
@@ -923,9 +1179,9 @@
             return totalResolvedTime / resolvedTickets.length;
         }
 
-        // Fixed updateKPICards function
+        // Update KPI cards
         function updateKPICards(tickets) {
-            const filteredTickets = processTicketData(tickets); // Now properly filters by branch too
+            const filteredTickets = processTicketData(tickets);
             
             // Calculate statistics
             const stats = {
@@ -942,9 +1198,6 @@
             const avgResponseTime = calculateAvgResponseTime(filteredTickets);
             const avgResolvedTime = calculateAvgResolvedTime(filteredTickets);
             
-            console.log('Avg response time (ms):', avgResponseTime);
-            console.log('Avg resolved time (ms):', avgResolvedTime);
-            
             // Update DOM elements
             document.getElementById('totalTickets').textContent = stats.total;
             document.getElementById('complaintTickets').textContent = stats.complaint;
@@ -954,18 +1207,16 @@
             document.getElementById('ticketResolved').textContent = stats.resolved;
             document.getElementById('ticketUnresolved').textContent = stats.unresolved;
             
-            // Update the first two time cards with real data
             document.getElementById('avgResponseTime1').textContent = formatDuration(avgResponseTime);
             document.getElementById('avgResponseTime2').textContent = formatDuration(avgResolvedTime);
             
-            // Hide the third time card since we only need 2
             const thirdTimeCard = document.getElementById('avgResponseTime3');
             if (thirdTimeCard && thirdTimeCard.parentElement) {
                 thirdTimeCard.parentElement.style.display = 'none';
             }
         }
 
-        // Fixed updateChart function - FIX FOR ISSUE 2 & 3
+        // Update chart
         function updateChart(tickets) {
             const ctx = document.getElementById('feedbackChart').getContext('2d');
             const filteredTickets = processTicketData(tickets);
@@ -973,21 +1224,15 @@
             let labels = [];
             let chartData = {};
             
-            console.log('Chart: Processing', filteredTickets.length, 'filtered tickets');
-            
-            // Get branches that have tickets in the filtered data
+            // Get branches with data
             const branchesWithData = [];
             if (currentFilters.branch === 'all') {
-                // Get all branches that have tickets
                 const branchTicketCounts = {};
                 filteredTickets.forEach(ticket => {
                     const branchId = ticket.branch_id || 'no-branch';
                     branchTicketCounts[branchId] = (branchTicketCounts[branchId] || 0) + 1;
                 });
                 
-                console.log('Branch ticket counts:', branchTicketCounts);
-                
-                // Find branch names for branches with data
                 Object.keys(branchTicketCounts).forEach(branchId => {
                     if (branchId === 'no-branch') {
                         branchesWithData.push({
@@ -1007,7 +1252,6 @@
                     }
                 });
             } else {
-                // Single branch selected
                 const selectedBranch = branches.find(b => b.branch_id === parseInt(currentFilters.branch));
                 if (selectedBranch) {
                     branchesWithData.push({
@@ -1018,7 +1262,6 @@
                 }
             }
             
-            // If no branches with data, show empty chart
             if (branchesWithData.length === 0) {
                 branchesWithData.push({
                     id: 'no-data',
@@ -1027,24 +1270,17 @@
                 });
             }
             
-            console.log('Branches with data:', branchesWithData);
-            
             if (currentFilters.period === 'annually') {
-                // Show monthly data for the year
                 labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 
-                // Initialize data structure for each branch
                 branchesWithData.forEach(branch => {
                     chartData[branch.id] = new Array(12).fill(0);
                 });
                 
-                // Group tickets by month and branch
                 filteredTickets.forEach(ticket => {
                     const ticketDate = new Date(ticket.submitted_at);
-                    const month = ticketDate.getMonth(); // 0-11
+                    const month = ticketDate.getMonth();
                     const branchId = ticket.branch_id || 'no-branch';
-                    
-                    console.log('Ticket date:', ticket.submitted_at, 'Month:', month, 'Branch:', branchId);
                     
                     if (chartData[branchId]) {
                         chartData[branchId][month]++;
@@ -1052,7 +1288,6 @@
                 });
                 
             } else if (currentFilters.period === 'monthly') {
-                // Show daily data for the month
                 const [year, month] = currentFilters.range.split('-');
                 const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
                 
@@ -1061,15 +1296,13 @@
                     labels.push(day.toString());
                 }
                 
-                // Initialize data structure for each branch
                 branchesWithData.forEach(branch => {
                     chartData[branch.id] = new Array(daysInMonth).fill(0);
                 });
                 
-                // Group tickets by day and branch
                 filteredTickets.forEach(ticket => {
                     const ticketDate = new Date(ticket.submitted_at);
-                    const day = ticketDate.getDate() - 1; // 0-based index
+                    const day = ticketDate.getDate() - 1;
                     const branchId = ticket.branch_id || 'no-branch';
                     
                     if (chartData[branchId] && day >= 0 && day < daysInMonth) {
@@ -1078,14 +1311,10 @@
                 });
             }
             
-            console.log('Chart data by branch:', chartData);
-            
-            // Destroy existing chart
             if (feedbackChart) {
                 feedbackChart.destroy();
             }
             
-            // Create datasets for each branch
             const colors = ['#8527F0', '#C084FC', '#F59E0B', '#10B981', '#EF4444', '#6366F1', '#EC4899'];
             const datasets = branchesWithData.map((branch, index) => ({
                 label: branch.name,
@@ -1097,9 +1326,6 @@
                 borderSkipped: false,
             }));
             
-            console.log('Chart datasets:', datasets);
-            
-            // Create new chart
             feedbackChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -1115,51 +1341,230 @@
                             labels: {
                                 usePointStyle: true,
                                 padding: 20,
-                                font: {
-                                    size: 12
-                                }
+                                font: { size: 12 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            stacked: currentFilters.branch === 'all', // Stack only when showing multiple branches
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 11
-                                }
-                            }
+                            stacked: currentFilters.branch === 'all',
+                            grid: { display: false },
+                            ticks: { font: { size: 11 } }
                         },
                         y: {
-                            stacked: currentFilters.branch === 'all', // Stack only when showing multiple branches
+                            stacked: currentFilters.branch === 'all',
                             beginAtZero: true,
-                            grid: {
-                                color: '#f1f5f9'
-                            },
-                            ticks: {
-                                font: {
-                                    size: 11
-                                },
-                                stepSize: 1 // Show whole numbers only
-                            }
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { size: 11 }, stepSize: 1 }
                         }
                     },
                     elements: {
-                        bar: {
-                            borderRadius: 4
-                        }
+                        bar: { borderRadius: 4 }
                     }
                 }
             });
         }
 
+        // Set default values when no data
+        function setDefaultValues() {
+            document.getElementById('totalTickets').textContent = '0';
+            document.getElementById('complaintTickets').textContent = '0';
+            document.getElementById('suggestionTickets').textContent = '0';
+            document.getElementById('inquiryTickets').textContent = '0';
+            document.getElementById('complimentTickets').textContent = '0';
+            document.getElementById('ticketResolved').textContent = '0';
+            document.getElementById('ticketUnresolved').textContent = '0';
+            document.getElementById('avgResponseTime1').textContent = 'N/A';
+            document.getElementById('avgResponseTime2').textContent = 'N/A';
+        }
+
+        // AI Insight Functions
+        async function requestAIInsight() {
+            const aiInsightBtn = document.getElementById('aiInsightBtn');
+            const aiInsightSection = document.getElementById('aiInsightSection');
+            const insightLoading = document.getElementById('insightLoading');
+            const insightContent = document.getElementById('insightContent');
+            const insightError = document.getElementById('insightError');
+            
+            try {
+                // Disable button and show loading
+                aiInsightBtn.disabled = true;
+                aiInsightBtn.innerHTML = '<span class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></span>Analyzing...';
+                
+                // Show insight section and loading state
+                aiInsightSection.style.display = 'block';
+                insightLoading.style.display = 'block';
+                insightContent.style.display = 'none';
+                insightError.style.display = 'none';
+                
+                // Get filtered tickets for analysis
+                const filteredTickets = processTicketData(currentTickets);
+                
+                // Prepare sanitized data
+                const analysisData = prepareAnalysisData(filteredTickets);
+                
+                // Call AI insight API
+                const response = await fetch('/api/ai-insight', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${clientToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(analysisData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.insight) {
+                    displayInsight(result.insight);
+                    insightLoading.style.display = 'none';
+                    insightContent.style.display = 'block';
+                } else {
+                    throw new Error(result.message || 'Failed to generate insight');
+                }
+                
+            } catch (error) {
+                console.error('Error requesting AI insight:', error);
+                insightLoading.style.display = 'none';
+                insightError.style.display = 'block';
+            } finally {
+                // Re-enable button
+                aiInsightBtn.disabled = false;
+                aiInsightBtn.innerHTML = '<span class="btn-icon">🤖</span>Request AI Insight';
+            }
+        }
+
+        function prepareAnalysisData(tickets) {
+            // Sanitize customer data
+            const sanitizedTickets = tickets.map(ticket => ({
+                type: ticket.type,
+                title: ticket.title,
+                description: ticket.description,
+                status: ticket.status,
+                branch_id: ticket.branch_id,
+                submitted_at: ticket.submitted_at,
+                responded_at: ticket.responded_at,
+                resolved_at: ticket.resolved_at
+            }));
+            
+            // Get branch info
+            const branchInfo = {};
+            branches.forEach(branch => {
+                branchInfo[branch.branch_id] = branch.branch_name;
+            });
+            
+            return {
+                dateRange: {
+                    period: currentFilters.period,
+                    range: currentFilters.range,
+                    displayText: document.getElementById('kpiDateRange').textContent
+                },
+                tickets: sanitizedTickets,
+                branches: branchInfo,
+                summary: {
+                    total: tickets.length,
+                    byType: {
+                        complaint: tickets.filter(t => t.type === 'complaint').length,
+                        suggestion: tickets.filter(t => t.type === 'suggestion').length,
+                        inquiry: tickets.filter(t => t.type === 'inquiry').length,
+                        compliment: tickets.filter(t => t.type === 'compliment').length
+                    },
+                    byStatus: {
+                        resolved: tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length,
+                        unresolved: tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length
+                    }
+                }
+            };
+        }
+
+        function displayInsight(insight) {
+            const summaryEl = document.getElementById('insightSummary');
+            const detailsEl = document.getElementById('insightDetails');
+            const recommendationsEl = document.getElementById('insightRecommendations');
+            
+            // Display summary
+            summaryEl.innerHTML = `
+                <h4>Executive Summary</h4>
+                <p>${insight.summary || 'No summary available'}</p>
+            `;
+            
+            // Display details
+            let detailsHTML = '';
+            if (insight.details) {
+                Object.keys(insight.details).forEach(key => {
+                    const items = insight.details[key];
+                    if (Array.isArray(items) && items.length > 0) {
+                        detailsHTML += `
+                            <div class="insight-card">
+                                <h5>${key.replace(/_/g, ' ').toUpperCase()}</h5>
+                                <ul>
+                                    ${items.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            detailsEl.innerHTML = detailsHTML;
+            
+            // Display recommendations
+            if (insight.recommendations && insight.recommendations.length > 0) {
+                recommendationsEl.innerHTML = `
+                    <h4>Recommendations</h4>
+                    <ul>
+                        ${insight.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                recommendationsEl.innerHTML = `
+                    <h4>Recommendations</h4>
+                    <p>No specific recommendations available based on current data.</p>
+                `;
+            }
+        }
+
+        function exportInsight() {
+            const summaryText = document.getElementById('insightSummary').textContent;
+            const detailsText = document.getElementById('insightDetails').textContent;
+            const recommendationsText = document.getElementById('insightRecommendations').textContent;
+            
+            const content = [
+                'FEEDFAST AI INSIGHT REPORT',
+                '=========================',
+                '',
+                'Generated on: ' + new Date().toLocaleDateString(),
+                'Period: ' + currentFilters.period,
+                'Range: ' + currentFilters.range,
+                '',
+                summaryText,
+                '',
+                detailsText,
+                '',
+                recommendationsText
+            ].join('\n');
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `feedfast-ai-insight-${currentFilters.period}-${currentFilters.range}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function closeInsight() {
+            document.getElementById('aiInsightSection').style.display = 'none';
+        }
+
         // Export CSV functionality
         function exportCSV() {
             try {
-                // Get current data
                 const totalTickets = document.getElementById('totalTickets').textContent;
                 const complaints = document.getElementById('complaintTickets').textContent;
                 const suggestions = document.getElementById('suggestionTickets').textContent;
@@ -1168,7 +1573,6 @@
                 const resolved = document.getElementById('ticketResolved').textContent;
                 const unresolved = document.getElementById('ticketUnresolved').textContent;
                 
-                // Create CSV content
                 const csvContent = [
                     ['Metric', 'Value'],
                     ['Total Tickets', totalTickets],
@@ -1183,7 +1587,6 @@
                     ['Generated On', new Date().toLocaleDateString()]
                 ].map(row => row.join(',')).join('\n');
                 
-                // Download file
                 const blob = new Blob([csvContent], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1193,8 +1596,6 @@
                 a.click();
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
-                
-                console.log('CSV export completed');
             } catch (error) {
                 console.error('Error exporting CSV:', error);
                 showError('Failed to export CSV file');
