@@ -5292,7 +5292,7 @@ function createAnalysisPrompt(dateRange, tickets, branches, summary, clientName)
         ticketsByBranch[branchName].push(ticket);
     });
     
-    return `As a customer feedback analysis expert, analyze this ${clientName} company data and provide structured insights.
+    return `As a customer feedback analysis expert, analyze this company data and provide structured insights.
 
 ANALYSIS PERIOD: ${dateRange.displayText}
 COMPANY: ${clientName}
