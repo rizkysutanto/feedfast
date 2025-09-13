@@ -85,9 +85,9 @@
                     </div>
                     <div class="report-actions">
                         <button class="btn btn-secondary ai-insight-btn" onclick="requestAIInsight()" id="aiInsightBtn">
-                            <span class="btn-icon">🤖</span>
-                            Request AI Insight
-                        </button>
+    <img src="/icon-ai.png" alt="" class="btn-icon" style="width: 16px; height: 16px;">
+    Request AI Insight
+</button>
                         <button class="btn btn-primary export-btn" onclick="exportCSV()">Export CSV</button>
                     </div>
                 </div>
@@ -322,72 +322,78 @@
             transform: translateY(-1px);
         }
 
-        /* AI Insight Button */
-        .ai-insight-btn {
-            background-color: #8527F0;
-            color: var(--text-white);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        /* Replace the existing .ai-insight-btn styles with: */
+.ai-insight-btn {
+    background-color: #8527F0;
+    color: var(--text-white);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-        .ai-insight-btn:hover {
-            background-color: #059669;
-            transform: translateY(-1px);
-        }
+.ai-insight-btn:hover {
+    background-color: #7c3aed;
+    transform: translateY(-1px);
+}
 
-        .ai-insight-btn:disabled {
-            background-color: #9CA3AF;
-            cursor: not-allowed;
-            transform: none;
-        }
+.ai-insight-btn:disabled {
+    background-color: #9CA3AF;
+    cursor: not-allowed;
+    transform: none;
+}
 
         .btn-icon {
             font-size: 1rem;
             line-height: 1;
         }
 
-        /* AI Insight Section */
-        .ai-insight-section {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius-lg);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
+        /* AI Insight Section - Updated Layout */
+.ai-insight-section {
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    padding: 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
 
-        .insight-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
+.insight-header {
+    background-color: #f8fafc;
+    padding: 1.5rem;
+    margin: 0;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        .insight-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+.insight-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
         .insight-title::before {
-            content: "🤖";
-            font-size: 1.25rem;
-        }
+    content: "";
+    background: url('/icon-ai.png') no-repeat center;
+    background-size: contain;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+}
 
         .insight-actions {
             display: flex;
@@ -416,14 +422,14 @@
         }
 
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #8527F0;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #8527F0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -442,24 +448,37 @@
 
         /* Insight Content */
         .insight-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
 
         .insight-summary {
-            background-color: #F0F9FF;
-            border: 1px solid #0EA5E9;
-            border-radius: 8px;
-            padding: 1rem;
-        }
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #0ea5e9;
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+}
+        .insight-summary::before {
+    content: "📊";
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background-color: #0ea5e9;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+}
 
         .insight-summary h4 {
-            color: #0369A1;
-            margin: 0 0 0.5rem 0;
-            font-size: 1rem;
-            font-weight: 600;
-        }
+    color: #0369a1;
+    margin: 0 0 1rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
 
         .insight-summary p {
             color: var(--text-primary);
@@ -468,26 +487,33 @@
         }
 
         .insight-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-        }
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
 
         .insight-card {
-            background-color: #FAFAFA;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-        }
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+        .insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 
         .insight-card h5 {
-            color: var(--text-primary);
-            margin: 0 0 0.75rem 0;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+    color: #374151;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    border-bottom: 2px solid #8527F0;
+    padding-bottom: 0.5rem;
+}
 
         .insight-card ul {
             list-style: none;
@@ -509,18 +535,30 @@
         }
 
         .insight-recommendations {
-            background-color: #F0FDF4;
-            border: 1px solid #8527F0;
-            border-radius: 8px;
-            padding: 1rem;
-        }
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #22c55e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+}
+        .insight-recommendations::before {
+    content: "💡";
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background-color: #22c55e;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+}
 
         .insight-recommendations h4 {
-            color: #059669;
-            margin: 0 0 0.75rem 0;
-            font-size: 1rem;
-            font-weight: 600;
-        }
+    color: #059669;
+    margin: 0 0 1rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
 
         .insight-recommendations ul {
             list-style: none;
@@ -1389,7 +1427,7 @@
             try {
                 // Disable button and show loading
                 aiInsightBtn.disabled = true;
-                aiInsightBtn.innerHTML = '<span class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></span>Analyzing...';
+                aiInsightBtn.innerHTML = '<img src="/icon-ai.png" alt="" class="btn-icon" style="width: 16px; height: 16px;">Request AI Insight';
                 
                 // Show insight section and loading state
                 aiInsightSection.style.display = 'block';
@@ -1528,35 +1566,56 @@
         }
 
         function exportInsight() {
-            const summaryText = document.getElementById('insightSummary').textContent;
-            const detailsText = document.getElementById('insightDetails').textContent;
-            const recommendationsText = document.getElementById('insightRecommendations').textContent;
-            
-            const content = [
-                'FEEDFAST AI INSIGHT REPORT',
-                '=========================',
-                '',
-                'Generated on: ' + new Date().toLocaleDateString(),
-                'Period: ' + currentFilters.period,
-                'Range: ' + currentFilters.range,
-                '',
-                summaryText,
-                '',
-                detailsText,
-                '',
-                recommendationsText
-            ].join('\n');
-            
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `feedfast-ai-insight-${currentFilters.period}-${currentFilters.range}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }
+    // Get current date for filename
+    const currentDate = new Date().toISOString().split('T')[0];
+    const companyName = currentUser.client_name || 'Company';
+    
+    // Create PDF content window
+    const printWindow = window.open('', '_blank');
+    const summaryContent = document.getElementById('insightSummary').innerHTML;
+    const detailsContent = document.getElementById('insightDetails').innerHTML;
+    const recommendationsContent = document.getElementById('insightRecommendations').innerHTML;
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>AI Insight Report - ${companyName}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; border-bottom: 2px solid #8527F0; padding-bottom: 20px; margin-bottom: 30px; }
+                .company-name { color: #8527F0; font-size: 28px; font-weight: bold; }
+                .report-title { color: #374151; font-size: 20px; margin: 10px 0; }
+                .metadata { color: #6b7280; font-size: 14px; }
+                .section { margin: 20px 0; }
+                .section h3 { color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+                @media print { body { margin: 0; } }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="company-name">${companyName}</div>
+                <div class="report-title">AI Insight Analysis Report</div>
+                <div class="metadata">
+                    Generated on: ${new Date().toLocaleDateString()}<br>
+                    Period: ${currentFilters.period} | Range: ${currentFilters.range}
+                </div>
+            </div>
+            <div class="section">${summaryContent}</div>
+            <div class="section">${detailsContent}</div>
+            <div class="section">${recommendationsContent}</div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+}
 
         function closeInsight() {
             document.getElementById('aiInsightSection').style.display = 'none';
