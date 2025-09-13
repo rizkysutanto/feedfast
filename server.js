@@ -4,6 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const QRCode = require('qrcode');
 
 let cloudinary, multer, upload;
 try {
@@ -5171,6 +5172,63 @@ app.get('/feedback/:clientname', async (req, res) => {
     console.error('❌ Error loading feedback form:', error);
     res.status(500).send('Internal server error');
   }
+});
+
+//===================================================
+// QR Code generation endpoint
+app.post('/api/generate-qr', authenticateClientToken, async (req, res) => {
+    try {
+        const { url, filename } = req.body;
+        
+        if (!url) {
+            return res.status(400).json({
+                success: false,
+                message: 'URL is required'
+            });
+        }
+
+        // Validate URL format
+        try {
+            new URL(url);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid URL format'
+            });
+        }
+
+        // Generate QR code as PNG buffer
+        const qrOptions = {
+            width: 512,
+            height: 512,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            },
+            margin: 2,
+            errorCorrectionLevel: 'M'
+        };
+
+        const qrBuffer = await QRCode.toBuffer(url, qrOptions);
+        
+        // Set appropriate headers for PNG download
+        res.set({
+            'Content-Type': 'image/png',
+            'Content-Disposition': `attachment; filename="${filename || 'qr-code'}.png"`,
+            'Content-Length': qrBuffer.length,
+            'Cache-Control': 'no-cache'
+        });
+
+        // Send the buffer
+        res.send(qrBuffer);
+
+    } catch (error) {
+        console.error('Error generating QR code:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to generate QR code'
+        });
+    }
 });
 
 
