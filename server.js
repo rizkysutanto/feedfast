@@ -4520,7 +4520,7 @@ function generateCustomFeedbackFormHTML(client, branches) {
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, ${settings.mainColor} 0%, ${adjustColor(settings.mainColor, -20)} 100%);
+            background: ${settings.mainColor};
             min-height: 100vh;
             padding: 20px;
             color: ${settings.textColor};
@@ -4536,7 +4536,7 @@ function generateCustomFeedbackFormHTML(client, branches) {
         }
         
         .header {
-            background: linear-gradient(135deg, ${settings.mainColor} 0%, ${adjustColor(settings.mainColor, -20)} 100%);
+            background: white;
             color: ${settings.textColor};
             padding: 30px;
             text-align: center;
