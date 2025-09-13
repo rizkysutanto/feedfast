@@ -27,6 +27,7 @@
     "express-rate-limit": "^6.7.0",
     "cloudinary": "^1.41.0",
     "qrcode": "^1.5.3",
+    "@google/generative-ai": "^0.17.1",
     "multer": "^2.0.2"
   },
   "devDependencies": {
