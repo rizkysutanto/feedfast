@@ -5221,7 +5221,7 @@ app.post('/api/ai-insight', authenticateClientToken, async (req, res) => {
         global.aiInsightRateLimit.set(rateLimitKey, now);
         
         // Prepare analysis prompt
-        const analysisPrompt = createAnalysisPrompt(dateRange, tickets, branches, summary);
+        const analysisPrompt = createAnalysisPrompt(dateRange, tickets, branches, summary, req.user.client_name);
         
         console.log('Sending request to Gemini API...');
         
@@ -5271,7 +5271,7 @@ app.post('/api/ai-insight', authenticateClientToken, async (req, res) => {
 });
 
 // Helper function to create analysis prompt
-function createAnalysisPrompt(dateRange, tickets, branches, summary) {
+function createAnalysisPrompt(dateRange, tickets, branches, summary, clientName) {
     const branchNames = Object.values(branches).join(', ');
     const ticketSamples = tickets.slice(0, 1000); // Limit to first 1000 tickets to manage prompt size
     
@@ -5292,9 +5292,10 @@ function createAnalysisPrompt(dateRange, tickets, branches, summary) {
         ticketsByBranch[branchName].push(ticket);
     });
     
-    return `As a customer feedback analysis expert, analyze this FeedFast company data and provide structured insights.
+    return `As a customer feedback analysis expert, analyze this ${clientName} company data and provide structured insights.
 
 ANALYSIS PERIOD: ${dateRange.displayText}
+COMPANY: ${clientName}
 TOTAL TICKETS: ${summary.total}
 
 TICKET BREAKDOWN:
@@ -5323,7 +5324,7 @@ Please provide your analysis in this EXACT JSON format:
   "details": {
     "main_issues": ["List of 3-5 main problems identified from complaints"],
     "trends": ["List of 2-4 trends identified from feedback received, compare month to month or weekly if available"],
-    "branch_insights": ["Branch-specific observations if multiple branches involved"],
+    "branch_insights": ["List qualitative and quantitative analysis for each branch specifically"],
     "response_efficiency": ["Observations about ticket resolution patterns"]
   },
   "recommendations": [
