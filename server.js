@@ -5273,7 +5273,7 @@ app.post('/api/ai-insight', authenticateClientToken, async (req, res) => {
 // Helper function to create analysis prompt
 function createAnalysisPrompt(dateRange, tickets, branches, summary) {
     const branchNames = Object.values(branches).join(', ');
-    const ticketSamples = tickets.slice(0, 50); // Limit to first 50 tickets to manage prompt size
+    const ticketSamples = tickets.slice(0, 1000); // Limit to first 1000 tickets to manage prompt size
     
     const ticketsByType = {
         complaint: tickets.filter(t => t.type === 'complaint'),
@@ -5307,7 +5307,7 @@ TICKET BREAKDOWN:
 
 BRANCHES: ${branchNames}
 
-SAMPLE TICKET DATA (first 50 tickets):
+SAMPLE TICKET DATA (first 1000 tickets):
 ${ticketSamples.map(ticket => `
 Type: ${ticket.type}
 Title: ${ticket.title}
@@ -5322,7 +5322,7 @@ Please provide your analysis in this EXACT JSON format:
   "summary": "A 2-3 sentence executive summary of the overall feedback situation",
   "details": {
     "main_issues": ["List of 3-5 main problems identified from complaints"],
-    "positive_trends": ["List of 2-4 positive aspects from compliments and general feedback"],
+    "trends": ["List of 2-4 trends identified from feedback received, compare month to month or weekly if available"],
     "branch_insights": ["Branch-specific observations if multiple branches involved"],
     "response_efficiency": ["Observations about ticket resolution patterns"]
   },
@@ -5364,7 +5364,7 @@ function parseAIResponse(generatedText) {
             summary: "Analysis completed successfully. Please review the detailed insights below.",
             details: {
                 main_issues: ["Unable to parse specific issues from AI response"],
-                positive_trends: ["Analysis completed but formatting needs adjustment"],
+                trends: ["Analysis completed but formatting needs adjustment"],
                 branch_insights: ["Please review raw response for detailed insights"],
                 response_efficiency: ["Analysis available in raw format"]
             },
@@ -5383,7 +5383,7 @@ function parseAIResponse(generatedText) {
             summary: "AI analysis was generated but encountered formatting issues during processing.",
             details: {
                 main_issues: ["Response parsing error - please try again"],
-                positive_trends: ["AI generated insights but format needs adjustment"],
+                trends: ["AI generated insights but format needs adjustment"],
                 branch_insights: ["Analysis completed with technical difficulties"],
                 response_efficiency: ["Please retry request for properly formatted results"]
             },
